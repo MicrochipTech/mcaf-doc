@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>4.5. Test Harness &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../_static/preliminary-draft.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.6. Supervisory Algorithms" href="supervisory.html" />
+    <link rel="prev" title="4.4. Field-Oriented Control (FOC)" href="foc.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="supervisory.html" title="4.6. Supervisory Algorithms"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="foc.html" title="4.4. Field-Oriented Control (FOC)"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">4. Components</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="test-harness">
+<span id="id1"></span><h1>4.5. Test Harness<a class="headerlink" href="#test-harness" title="Permalink to this headline">¶</a></h1>
+<p></p>
+<p>The test harness represents several runtime parameters, which, in combination
+with adjustable parameters used elsewhere in MCAF, can be used to put the controller
+into certain test modes in order to debug and test proper operation of control algorithms,
+the board, and/or motor. It is tightly coupled to the design of the <a class="reference internal" href="../appendix/glossary.html#term-foc"><span class="xref std std-term">FOC</span></a> modules.</p>
+<div class="section" id="overview">
+<h2>4.5.1. Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The test harness includes the features listed below.</p>
+<div class="highlighted-refs docutils container">
+<ul class="simple">
+<li><a class="reference internal" href="#test-modes"><span class="std std-ref">Operating mode</span></a> — this determines whether the motor controller operates
+in its normal mode, or with a subset of the controller features, and is used
+for <a class="reference internal" href="#test-accretive"><span class="std std-ref">accretive testing</span></a>, so that, for example, <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> outputs can be tested first,
+then three-phase modulation, then the current loop, then the velocity loop.</li>
+<li><a class="reference internal" href="#test-state-change"><span class="std std-ref">Forced state change</span></a> — this allows the test operator
+to force certain state transitions</li>
+<li><a class="reference internal" href="#test-overrides"><span class="std std-ref">Overrides</span></a>  — these are boolean flags that
+determine whether certain features such as commutation angle, DC link compensation,
+or input velocity command to operate normally or receive input from alternate sources.</li>
+<li><a class="reference internal" href="#test-perturbation"><span class="std std-ref">Square-wave perturbation</span></a> — this adds a square wave signal to
+either velocity, current, or voltage commands.</li>
+<li><a class="reference internal" href="#test-seizures"><span class="std std-ref">Seizures</span></a> — Setting an
+appropriate flag causes either the <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> or the main loop to enter an infinite
+loop, triggering the watchdog timeout (if enabled). This allows testing
+of the watchdog timer.</li>
+<li><a class="reference internal" href="#test-stack-overflow"><span class="std std-ref">Intentional stack overflow</span></a> — Allows testing the
+hardware stack overflow trap.</li>
+<li><a class="reference internal" href="#test-guard"><span class="std std-ref">Guards</span></a> — Test guards prevent
+accidental activation of test harness features.</li>
+<li><a class="reference internal" href="#test-timestamps"><span class="std std-ref">Profiling timestamps</span></a> — these are 16-bit timer snapshots
+that can be used for profiling the main control ISR.</li>
+</ul>
+</div>
+<p>Seizures, stack overflow, and guards are features that apply to the MCAF firmware as a whole,
+whereas the remaining features apply to each motor in the system.</p>
+</div>
+<div class="section" id="accretive-testing">
+<span id="test-accretive"></span><span id="index-3"></span><h2>4.5.2. Accretive Testing<a class="headerlink" href="#accretive-testing" title="Permalink to this headline">¶</a></h2>
+<p></p>
+<p>Motor control testing should be possible using firmware that is as equivalent as possible
+(ideally identical) to the intended release firmware. This prevents errors
+reproducing a problem in the release firmware because it got out
+of sync with the test firmware.</p>
+<p>The MCAF includes built-in test modes to support so-called “accretive” testing at run-time,
+allowing engineers to start from low-level tests of the power electronics,
+and work up through verification of open-loop commutation, current control loop,
+and finally velocity control loop, all without having to recompile the software.
+This approach is vital, both when bringing up a new circuit board,
+and when troubleshooting.</p>
+</div>
+<div class="section" id="test-harness-parameters">
+<span id="index-4"></span><h2>4.5.3. Test Harness Parameters<a class="headerlink" href="#test-harness-parameters" title="Permalink to this headline">¶</a></h2>
+<p></p>
+<p>The following table lists test parameters used in various cases. Parameters are
+found both in the main motor data structure <code class="docutils literal notranslate"><span class="pre">MCAF_MOTOR_DATA</span></code>, and the main
+system data structure <code class="docutils literal notranslate"><span class="pre">MCAF_SYSTEM_DATA</span></code>, and are hierarchical (e.g.
+<code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.idq.q</span></code> for the q-axis current command perturbation shown below).</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="39%" />
+<col width="61%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">motor.testing</span></code></td>
+<td>Contains testing parameters per motor</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate">&#160; <span class="pre">.sqwave</span></code></td>
+<td>Contains parameters for square wave generator</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate">&#160;&#160;&#160;&#160; <span class="pre">.halfperiod</span></code></td>
+<td>Half-period, in <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> cycles, of the test square wave</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate">&#160;&#160;&#160;&#160; <span class="pre">.velocity</span></code> <a class="footnote-reference" href="#fnvel" id="id2">[1]</a></td>
+<td>Amplitude of velocity command perturbation</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate">&#160;&#160;&#160;&#160; <span class="pre">.idq</span></code></td>
+<td>Amplitudes of current command perturbation</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.d</span></code></td>
+<td>Amplitude of d-axis current command perturbation</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.q</span></code></td>
+<td>Amplitude of q-axis current command perturbation</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate">&#160;&#160;&#160;&#160; <span class="pre">.vdq</span></code></td>
+<td>Amplitudes of voltage command perturbation</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.d</span></code></td>
+<td>Amplitude of d-axis voltage command perturbation</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.q</span></code></td>
+<td>Amplitude of q-axis voltage command perturbation</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate">&#160;&#160;&#160;&#160; <span class="pre">.value</span></code></td>
+<td>square-wave signal, 0 or ±1 (0 to disable all
+perturbations)</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate">&#160; <span class="pre">.overrides</span></code></td>
+<td><p class="first">Bit fields (denoted later in this document as
+<code class="docutils literal notranslate"><span class="pre">overrides:F</span></code> where <code class="docutils literal notranslate"><span class="pre">F</span></code> is the bit field), which
+control certain test overrides:</p>
+<ul class="last simple">
+<li><code class="docutils literal notranslate"><span class="pre">velocityCommand</span></code>: Controls whether input velocity
+command comes from normal input, or is held static.</li>
+<li><code class="docutils literal notranslate"><span class="pre">commutation</span></code>: Controls whether commutation angle is
+overridden</li>
+<li><code class="docutils literal notranslate"><span class="pre">dcLinkCompensation</span></code>: Controls whether DC link
+compensation is overridden</li>
+<li><code class="docutils literal notranslate"><span class="pre">stallDetection</span></code>:     Controls whether stall
+detection is masked</li>
+<li><code class="docutils literal notranslate"><span class="pre">startupPause</span></code>:     Controls whether startup
+pauses when reaching the HOLD state</li>
+<li><code class="docutils literal notranslate"><span class="pre">fluxControl</span></code>:     Controls whether d-axis current
+reference comes from the <code class="docutils literal notranslate"><span class="pre">flux_control</span></code> module,
+or is held static.</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate">&#160; <span class="pre">.overrideOmegaElectrical</span></code></td>
+<td>Controls value of electrical frequency used during
+commutation overrides</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate">&#160; <span class="pre">.overrideCommutationOnOff</span></code></td>
+<td>Allows delays in commutation angle changes, used during
+commutation overrides</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.maxCount</span></code></td>
+<td>Specifies the period of commutation frequency variations</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.threshold</span></code></td>
+<td>Specifies the fraction of time where
+<code class="docutils literal notranslate"><span class="pre">overrideOmegaElectrical</span></code> is applied</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate">&#160; <span class="pre">.operatingMode</span></code></td>
+<td>Controls operating mode of the motor</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate">&#160; <span class="pre">.forceStateChange</span></code></td>
+<td>Affects state change of primary state machine</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate">&#160; <span class="pre">.timestampReference</span></code></td>
+<td>Captured timestamp reference for profiling</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate">&#160; <span class="pre">.timestamps</span></code></td>
+<td>Captured timestamp values for profiling</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">systemData.testing</span></code></td>
+<td>Contains testing parameters per system</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate">&#160; <span class="pre">.flags</span></code></td>
+<td>Test flags, including seizure flags for the <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a>
+and main loop, and stack overflow</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate">&#160; <span class="pre">.guard</span></code></td>
+<td>Enables test harness functionality</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<table class="docutils footnote" frame="void" id="fnvel" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[1]</a></td><td>The type of <code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.velocity</span></code> is <code class="docutils literal notranslate"><span class="pre">MCAF_U_VELOCITY</span></code>,
+which is a union containing two members, <code class="docutils literal notranslate"><span class="pre">mechanical</span></code> and <code class="docutils literal notranslate"><span class="pre">electrical</span></code>.
+These have identical value, but may facilitate special treatment in
+future real-time diagnostic tools.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="test-guarding">
+<span id="test-guard"></span><span id="index-5"></span><h2>4.5.4. Test Guarding<a class="headerlink" href="#test-guarding" title="Permalink to this headline">¶</a></h2>
+<p></p>
+<p>The presence of test modes does represent a miniscule risk for accidental
+operation in these modes. If not set intentionally, the only way to enter a test
+mode is for certain state variables located in RAM to change autonomously.
+This can be considered an improbable event, with one of the following causes:</p>
+<ul class="simple">
+<li>random hardware failures</li>
+<li>software implementation errors</li>
+<li>execution of write-memory commands from the <a class="reference internal" href="diagnostics.html#diag-kernel"><span class="std std-ref">diagnostic kernel</span></a>,
+which are in turn caused by either<ul>
+<li>communications errors that somehow reproduce exactly the required data</li>
+<li>malicious sources</li>
+</ul>
+</li>
+</ul>
+<p>Unfortunately, such a change is persistent, and
+the test modes will not revert back to normal behavior on their own.</p>
+<div class="section" id="test-features-in-production-should-they-stay-or-should-they-go">
+<h3>4.5.4.1. Test Features in Production: Should They Stay or Should They Go?<a class="headerlink" href="#test-features-in-production-should-they-stay-or-should-they-go" title="Permalink to this headline">¶</a></h3>
+<p>This raises a philosophical question: should a test harness remain in production
+code? There are two schools of thought for run-time test features.</p>
+<ul class="simple">
+<li>Test features should be left in place in production code<ul>
+<li>Production code is actually the exact code being tested</li>
+<li>In case of an issue observed later (e.g. customer problem), it facilitates understanding of the issue and can even be activated in the field</li>
+</ul>
+</li>
+<li>Test features should not be left in place in production code<ul>
+<li>They can take extra software resources (CPU time, program and data memory)</li>
+<li>In safety-critical systems they increase the risk of unintended behavior</li>
+<li>Code alterations should be removed upon completion of testing</li>
+</ul>
+</li>
+</ul>
+<p>We believe the choice should be left up to the customer; as a future
+enhancement, the application framework will facilitate this by allowing removal
+of test features either through the code generation process or the preprocessor
+(<code class="docutils literal notranslate"><span class="pre">#ifdef</span></code>). In any case, keeping the alterations used for testing to a minimum is
+extremely important: if we test codebase X but deliver codebase Y, any
+differences should not be significant with respect to the features being tested,
+otherwise they represent a shortcoming of the test process.</p>
+</div>
+<div class="section" id="implementation-of-test-guarding">
+<span id="test-guard-impl"></span><span id="index-6"></span><h3>4.5.4.2. Implementation of Test Guarding<a class="headerlink" href="#implementation-of-test-guarding" title="Permalink to this headline">¶</a></h3>
+<p></p>
+<p>To mitigate the risk of accidentally entering test modes, an optional guard
+mechanism is provided. Essentially, on each <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> cycle the guard is checked and
+if not valid, the test parameters are reset to their normal mode of operation.
+The guard consists of two memory locations, a key and a timeout
+(<code class="docutils literal notranslate"><span class="pre">systemData.testing.guard.key</span></code> and <code class="docutils literal notranslate"><span class="pre">systemData.testing.guard.timeout</span></code>). In order for the
+guard to be valid, the key must match a given value (<code class="docutils literal notranslate"><span class="pre">0xD1A6</span></code> = “DIAG”).
+If the timeout has expired, the key is reset to an invalid value
+(zero), otherwise the timeout is decremented. If the guard is invalid, the test
+parameters are set to their normal conditions. An example of C code to implement
+this behavior is shown in <a class="reference internal" href="#code-test-guard"><span class="std std-numref">Listing 4.2</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="code-test-guard">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 4.2 </span><span class="caption-text"></span><a class="headerlink" href="#code-test-guard" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#define GUARD_KEY_VALID 0xD1A6</span>
+<span class="cp">#define GUARD_KEY_RESET 0x0000</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">systemData</span><span class="p">.</span><span class="n">testing</span><span class="p">.</span><span class="n">guard</span><span class="p">.</span><span class="n">timeout</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">systemData</span><span class="p">.</span><span class="n">testing</span><span class="p">.</span><span class="n">guard</span><span class="p">.</span><span class="n">key</span> <span class="o">=</span> <span class="n">GUARD_KEY_RESET</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">else</span>
+<span class="p">{</span>
+  <span class="o">--</span><span class="n">systemData</span><span class="p">.</span><span class="n">testing</span><span class="p">.</span><span class="n">guard</span><span class="p">.</span><span class="n">timeout</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="c1">// repeat the following block for each motor</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">systemData</span><span class="p">.</span><span class="n">testing</span><span class="p">.</span><span class="n">guard</span><span class="p">.</span><span class="n">key</span> <span class="o">!=</span> <span class="n">GUARD_KEY_VALID</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">motor</span><span class="p">.</span><span class="n">testing</span><span class="p">.</span><span class="n">overrides</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="n">motor</span><span class="p">.</span><span class="n">testing</span><span class="p">.</span><span class="n">sqwave</span><span class="p">.</span><span class="n">value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="n">motor</span><span class="p">.</span><span class="n">testing</span><span class="p">.</span><span class="n">operatingMode</span> <span class="o">=</span> <span class="n">OM_NORMAL</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>The intent is to require minimal execution time, and to disable test modes
+unless diagnostic tools are used to maintain those test modes in an active
+condition. The guard key should be set manually; the guard timeout can be
+automatically set to its maximum value (<code class="docutils literal notranslate"><span class="pre">0xFFFF</span></code>) periodically by diagnostic
+tools; even at 20 kHz, 65536 counts represents 3.2768 seconds and should be
+enough time to allow reactivation in time, even if there are OS or communication
+hiccups.</p>
+<p>The guard timeout mechanism should be optional: publicly-available tools do not
+yet support the automatic timeout reset, and in some cases the extra program and
+data memory usage are not warranted.</p>
+<p><strong>Note:</strong> MCAF R1-R5 implement test guarding but not the test guard timeout
+mechanism.</p>
+</div>
+</div>
+<div class="section" id="test-harness-architecture">
+<h2>4.5.5. Test Harness Architecture<a class="headerlink" href="#test-harness-architecture" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="signal-valves">
+<span id="index-7"></span><h3>4.5.5.1. Signal Valves<a class="headerlink" href="#signal-valves" title="Permalink to this headline">¶</a></h3>
+<p></p>
+<p>In order to add test mode hooks with minimal impact on the end application, we
+introduce the concept of a “signal valve” in a block diagram. This is shown in
+the following example as a circle with an arrow inside it:</p>
+<div class="figure align-center" id="id9">
+<span id="fig-test-valve"></span><img alt="../_images/valve-example.png" src="../_images/valve-example.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 4.5 </span><span class="caption-text">Signal valve example</span></p>
+</div></div>
+<p>The valve represents a state variable with a choice: in its normal mode of
+operation, the valve is “open” and data flows normally through the valve, so
+that in the example in <a class="reference internal" href="#fig-test-valve"><span class="std std-numref">Figure 4.5</span></a>, the signal <span class="math">\(y\)</span> is
+determined by input signal <span class="math">\(x\)</span> propagating through
+functions <code class="docutils literal notranslate"><span class="pre">f</span></code> and <code class="docutils literal notranslate"><span class="pre">g</span></code>. In a
+test mode, the block or blocks upstream of the valve are not
+executed, and the valve retains its value, so that real-time diagnostic tools
+can modify that
+value as appropriate.</p>
+<p>For example, one way to implement it in C is shown in <a class="reference internal" href="#code-test-valve"><span class="std std-numref">Listing 4.3</span></a>:</p>
+<div class="literal-block-wrapper docutils container" id="code-test-valve">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 4.3 </span><span class="caption-text"></span><a class="headerlink" href="#code-test-valve" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span> <span class="kt">int16_t</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">;</span>
+ <span class="kt">bool</span> <span class="n">y_enable</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+ <span class="kt">void</span> <span class="nf">step</span><span class="p">()</span>
+ <span class="p">{</span>
+   <span class="c1">// executed at a regular rate</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">y_enable</span><span class="p">)</span>
+   <span class="p">{</span>
+     <span class="n">y</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">));</span>
+   <span class="p">}</span>
+   <span class="n">z</span> <span class="o">=</span> <span class="n">h</span><span class="p">(</span><span class="n">y</span><span class="p">);</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>This gives us a choice between running our control algorithm in its normal mode
+of operation (<code class="docutils literal notranslate"><span class="pre">y</span> <span class="pre">=</span> <span class="pre">g(f(x));</span> <span class="pre">z</span> <span class="pre">=</span> <span class="pre">h(y);</span></code>) with <code class="docutils literal notranslate"><span class="pre">x</span></code> as an input variable,
+or in a test mode (<code class="docutils literal notranslate"><span class="pre">z</span> <span class="pre">=</span> <span class="pre">h(y);</span></code>) with <code class="docutils literal notranslate"><span class="pre">y</span></code> as an input variable.</p>
+</div>
+</div>
+<div class="section" id="test-harness-modes">
+<span id="test-modes"></span><span id="index-8"></span><h2>4.5.6. Test harness modes<a class="headerlink" href="#test-harness-modes" title="Permalink to this headline">¶</a></h2>
+<p></p>
+<p>The behavior shown in <a class="reference internal" href="#fig-test-blkdiag"><span class="std std-numref">Figure 4.6</span></a> (reproduced from <a class="reference internal" href="foc.html#fig-foc-blkdiag"><span class="std std-numref">Figure 4.3</span></a>)
+represents the primary signal flow paths used in
+the motor controller. This does not show the complete functionality of the motor
+controller; in particular supervisory features like overcurrent and stall
+detection are not shown. Also note that the shaded area represents a vector controller,
+and signals within this area have multiple components (dq or alpha-beta or abc).</p>
+<div class="figure align-center" id="id10">
+<span id="fig-test-blkdiag"></span><a class="reference external image-reference" href="../dataflow-diagram/dataflow-diagrams.html"><img alt="../_images/accret-bdiag.svg" src="../_images/accret-bdiag.svg" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 4.6 </span><span class="caption-text">Block diagram of MCAF Field Oriented Control</span></p>
+</div></div>
+<p>The behavior of the motor controller can be modified under several different
+modes, described in the following sections. Refer to <a class="reference internal" href="#fig-test-blkdiag"><span class="std std-numref">Figure 4.6</span></a> for the block
+diagram behavior. The modes are enumerated values that can be assigned to the
+<code class="docutils literal notranslate"><span class="pre">operatingMode</span></code> parameter.</p>
+<div class="section" id="om-disabled">
+<h3>4.5.6.1. <code class="docutils literal notranslate"><span class="pre">OM_DISABLED</span></code><a class="headerlink" href="#om-disabled" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">OM_DISABLED</span></code> mode represents a disabled controller with output transistors
+set to a “minimal impact state”. Valves V2-V5 are all off.</p>
+<p><strong>Active features of the motor controller</strong>:</p>
+<ul class="simple">
+<li>All feedback computations execute normally, including<ul>
+<li><a class="reference internal" href="../appendix/glossary.html#term-adc"><span class="xref std std-term">ADC</span></a> readings</li>
+<li>Park and Clarke transforms</li>
+<li>Commutation angle estimator (if possible)</li>
+<li>Sine and cosine calculation</li>
+</ul>
+</li>
+<li>Supervisory algorithms (stall detection, overcurrent/overvoltage/etc.)</li>
+</ul>
+<p><strong>Inactive features of the motor controller</strong>:</p>
+<ul class="simple">
+<li>All forward path computations are disabled, including<ul>
+<li>Rate limiters</li>
+<li>Current and velocity control loops</li>
+<li>Inverse Park and Clarke transforms</li>
+<li>Zero Sequence Modulation or Space Vector Modulation</li>
+</ul>
+</li>
+</ul>
+<p><strong>PWM Minimal impact state</strong>:</p>
+<ul class="simple">
+<li>Output transistors are set to a <a class="reference internal" href="hal.html#hardware-pwm-minimal-impact"><span class="std std-ref">“minimal impact state”</span></a>, namely:<ul>
+<li>upper transistors off</li>
+<li>lower transistors at a minimal duty cycle to maintain bootstrap capacitor charge (or completely off if this is not required)</li>
+</ul>
+</li>
+</ul>
+<p>The behavior in the <code class="docutils literal notranslate"><span class="pre">OM_DISABLED</span></code> state is best implemented as a separate
+state (e.g. <code class="docutils literal notranslate"><span class="pre">STATE_TEST_DISABLE</span></code>) in the main state machine outside the main state
+transitions, with <code class="docutils literal notranslate"><span class="pre">OM_DISABLED</span></code> forcing entrance to that state from any other
+state. Re-entry into other test modes or normal behavior can then be handled in
+the state machine, allows exiting of the <code class="docutils literal notranslate"><span class="pre">OM_DISABLED</span></code> state to occur cleanly.</p>
+</div>
+<div class="section" id="om-force-voltage-pwm">
+<span id="test-mode-vpwm"></span><h3>4.5.6.2. <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_PWM</span></code><a class="headerlink" href="#om-force-voltage-pwm" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_PWM</span></code> mode represents a test mode where the <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> outputs are
+active and assigned from static motor state variables, shown as <span class="math">\(D_{abc1}\)</span> in <a class="reference internal" href="#fig-test-blkdiag"><span class="std std-numref">Figure 4.6</span></a>. Valves V2-V5 are all off.</p>
+<p><strong>Active/inactive features of the motor controller</strong>: Same as <code class="docutils literal notranslate"><span class="pre">OM_DISABLED</span></code>.</p>
+<p><strong>Use case</strong>: Testing system behavior with constant or slowly-changing <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> duty cycles.</p>
+<p>Motor or other load may or may not be connected.</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Using debug tools, set mode to <code class="docutils literal notranslate"><span class="pre">OM_DISABLED</span></code> first</li>
+<li>Set <span class="math">\(D_{abc1}\)</span> to desired values</li>
+<li>Set mode to <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_PWM</span></code></li>
+</ol>
+</div></blockquote>
+<p>The behavior in the <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_PWM</span></code> is best implemented as a separate state
+(e.g. <code class="docutils literal notranslate"><span class="pre">STATE_TEST_ENABLE</span></code>) in the main state machine outside the normal state
+transitions, with <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_PWM</span></code> forcing entrance to that state from any
+other state. Overcurrent, or any other severe fault condition, should cause
+entrance to a disabled state that requires manual re-entry into the enabled
+state.</p>
+<p>Setting <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_PWM</span></code> without using <code class="docutils literal notranslate"><span class="pre">OM_DISABLED</span></code> first is not
+forbidden, but may have undesirable consequences, since whichever values were
+present in <span class="math">\(D_{abc1}\)</span> are “frozen” at the time of mode switch, unless changed via
+debug tools.</p>
+</div>
+<div class="section" id="om-force-voltage-alphabeta">
+<span id="test-mode-valphabeta"></span><h3>4.5.6.3. <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_ALPHABETA</span></code><a class="headerlink" href="#om-force-voltage-alphabeta" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_ALPHABETA</span></code> mode represents a test mode where the <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> outputs
+are active along with the ZSM block and inverse Clarke block, which takes its
+inputs from static motor state variables, shown as <span class="math">\(D_{\alpha\beta}\)</span> in <a class="reference internal" href="#fig-test-blkdiag"><span class="std std-numref">Figure 4.6</span></a>. Valves V2-V4
+are off; valve V5 is on.</p>
+<p><strong>Active/inactive features of the motor controller</strong>: Same as
+<code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_PWM</span></code>, but inverse Clarke and ZSM are now active.</p>
+<p><strong>Use case</strong>: Testing system behavior with the inverse Clarke transform active. (rare)</p>
+<p>Otherwise this mode is similar to <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_PWM</span></code> and should be handled in
+a special state (<code class="docutils literal notranslate"><span class="pre">STATE_TEST_ENABLE</span></code>) outside the normal state transitions.</p>
+</div>
+<div class="section" id="om-force-voltage-dq">
+<h3>4.5.6.4. <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_DQ</span></code><a class="headerlink" href="#om-force-voltage-dq" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_DQ</span></code> mode represents a test mode where the <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> outputs are
+active along with the ZSM block, inverse Clarke, and inverse Park block, which
+takes its inputs from static motor state variables, shown as <span class="math">\(V_{dq0}\)</span> in <a class="reference internal" href="#fig-test-blkdiag"><span class="std std-numref">Figure 4.6</span></a>.
+Valves V2-V3 are off; valves V4-V5 are on.</p>
+<p><strong>Active/inactive features of the motor controller</strong>: Same as
+<code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_ALPHABETA</span></code>, but inverse Park, DC link compensation, and
+dq-voltage perturbation are now active.</p>
+<p><strong>Use case</strong>: Testing system behavior with the inverse Park transform active. This
+represents open-loop sinusoidal voltages applied line-to-line. Commutation angle
+can either be done through the normal feedback mechanism, or via forced
+commutation. DC link voltage compensation can be active or inactive.</p>
+<p>Otherwise this mode is similar to <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_PWM</span></code> and should be handled in
+a special state (<code class="docutils literal notranslate"><span class="pre">STATE_TEST_ENABLE</span></code>) outside the normal state transitions.</p>
+</div>
+<div class="section" id="om-force-current">
+<span id="test-force-current"></span><h3>4.5.6.5. <code class="docutils literal notranslate"><span class="pre">OM_FORCE_CURRENT</span></code><a class="headerlink" href="#om-force-current" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">OM_FORCE_CURRENT</span></code> mode represents a test mode where the <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> outputs are
+active along with the forward path and the current controller, which takes its
+input command from static motor state variables, shown as <span class="math">\(I_{dq,\text{ref0}}\)</span> in <a class="reference internal" href="#fig-test-blkdiag"><span class="std std-numref">Figure 4.6</span></a>.
+Valve V2 is off; valves V3-V5 are on.</p>
+<p>This can be considered a “torque mode”, since controlling <span class="math">\(I_{dq}\)</span> effectively
+dictates motor torque. Because of this, unless the input command is small or there is a stiff
+mechanical load present, the motor will generally accelerate to its full speed.</p>
+<p><strong>Active/inactive features of the motor controller</strong>: Same as <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_DQ</span></code>,
+but the current controller and its input filter are now active.</p>
+<p><strong>Use case</strong>: Testing system behavior with a current loop active. Commutation angle
+can either be done through the normal feedback mechanism, or via forced
+commutation.</p>
+<p>Otherwise this mode is similar to <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_PWM</span></code> and should be handled in
+a special state (<code class="docutils literal notranslate"><span class="pre">STATE_TEST_ENABLE</span></code>) outside the normal state transitions.</p>
+<p><strong>Note</strong>: Because this is a test mode, the <a class="reference internal" href="statemach.html#motor-startup"><span class="std std-ref">normal motor startup process</span></a> does
+not operate, and no automatic transition occurs from open-loop commutation to closed-loop commutation.
+This mode should either be enabled after the motor startup has occurred, or
+commutation behavior will have to be managed manually.</p>
+</div>
+<div class="section" id="om-normal">
+<h3>4.5.6.6. <code class="docutils literal notranslate"><span class="pre">OM_NORMAL</span></code><a class="headerlink" href="#om-normal" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">OM_NORMAL</span></code> mode represents the default operating mode of velocity control.
+All features are active, including the main state machine.</p>
+</div>
+</div>
+<div class="section" id="interaction-with-the-system-state-machine">
+<span id="index-9"></span><h2>4.5.7. Interaction with the System State Machine<a class="headerlink" href="#interaction-with-the-system-state-machine" title="Permalink to this headline">¶</a></h2>
+<p></p>
+<p><a class="reference internal" href="statemach.html#fig-state-machine"><span class="std std-numref">Figure 4.2</span></a> shows the system state machine and its interaction with the operating
+mode. If the operating mode is <code class="docutils literal notranslate"><span class="pre">OM_NORMAL</span></code>, the state machine should revert to its
+reset state, where it can safely re-engage in its normal behavior. If the
+operating mode is <code class="docutils literal notranslate"><span class="pre">OM_DISABLED</span></code>, the state machine should enter <code class="docutils literal notranslate"><span class="pre">STATE_TEST_DISABLE</span></code>
+state, where a new test operating mode can put it into the <code class="docutils literal notranslate"><span class="pre">STATE_TEST_ENABLE</span></code>
+state with a clean transition. In order to support certain rare test cases,
+direct entry into <code class="docutils literal notranslate"><span class="pre">STATE_TEST_ENABLE</span></code> is allowed but is discouraged.</p>
+</div>
+<div class="section" id="forcing-system-state-machine-transitions">
+<span id="test-state-change"></span><h2>4.5.8. Forcing System State Machine Transitions<a class="headerlink" href="#forcing-system-state-machine-transitions" title="Permalink to this headline">¶</a></h2>
+<p>Operating modes other than <code class="docutils literal notranslate"><span class="pre">OM_NORMAL</span></code> alter the behavior of the state machine.
+In some cases, it is useful to maintain the essential behavior of the state machine,
+but cause manual transitions in the state machine to some desired state.</p>
+<p>This can be accomplished by setting <code class="docutils literal notranslate"><span class="pre">motor.testing.forceStateChange</span></code> to one
+of the following values:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">TEST_FORCE_STATE_RUN</span></code> — sets the <code class="docutils literal notranslate"><span class="pre">ui.run</span></code> flag to <code class="docutils literal notranslate"><span class="pre">true</span></code>,
+behaving the same way as starting the motor with a button press.</li>
+<li><code class="docutils literal notranslate"><span class="pre">TEST_FORCE_STATE_STOP</span></code> — sets <code class="docutils literal notranslate"><span class="pre">ui.run</span></code> to <code class="docutils literal notranslate"><span class="pre">false</span></code>,
+behaving the same way as stopping the motor with a button press.</li>
+<li><code class="docutils literal notranslate"><span class="pre">TEST_FORCE_STATE_STOP_NOW</span></code> — sets <code class="docutils literal notranslate"><span class="pre">ui.run</span></code> to <code class="docutils literal notranslate"><span class="pre">false</span></code> and
+bypasses the time delay in the <code class="docutils literal notranslate"><span class="pre">STOPPING</span></code> state by causing
+the coastdown timer to immediately expire,
+performing an abrupt transition to the <code class="docutils literal notranslate"><span class="pre">STOPPED</span></code> state. Useful
+for high-inertia motors where the motor is brought to a stop quickly
+through external load torques, such as a mechanical brake.</li>
+</ul>
+<p>Using <code class="docutils literal notranslate"><span class="pre">motor.testing.forceStateChange</span></code> is preferable to directly altering
+the main motor FSM state (<code class="docutils literal notranslate"><span class="pre">motor.state</span></code>), since transitions in the state machine
+are allowed to happen normally. Setting <code class="docutils literal notranslate"><span class="pre">motor.state</span></code> directly may cause
+initialization steps at the beginning of a state transition to be skipped.</p>
+</div>
+<div class="section" id="test-harness-switches-overrides">
+<span id="test-overrides"></span><span id="index-10"></span><h2>4.5.9. Test Harness Switches (Overrides)<a class="headerlink" href="#test-harness-switches-overrides" title="Permalink to this headline">¶</a></h2>
+<p></p>
+<p>Test harness switches are boolean flags stored in an <code class="docutils literal notranslate"><span class="pre">overrides</span></code> field.</p>
+<div class="section" id="input-velocity-command-override">
+<h3>4.5.9.1. Input Velocity Command Override<a class="headerlink" href="#input-velocity-command-override" title="Permalink to this headline">¶</a></h3>
+<p>If the bitfield <code class="docutils literal notranslate"><span class="pre">overrides:velocityCommand</span></code> is false, valve V1 is enabled and
+the velocity command comes from its normal source.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">overrides:velocityCommand</span></code> is true, the velocity command is static and may be changed via debug tools.</p>
+</div>
+<div class="section" id="commutation-override">
+<span id="test-overrides-commutation"></span><h3>4.5.9.2. Commutation Override<a class="headerlink" href="#commutation-override" title="Permalink to this headline">¶</a></h3>
+<p>If the bitfield <code class="docutils literal notranslate"><span class="pre">overrides:commutation</span></code> is false, commutation angle is computed in its normal manner.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">overrides:commutation</span></code> is true, the commutation angle is updated automatically with the repetition
+of the following behavior (“on-off commutation”):</p>
+<ul class="simple" id="test-commutation-onoff">
+<li>for <span class="math">\(k\)</span> <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> cycles, the commutation angle accumulates the commutation frequency
+<span class="math">\(\omega_{e,\text{override}}\)</span> <a class="footnote-reference" href="#fncommfreq" id="id5">[2]</a></li>
+<li>for <span class="math">\(N-k\)</span> <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> cycles, the commutation angle is fixed.</li>
+</ul>
+<p>The available values of <span class="math">\(k\)</span> and <span class="math">\(N-k\)</span>, and the program variables that control them, depend on the
+MCAF version, and are detailed in subsections below. There are a number of use cases that can
+be achieved with this feature; these can be controlled using real-time debug tools to set appropriate program variables.</p>
+<ul class="simple">
+<li><strong>Fixed commutation angle</strong> — set <span class="math">\(\omega_{e,\text{override}} = 0\)</span>, set desired commutation angle.</li>
+<li><strong>Fixed commutation frequency</strong> — set <span class="math">\(\omega_{e,\text{override}} \ne 0\)</span>, set <span class="math">\(N=1, k=1\)</span>.</li>
+<li><strong>Quasi-fixed, slow commutation frequency</strong> (since MCAF R3) — set <span class="math">\(\omega_{e,\text{override}} = \pm 1\)</span>, set <span class="math">\(N&gt;1, k=1\)</span>,
+for an effective commutation frequency of <span class="math">\(f_{PWM}/N\)</span>.</li>
+<li><strong>Commutation angle jumps</strong> (since MCAF R3) — set <span class="math">\(\omega_{e,\text{override}} = \Delta\theta\)</span>, set <span class="math">\(N\gg 1, k=1\)</span>,
+for a jump angle of <span class="math">\(\Delta\theta\)</span> and a jump frequency of <span class="math">\(f_{PWM}/N\)</span>. Setting
+<span class="math">\(\Delta\theta \approx 60^\circ\)</span> (10923 counts) can achieve quasi-six-step operation during open-loop testing.</li>
+<li><strong>Slew-rate-limited jumps</strong> (since MCAF R4) — set <span class="math">\(\omega_{e,\text{override}} \ne 0\)</span>, set <span class="math">\(N\gg 1, k&gt;1\)</span>.
+This achieves the behavior shown in <a class="reference internal" href="#fig-test-commutation-onoff"><span class="std std-numref">Figure 4.7</span></a>.</li>
+</ul>
+<div class="figure align-center" id="id11">
+<span id="fig-test-commutation-onoff"></span><img alt="../_images/2113-slew-rate-step.png" src="../_images/2113-slew-rate-step.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 4.7 </span><span class="caption-text">On-off commutation for slew-rate-limited jumps</span></p>
+</div></div>
+<p class="rubric">Notes</p>
+<p>The transition of commutation angle from forced commutation to normal commutation is an abrupt transition,
+and is likely to cause transient disturbances in motor current.</p>
+<table class="docutils footnote" frame="void" id="fncommfreq" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[2]</a></td><td>Commutation frequency <span class="math">\(\omega_{e,\text{override}}\)</span> = <code class="docutils literal notranslate"><span class="pre">motor.testing.overrideOmegaElectrical</span></code>
+has different scaling factor from the velocity values used elsewhere in MCAF, such as
+<code class="docutils literal notranslate"><span class="pre">motor.omegaElectrical</span></code> or <code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.velocity</span></code>.
+This is done in order to minimize the CPU execution time of the test harness.
+The type of <code class="docutils literal notranslate"><span class="pre">motor.testing.overrideOmegaElectrical</span></code> is <code class="docutils literal notranslate"><span class="pre">MCAF_U_VELOCITY_DTHETA_ELEC_DT</span></code>;
+this type is just an alias for <code class="docutils literal notranslate"><span class="pre">int16_t</span></code> but it is intended to signify scaling as a change in
+electrical angle per control update. With <span class="math">\(N=1, k=1\)</span>, a value of 1 count will increment
+the commutation angle <code class="docutils literal notranslate"><span class="pre">motor.thetaElectrical</span></code> by one count on each control update —
+for a 20 kHz control ISR, this amounts to ≈ 109.863°/s = 0.30518 Hz;
+a value of 32767 counts corresponds to just under 10kHz.</td></tr>
+</tbody>
+</table>
+<div class="section" id="mcaf-r1-and-r2">
+<h4>4.5.9.2.1. MCAF R1 and R2<a class="headerlink" href="#mcaf-r1-and-r2" title="Permalink to this headline">¶</a></h4>
+<p>Only <span class="math">\(k=1,N=1\)</span> is supported.</p>
+</div>
+<div class="section" id="mcaf-r3">
+<h4>4.5.9.2.2. MCAF R3<a class="headerlink" href="#mcaf-r3" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><span class="math">\(N-1\)</span> is the value of <code class="docutils literal notranslate"><span class="pre">overrideCommutationDelay</span></code>.</li>
+<li><span class="math">\(k = 1\)</span> is fixed.</li>
+</ul>
+</div>
+<div class="section" id="mcaf-r4-and-later">
+<h4>4.5.9.2.3. MCAF R4 and later<a class="headerlink" href="#mcaf-r4-and-later" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><span class="math">\(N-1\)</span> is the value of <code class="docutils literal notranslate"><span class="pre">overrideCommutationOnOff.maxCount</span></code></li>
+<li><span class="math">\(k\)</span> is the value of <code class="docutils literal notranslate"><span class="pre">overrideCommutationOnOff.threshold</span></code></li>
+</ul>
+</div>
+</div>
+<div class="section" id="dc-link-voltage-compensation">
+<h3>4.5.9.3. DC Link Voltage Compensation<a class="headerlink" href="#dc-link-voltage-compensation" title="Permalink to this headline">¶</a></h3>
+<p>If <code class="docutils literal notranslate"><span class="pre">overrides:dcLinkCompensation</span></code> is false, DC link compensation occurs normally.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">overrides:dcLinkCompensation</span></code> is true, valve V6 is off and DC link
+compensation occurs using a value <span class="math">\(R_V\)</span> that can be either manually adjusted or
+left at a fixed value.</p>
+</div>
+<div class="section" id="stall-detect-override">
+<h3>4.5.9.4. Stall Detect Override<a class="headerlink" href="#stall-detect-override" title="Permalink to this headline">¶</a></h3>
+<p>If <code class="docutils literal notranslate"><span class="pre">overrides:stallDetection</span></code> is false, all logic related to stall detection occurs normally.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">overrides:stallDetection</span></code> is true, stall detection itself is not changed,
+but a detected stall condition is ignored.</p>
+<p>This is useful for running certain tests that would otherwise cause a detected
+stall condition (whether real or false) to trigger a transition in the state machine and disrupt the intended test.</p>
+</div>
+<div class="section" id="pause-at-end-of-open-loop-startup">
+<span id="test-pause-in-hold"></span><span id="index-0"></span><h3>4.5.9.5. Pause at end of open-loop startup<a class="headerlink" href="#pause-at-end-of-open-loop-startup" title="Permalink to this headline">¶</a></h3>
+<p>(Added in MCAF R5)</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">overrides:startupPause</span></code> is false, startup occurs normally, and proceeds to closed-loop
+commutation.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">overrides:startupPause</span></code> is true, startup proceeds normally until reaching the HOLD state,
+and remains in the HOLD state (fixed current and electrical frequency, under open-loop commutation),
+until one of the following conditions is true:</p>
+<ul>
+<li><p class="first"><strong>Remain in HOLD</strong> — while in the HOLD state, normal state machine behavior continues;
+possible exit conditions are:</p>
+<ul class="simple">
+<li>the <code class="docutils literal notranslate"><span class="pre">overrides:startupPause</span></code> flag is cleared manually, at which point startup
+will proceed to closed-loop commutation and normal operation.</li>
+<li>a STOP input is received (user presses a button in MCLV-2 or MCHV-2)</li>
+<li>a fault is detected</li>
+</ul>
+</li>
+<li><p class="first"><strong>Switch to</strong> <a class="reference internal" href="#test-force-current"><code class="docutils literal notranslate"><span class="pre">OM_FORCE_CURRENT</span></code></a> — the force-current test mode may be entered
+by manually setting the following flags with real-time diagnostic tools:</p>
+<ul class="simple">
+<li>Set <code class="docutils literal notranslate"><span class="pre">overrides:commutation</span></code>, to prevent normal closed-loop commutation once the test mode is reached</li>
+<li>Set <code class="docutils literal notranslate"><span class="pre">motor.testing.operatingMode</span> <span class="pre">=</span> <span class="pre">OM_FORCE_CURRENT</span></code></li>
+</ul>
+<p>This will allow operation in a test state, where the normal state machine does not operate.</p>
+</li>
+</ul>
+<p>Both are useful for debugging or analyzing behavior during open-loop operation.
+The switch-to-<code class="docutils literal notranslate"><span class="pre">OM_FORCE_CURRENT</span></code> behavior is useful for running at a fixed current
+and commutation frequency; attempting to start in the <code class="docutils literal notranslate"><span class="pre">OM_FORCE_CURRENT</span></code> mode
+and manually accelerate to some desired commutation frequency can be difficult.</p>
+<p>To summarize the differences in these two approaches:</p>
+<table border="1" class="colwidths-given docutils" id="id12">
+<caption><span class="caption-number">Table 4.5 </span><span class="caption-text">Comparison of pause-in-HOLD behaviors</span><a class="headerlink" href="#id12" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="67%" />
+<col width="17%" />
+<col width="17%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head">Remain in HOLD</th>
+<th class="head">Switch to <code class="docutils literal notranslate"><span class="pre">OM_FORCE_CURRENT</span></code></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Can return to normal closed-loop startup</td>
+<td>yes</td>
+<td>no</td>
+</tr>
+<tr class="row-odd"><td>Current control level value can be changed at runtime?</td>
+<td>no</td>
+<td>yes</td>
+</tr>
+<tr class="row-even"><td>Electrical frequency can be changed at runtime?</td>
+<td>no</td>
+<td>yes</td>
+</tr>
+<tr class="row-odd"><td>Interacts with normal state machine</td>
+<td>yes</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<div class="figure align-center" id="id13">
+<span id="fig-test-pause-in-hold-1"></span><img alt="../_images/test-harness-startup-hold-1.png" src="../_images/test-harness-startup-hold-1.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 4.8 </span><span class="caption-text">Example use of “Remain in HOLD” behavior. (This demonstrates the Weathervane startup algorithm.)</span></p>
+</div></div>
+<p><a class="reference internal" href="#fig-test-pause-in-hold-1"><span class="std std-numref">Figure 4.8</span></a> shows an example of the “Remain in Hold” behavior with MCAF R5,
+using the <a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/AC300022">Nidec Hurst DMA0204024B101</a> motor with the <a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/dm330021-2">dsPICDEM<sup>®</sup> MCLV‑2 Development Board</a>:</p>
+<ul class="simple">
+<li>From t ≈ 0.4 s to t ≈ 1.0 s, motor is started, and normal startup occurs.</li>
+<li>At t ≈ 3.5 s, the motor is started with <code class="docutils literal notranslate"><span class="pre">overrides:startupPause</span></code> set.</li>
+<li>At t ≈ 4.0 s, the motor reaches and remains in the HOLD state (startup state 5).</li>
+<li>At t ≈ 5.0 s, the motor is stopped.</li>
+<li>At t ≈ 6.5 s, the motor is started, and it remains in the HOLD state since <code class="docutils literal notranslate"><span class="pre">overrides:startupPause</span></code> is still set.</li>
+<li>At t ≈ 8.0 s, <code class="docutils literal notranslate"><span class="pre">overrides:startupPause</span></code> is manually cleared, so startup proceeds to transition to closed-loop.</li>
+</ul>
+<p>(This test used the <a class="reference internal" href="#test-state-change"><span class="std std-ref">Forcing System State Machine Transitions</span></a> feature to start and stop the motor programmatically
+rather than through the pushbuttons on the MCLV-2.)</p>
+<div class="figure align-center" id="id14">
+<span id="fig-test-pause-in-hold-2"></span><img alt="../_images/test-harness-startup-hold-2.png" src="../_images/test-harness-startup-hold-2.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 4.9 </span><span class="caption-text">Example use of “Switch to <code class="docutils literal notranslate"><span class="pre">OM_FORCE_CURRENT</span></code>” behavior.</span></p>
+</div></div>
+<p><a class="reference internal" href="#fig-test-pause-in-hold-2"><span class="std std-numref">Figure 4.9</span></a> shows an example of the “Switch to <code class="docutils literal notranslate"><span class="pre">OM_FORCE_CURRENT</span></code>” behavior with MCAF R5,
+also using the <a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/AC300022">Nidec Hurst DMA0204024B101</a> motor with the <a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/dm330021-2">dsPICDEM<sup>®</sup> MCLV‑2 Development Board</a>:</p>
+<ul class="simple">
+<li>t ≈ 0.5 s: <code class="docutils literal notranslate"><span class="pre">overrides:startupPause</span></code> is set manually and the motor is started.</li>
+<li>t ≈ 1.0 s: the motor reaches and remains in the HOLD state (startup state 5).</li>
+<li>t ≈ 2.0 s: set <code class="docutils literal notranslate"><span class="pre">motor.testing.operatingMode</span> <span class="pre">=</span> <span class="pre">OM_FORCE_CURRENT</span></code> — note that <code class="docutils literal notranslate"><span class="pre">motor.state</span></code> switches
+to <code class="docutils literal notranslate"><span class="pre">MCSM_TEST_ENABLE</span> <span class="pre">=</span> <span class="pre">7</span></code></li>
+<li>t ≈ 3.5 s: <code class="docutils literal notranslate"><span class="pre">motor.testing.overrideOmegaElectrical</span></code> is set to an appropriate value to maintain speed,
+and <code class="docutils literal notranslate"><span class="pre">overrides:commutation</span></code> is set to stop startup logic from running. (Note that active damping no longer runs,
+since it is a feature of normal startup.)</li>
+<li>t ≈ 4.1 s: current is lowered by 20%</li>
+<li>t ≈ 4.6 s: <code class="docutils literal notranslate"><span class="pre">motor.testing.overrideOmegaElectrical</span></code> is lowered by 20%.
+Note that speed transients are very lightly damped,
+and cause oscillations in current; this is expected in open-loop commutation.
+Large transients in electrical frequency can cause cycle slips and loss of lock.</li>
+<li>t ≈ 5.6 s: motor is stopped by returning to <code class="docutils literal notranslate"><span class="pre">OM_NORMAL</span></code> and forcing the motor to stop.</li>
+</ul>
+</div>
+<div class="section" id="flux-control-override">
+<span id="test-fluxctrl-override"></span><h3>4.5.9.6. Flux control override<a class="headerlink" href="#flux-control-override" title="Permalink to this headline">¶</a></h3>
+<p>(Added in MCAF R6)</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">overrides:fluxControl</span></code> is false, d-axis reference current is computed from the
+<a class="reference internal" href="../algorithms/flux_control/index.html#algorithm-flux-control"><span class="std std-ref">Flux control</span></a> module.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">overrides:fluxControl</span></code> is true, d-axis reference current is static
+and may be changed via real-time diagnostic tools.</p>
+</div>
+</div>
+<div class="section" id="perturbation-signals">
+<span id="test-perturbation"></span><span id="index-11"></span><h2>4.5.10. Perturbation Signals<a class="headerlink" href="#perturbation-signals" title="Permalink to this headline">¶</a></h2>
+<p></p>
+<p>Perturbation signals may be created using the test harness, which
+allows step response and disturbance rejection testing for the different controllers.</p>
+<p>The state variable <code class="docutils literal notranslate"><span class="pre">sqwave</span></code> is a structure containing several members to generate
+a square wave perturbation signal. The field <code class="docutils literal notranslate"><span class="pre">sqwave.value</span></code> either remains at 0
+(its default value) or toggles back and forth between +1 and -1 every <code class="docutils literal notranslate"><span class="pre">sqwave.halfperiod</span></code>
+test harness updates. For example, if the test harness update is executed during
+the control <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> at 20 kHz, and <code class="docutils literal notranslate"><span class="pre">sqwave.halfperiod</span></code> is 8, then the half-period
+is 400 μs and the resulting square wave frequency is 1.25 kHz (= 1/800 μs)</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">sqwave.value</span></code> is set to any other value, it will be limited
+in magnitude to 1. The code to do this is found in <code class="docutils literal notranslate"><span class="pre">MCAF_TestPerturbationUpdate</span></code>:</p>
+<div class="literal-block-wrapper docutils container" id="code-test-perturb">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 4.4 </span><span class="caption-text"></span><a class="headerlink" href="#code-test-perturb" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kr">inline</span> <span class="k">static</span> <span class="kt">void</span> <span class="nf">MCAF_TestPerturbationUpdate</span><span class="p">(</span><span class="n">MCAF_MOTOR_TEST_MANAGER</span> <span class="o">*</span><span class="n">ptest</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">const</span> <span class="kt">int16_t</span> <span class="n">value</span> <span class="o">=</span> <span class="n">ptest</span><span class="o">-&gt;</span><span class="n">sqwave</span><span class="p">.</span><span class="n">value</span><span class="p">;</span>
+    <span class="cm">/* update test perturbation waveform */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="cm">/*</span>
+<span class="cm">         * Ensure square wave value maintains sign and is +/- 1:</span>
+<span class="cm">         * v &gt;&gt; 15 computes as 0 for positive numbers and -1 for negative numbers.</span>
+<span class="cm">         * To map to +/- 1, we just have to multiply by 2 and add 1</span>
+<span class="cm">         * (note: (v&gt;&gt;14) + 1 won&#39;t work)</span>
+<span class="cm">         */</span>
+        <span class="k">const</span> <span class="kt">int16_t</span> <span class="n">valueLimited</span> <span class="o">=</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;&gt;</span> <span class="mi">15</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span>
+
+        <span class="cm">/*</span>
+<span class="cm">         * Reverse sign after N cycles (N = sqwave.halfperiod)</span>
+<span class="cm">         */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">++</span><span class="n">ptest</span><span class="o">-&gt;</span><span class="n">sqwave</span><span class="p">.</span><span class="n">count</span> <span class="o">&gt;=</span> <span class="n">ptest</span><span class="o">-&gt;</span><span class="n">sqwave</span><span class="p">.</span><span class="n">halfperiod</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">ptest</span><span class="o">-&gt;</span><span class="n">sqwave</span><span class="p">.</span><span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="n">valueLimited</span><span class="p">;</span>
+            <span class="n">ptest</span><span class="o">-&gt;</span><span class="n">sqwave</span><span class="p">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">else</span>
+        <span class="p">{</span>
+            <span class="n">ptest</span><span class="o">-&gt;</span><span class="n">sqwave</span><span class="p">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">valueLimited</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">sqwave.value</span></code> field is then multiplied by one of several amplitudes elsewhere
+in the code to setup square wave perturbation signals of variable amplitude and
+added into the appropriate point of the calculation:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="38%" />
+<col width="29%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Signal
+(see <a class="reference internal" href="#fig-test-blkdiag"><span class="std std-numref">Figure 4.6</span></a>)</th>
+<th class="head">Amplitude variable(s)</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><span class="math">\(\omega_{m,\text{pert}}\)</span></td>
+<td><code class="docutils literal notranslate"><span class="pre">sqwave.omega</span></code></td>
+<td>Mechanical velocity</td>
+</tr>
+<tr class="row-odd"><td><span class="math">\(I_{dq,\text{pert}}\)</span></td>
+<td><p class="first"><code class="docutils literal notranslate"><span class="pre">sqwave.idq.d</span></code></p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">sqwave.idq.q</span></code></p>
+</td>
+<td><a class="reference internal" href="../appendix/glossary.html#term-foc"><span class="xref std std-term">FOC</span></a> current command</td>
+</tr>
+<tr class="row-even"><td><span class="math">\(V_{dq,\text{pert}}\)</span></td>
+<td><p class="first"><code class="docutils literal notranslate"><span class="pre">sqwave.V.d</span></code></p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">sqwave.V.q</span></code></p>
+</td>
+<td><a class="reference internal" href="../appendix/glossary.html#term-foc"><span class="xref std std-term">FOC</span></a> voltage command
+(output of current loop)</td>
+</tr>
+</tbody>
+</table>
+<p>This technique allows all test perturbation signals to be disabled by setting <code class="docutils literal notranslate"><span class="pre">sqwave.value</span> <span class="pre">=</span> <span class="pre">0</span></code>,
+keeping the execution time of the test harness to a minimum (including guard processing).</p>
+</div>
+<div class="section" id="seizures">
+<span id="test-seizures"></span><span id="index-12"></span><h2>4.5.11. Seizures<a class="headerlink" href="#seizures" title="Permalink to this headline">¶</a></h2>
+<p></p>
+<p>To test the <a class="reference internal" href="supervisory.html#watchdog"><span class="std std-ref">watchdog timer</span></a>, the test harness includes flags that can be set at runtime, to enter an
+infinite <code class="docutils literal notranslate"><span class="pre">while</span> <span class="pre">(true)</span></code> loop in either the main loop or <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a>. The <a class="reference internal" href="#test-guard"><span class="std std-ref">test guards</span></a>
+prevent accidental activation.</p>
+</div>
+<div class="section" id="stack-overflow">
+<span id="test-stack-overflow"></span><span id="index-13"></span><h2>4.5.12. Stack overflow<a class="headerlink" href="#stack-overflow" title="Permalink to this headline">¶</a></h2>
+<p></p>
+<p>To test the hardware stack overflow trap, the test harness includes a flag that can be set at runtime, to enter an
+infinite recursion to cause a stack overflow. The <a class="reference internal" href="#test-guard"><span class="std std-ref">test guards</span></a>
+prevent accidental activation.</p>
+</div>
+<div class="section" id="profiling-timestamps">
+<span id="test-timestamps"></span><h2>4.5.13. Profiling Timestamps<a class="headerlink" href="#profiling-timestamps" title="Permalink to this headline">¶</a></h2>
+<p>An array of 16-bit timestamps is part of the test harness state structure. These timestamps are recorded
+in various places for use in profiling the main control ISR via real-time diagnostic tools. Sections
+of the <code class="docutils literal notranslate"><span class="pre">state_machine</span></code> module contain code such as the following:</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="code-test-timestamps">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 4.5 </span><span class="caption-text"></span><a class="headerlink" href="#code-test-timestamps" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">MCAF_CaptureTimestamp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pmotor</span><span class="o">-&gt;</span><span class="n">testing</span><span class="p">,</span> <span class="n">MCTIMESTAMP_STATEMACH_START</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+</div></blockquote>
+<p>This uses one of the timers to count at the system clock rate, so that the timer value
+indicates the elapsed system clock time.</p>
+<p>The various <code class="docutils literal notranslate"><span class="pre">MCTIMESTAMP_xxxx</span></code> enum values are defined in <code class="docutils literal notranslate"><span class="pre">test_harness_timestamps.h</span></code>.</p>
+<p>Timestamp recording is disabled by default, but can be enabled via <code class="docutils literal notranslate"><span class="pre">#define</span> <span class="pre">MCAF_TEST_PROFILING</span></code>.
+(See <a class="reference internal" href="#test-errata"><span class="std std-ref">errata</span></a>)</p>
+</div>
+<div class="section" id="example-use-cases">
+<span id="index-14"></span><h2>4.5.14. Example use cases<a class="headerlink" href="#example-use-cases" title="Permalink to this headline">¶</a></h2>
+<p></p>
+<p>This section shows several use cases and how to achieve those use cases with the test harness described in this document. Our entry assumptions are that in each case:</p>
+<ul class="simple">
+<li>We start with normal operation with <code class="docutils literal notranslate"><span class="pre">systemData.testing.guard.key</span> <span class="pre">=</span> <span class="pre">0</span></code></li>
+<li>The motor is at rest (not rotating)</li>
+<li>A debug tool is in use which can write variables to the target</li>
+<li>The debug tool can regularly assign <code class="docutils literal notranslate"><span class="pre">systemData.testing.guard.timeout</span> <span class="pre">=</span> <span class="pre">0xFFFF</span></code> as described in <a class="reference internal" href="#test-guard"><span class="std std-ref">Test Guarding</span></a>, or the guard timeout feature is not in use</li>
+<li>We start each test case by setting <code class="docutils literal notranslate"><span class="pre">systemData.testing.guard.key</span> <span class="pre">=</span> <span class="pre">0xD1A6</span></code> as described in <a class="reference internal" href="#test-guard"><span class="std std-ref">Test Guarding</span></a></li>
+</ul>
+<div class="section" id="fixed-frequency-sinusoidal-current-control">
+<h3>4.5.14.1. Fixed-frequency sinusoidal current control<a class="headerlink" href="#fixed-frequency-sinusoidal-current-control" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.operatingMode</span> <span class="pre">=</span> <span class="pre">OM_DISABLED</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.overrides</span> <span class="pre">=</span> <span class="pre">TEST_OVERRIDE_COMMUTATION</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.overrideOmegaElectrical</span> <span class="pre">=</span></code> [some desired value of electrical frequency]</li>
+<li>Set desired dq current (see <a class="reference internal" href="#test-errata"><span class="std std-ref">errata</span></a>)</li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.operatingMode</span> <span class="pre">=</span> <span class="pre">OM_FORCE_CURRENT</span></code></li>
+</ol>
+</div>
+<div class="section" id="current-torque-control-mode">
+<span id="test-ictrl-mode"></span><h3>4.5.14.2. Current/torque control mode<a class="headerlink" href="#current-torque-control-mode" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.operatingMode</span> <span class="pre">=</span> <span class="pre">OM_DISABLED</span></code></li>
+<li>Set desired dq current (see <a class="reference internal" href="#test-errata"><span class="std std-ref">errata</span></a>)</li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.operatingMode</span> <span class="pre">=</span> <span class="pre">OM_FORCE_CURRENT</span></code></li>
+</ol>
+</div>
+<div class="section" id="normal-operation-bypassing-the-external-control-potentiometer">
+<h3>4.5.14.3. Normal operation bypassing the external control (potentiometer)<a class="headerlink" href="#normal-operation-bypassing-the-external-control-potentiometer" title="Permalink to this headline">¶</a></h3>
+<p>Note that the normal side effects of state machines and fault handling are still active here (e.g. open-loop → closed-loop transition, stall detection and retry, etc.) since we do not enter a test operating mode.</p>
+<ol class="arabic simple">
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.overrides</span> <span class="pre">=</span> <span class="pre">TEST_OVERRIDE_VELOCITY_COMMAND</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.velocityControl.velocityCmd</span> <span class="pre">=</span></code> [some desired value of motor velocity in terms of electrical frequency]</li>
+</ol>
+</div>
+<div class="section" id="square-wave-velocity-command-disturbances-to-a-velocity-controller-with-fixed-velocity-command">
+<span id="test-velctrl-idqpert"></span><h3>4.5.14.4. Square wave velocity command disturbances to a velocity controller with fixed velocity command<a class="headerlink" href="#square-wave-velocity-command-disturbances-to-a-velocity-controller-with-fixed-velocity-command" title="Permalink to this headline">¶</a></h3>
+<p>This is the same as the previous case, but with a disturbance.</p>
+<ol class="arabic simple">
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.overrides</span> <span class="pre">=</span> <span class="pre">TEST_OVERRIDE_VELOCITY_COMMAND</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.velocityControl.velocityCmd</span> <span class="pre">=</span></code> [some desired value of motor velocity in terms of electrical frequency]</li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.halfPeriod</span> <span class="pre">=</span></code> [desired value of half period]</li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.omega</span> <span class="pre">=</span></code> [some desired value of velocity amplitude]</li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.value</span> <span class="pre">=</span> <span class="pre">1</span></code> (starts the square wave)</li>
+</ol>
+</div>
+<div class="section" id="square-wave-current-command-disturbances-to-a-velocity-controller-with-fixed-velocity-command">
+<h3>4.5.14.5. Square wave current command disturbances to a velocity controller with fixed velocity command<a class="headerlink" href="#square-wave-current-command-disturbances-to-a-velocity-controller-with-fixed-velocity-command" title="Permalink to this headline">¶</a></h3>
+<p>Same as the previous section, but with a disturbance to the d and/or q currents.
+This case keeps the velocity roughly constant while allowing tests of the
+current step response. Often this is appropriate since a pure current controller
+will cause the motor to stall or reach its maximum operating speed and saturate.</p>
+<ol class="arabic simple">
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.overrides</span> <span class="pre">=</span> <span class="pre">TEST_OVERRIDE_VELOCITY_COMMAND</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.velocityControl.velocityCmd</span> <span class="pre">=</span></code> [some desired value of motor velocity in terms of electrical frequency]</li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.halfPeriod</span> <span class="pre">=</span></code> [desired value of half period]</li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.idq.q</span> <span class="pre">=</span></code> [some desired value of current amplitude]</li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.idq.d</span> <span class="pre">=</span></code> [some desired value of current amplitude]</li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.value</span> <span class="pre">=</span> <span class="pre">1</span></code> (starts the square wave)</li>
+</ol>
+</div>
+<div class="section" id="square-wave-current-command-disturbances-to-a-current-controller-with-fixed-current-command">
+<h3>4.5.14.6. Square wave current command disturbances to a current controller with fixed current command<a class="headerlink" href="#square-wave-current-command-disturbances-to-a-current-controller-with-fixed-current-command" title="Permalink to this headline">¶</a></h3>
+<p>This is the same as the <a class="reference internal" href="#test-ictrl-mode"><span class="std std-ref">current control mode</span></a>, but with a disturbance to the d and/or q currents.</p>
+<ol class="arabic simple">
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.operatingMode</span> <span class="pre">=</span> <span class="pre">OM_DISABLED</span></code></li>
+<li>Set desired dq current (see <a class="reference internal" href="#test-errata"><span class="std std-ref">errata</span></a>)</li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.operatingMode</span> <span class="pre">=</span> <span class="pre">OM_FORCE_CURRENT</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.halfPeriod</span> <span class="pre">=</span></code> [desired value of half period]</li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.idq.q</span> <span class="pre">=</span></code> [some desired value of current amplitude]</li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.idq.d</span> <span class="pre">=</span></code> [some desired value of current amplitude]</li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.value</span> <span class="pre">=</span> <span class="pre">1</span></code> (starts the square wave)</li>
+</ol>
+</div>
+</div>
+<div class="section" id="implementation-notes">
+<span id="index-15"></span><h2>4.5.15. Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permalink to this headline">¶</a></h2>
+<p></p>
+<div class="section" id="test-harness-feature-support">
+<h3>4.5.15.1. Test harness feature support<a class="headerlink" href="#test-harness-feature-support" title="Permalink to this headline">¶</a></h3>
+<p>Certain features described in this section have not been implemented the MCAF test harness,
+but are planned for future versions:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#test-guard-impl"><span class="std std-ref">Test guarding timeout</span></a></li>
+<li>Low-level test modes<ul>
+<li><a class="reference internal" href="#test-mode-vpwm"><span class="std std-ref">OM_FORCE_VOLTAGE_PWM</span></a></li>
+<li><a class="reference internal" href="#test-mode-valphabeta"><span class="std std-ref">OM_FORCE_VOLTAGE_ALPHABETA</span></a></li>
+</ul>
+</li>
+<li>Prior to MCAF R3, the overrides <code class="docutils literal notranslate"><span class="pre">TEST_OVERRIDE_DC_LINK_COMPENSATION</span></code> was not implemented.
+Since MCAF R3 it is implemented.</li>
+<li>MCAF R3 and R4 have added support for <a class="reference internal" href="#test-commutation-onoff"><span class="std std-ref">on-off commutation</span></a>.</li>
+</ul>
+</div>
+<div class="section" id="test-harness-errata">
+<span id="test-errata"></span><h3>4.5.15.2. Test harness errata<a class="headerlink" href="#test-harness-errata" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first"><strong>Manual adjustment of dq-current in</strong> <code class="docutils literal notranslate"><span class="pre">OM_FORCE_CURRENT</span></code> <strong>is not designed correctly.</strong> (DB_MC-1167;
+Applicability: MCAF R1, R2, R3)</p>
+<p><code class="docutils literal notranslate"><span class="pre">MCAF_VelocityAndCurrentControllerStep</span></code> has the following
+behavior:</p>
+<ul class="simple">
+<li>D-axis: Current command prior to rate-limiting may be altered with real-time diagnostics
+by adjusting <code class="docutils literal notranslate"><span class="pre">motor.idqCmdRaw.d</span></code>.
+Square-wave perturbation using <code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.idq.d</span></code> is disabled in <code class="docutils literal notranslate"><span class="pre">OM_FORCE_CURRENT</span></code>
+(more generally, whenever the velocity loop is disabled).</li>
+<li>Q-axis: Current command prior to rate-limiting may be altered with real-time diagnostics
+by adjusting <code class="docutils literal notranslate"><span class="pre">motor.iqTorqueCmd</span></code>.
+Square-wave perturbation using <code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.idq.q</span></code> is enabled in <code class="docutils literal notranslate"><span class="pre">OM_FORCE_CURRENT</span></code>
+(more generally, whenever the current loop is enabled).</li>
+</ul>
+</li>
+<li><p class="first"><strong>Profiling with</strong> <code class="docutils literal notranslate"><span class="pre">MCAF_CaptureTimestamp</span></code> <strong>may not work properly with MCC-generated
+timer calls</strong>. (DB_MC-2671; Applicability: MCAF R5) There are two important points here:</p>
+<ul class="simple">
+<li>For dsPIC33CK devices, the wrong timer is used. This can be fixed by manually changing
+<code class="docutils literal notranslate"><span class="pre">MCAF_CaptureTimestamp()</span></code> in test_harness.h, from using <code class="docutils literal notranslate"><span class="pre">TMR1_Counter16BitGet()</span></code> (incorrect)
+to using <code class="docutils literal notranslate"><span class="pre">HAL_ProfilingCounter_Get()</span></code> (correct).</li>
+<li>MCC-generated timer functions as of 16-bit libraries version 1.166.0 are not inline functions,
+and incur the cost of a function call. (CC16DEV-3543) This will impact the timing measurements.
+To workaround, change the implementation of <code class="docutils literal notranslate"><span class="pre">SCCP1_TMR_Counter16BitPrimaryGet()</span></code> (dsPIC33CK devices)
+or <code class="docutils literal notranslate"><span class="pre">TMR1_Counter16BitGet()</span></code> (dsPIC33EP devices) to an <code class="docutils literal notranslate"><span class="pre">inline</span> <span class="pre">static</span></code> function. Note that
+this requires the function definition to be in the same translation unit as the call site,
+so it must be present in either test_harness.h or one of the .h files that is #included
+where <code class="docutils literal notranslate"><span class="pre">MCAF_CaptureTimestamp()</span></code> is called; it cannot be located in a separate .c file.</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="modules">
+<h3>4.5.15.3. Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h3>
+<span id="index-1"></span><table border="1" class="components-table docutils">
+<colgroup>
+<col width="14%" />
+<col width="14%" />
+<col width="29%" />
+<col width="43%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Module</th>
+<th class="head">Files</th>
+<th class="head">Description</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="first last docutils literal notranslate"><span class="pre">test_harness</span></code></td>
+<td class="longcolumn-1"><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">test_harness.c</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">test_harness.h</span></code></div>
+</div>
+</td>
+<td>Test harness</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td class="longcolumn-3"><code class="first last docutils literal notranslate"><span class="pre">test_harness_timestamps</span></code></td>
+<td class="longcolumn-3"><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">test_harness_timestamps.c</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">test_harness_timestamps.h</span></code></div>
+</div>
+</td>
+<td>Test harness logic for profiling execution times</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">4.5. Test Harness</a><ul>
+<li><a class="reference internal" href="#overview">4.5.1. Overview</a></li>
+<li><a class="reference internal" href="#accretive-testing">4.5.2. Accretive Testing</a></li>
+<li><a class="reference internal" href="#test-harness-parameters">4.5.3. Test Harness Parameters</a></li>
+<li><a class="reference internal" href="#test-guarding">4.5.4. Test Guarding</a><ul>
+<li><a class="reference internal" href="#test-features-in-production-should-they-stay-or-should-they-go">4.5.4.1. Test Features in Production: Should They Stay or Should They Go?</a></li>
+<li><a class="reference internal" href="#implementation-of-test-guarding">4.5.4.2. Implementation of Test Guarding</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#test-harness-architecture">4.5.5. Test Harness Architecture</a><ul>
+<li><a class="reference internal" href="#signal-valves">4.5.5.1. Signal Valves</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#test-harness-modes">4.5.6. Test harness modes</a><ul>
+<li><a class="reference internal" href="#om-disabled">4.5.6.1. <code class="docutils literal notranslate"><span class="pre">OM_DISABLED</span></code></a></li>
+<li><a class="reference internal" href="#om-force-voltage-pwm">4.5.6.2. <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_PWM</span></code></a></li>
+<li><a class="reference internal" href="#om-force-voltage-alphabeta">4.5.6.3. <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_ALPHABETA</span></code></a></li>
+<li><a class="reference internal" href="#om-force-voltage-dq">4.5.6.4. <code class="docutils literal notranslate"><span class="pre">OM_FORCE_VOLTAGE_DQ</span></code></a></li>
+<li><a class="reference internal" href="#om-force-current">4.5.6.5. <code class="docutils literal notranslate"><span class="pre">OM_FORCE_CURRENT</span></code></a></li>
+<li><a class="reference internal" href="#om-normal">4.5.6.6. <code class="docutils literal notranslate"><span class="pre">OM_NORMAL</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#interaction-with-the-system-state-machine">4.5.7. Interaction with the System State Machine</a></li>
+<li><a class="reference internal" href="#forcing-system-state-machine-transitions">4.5.8. Forcing System State Machine Transitions</a></li>
+<li><a class="reference internal" href="#test-harness-switches-overrides">4.5.9. Test Harness Switches (Overrides)</a><ul>
+<li><a class="reference internal" href="#input-velocity-command-override">4.5.9.1. Input Velocity Command Override</a></li>
+<li><a class="reference internal" href="#commutation-override">4.5.9.2. Commutation Override</a><ul>
+<li><a class="reference internal" href="#mcaf-r1-and-r2">4.5.9.2.1. MCAF R1 and R2</a></li>
+<li><a class="reference internal" href="#mcaf-r3">4.5.9.2.2. MCAF R3</a></li>
+<li><a class="reference internal" href="#mcaf-r4-and-later">4.5.9.2.3. MCAF R4 and later</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dc-link-voltage-compensation">4.5.9.3. DC Link Voltage Compensation</a></li>
+<li><a class="reference internal" href="#stall-detect-override">4.5.9.4. Stall Detect Override</a></li>
+<li><a class="reference internal" href="#pause-at-end-of-open-loop-startup">4.5.9.5. Pause at end of open-loop startup</a></li>
+<li><a class="reference internal" href="#flux-control-override">4.5.9.6. Flux control override</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#perturbation-signals">4.5.10. Perturbation Signals</a></li>
+<li><a class="reference internal" href="#seizures">4.5.11. Seizures</a></li>
+<li><a class="reference internal" href="#stack-overflow">4.5.12. Stack overflow</a></li>
+<li><a class="reference internal" href="#profiling-timestamps">4.5.13. Profiling Timestamps</a></li>
+<li><a class="reference internal" href="#example-use-cases">4.5.14. Example use cases</a><ul>
+<li><a class="reference internal" href="#fixed-frequency-sinusoidal-current-control">4.5.14.1. Fixed-frequency sinusoidal current control</a></li>
+<li><a class="reference internal" href="#current-torque-control-mode">4.5.14.2. Current/torque control mode</a></li>
+<li><a class="reference internal" href="#normal-operation-bypassing-the-external-control-potentiometer">4.5.14.3. Normal operation bypassing the external control (potentiometer)</a></li>
+<li><a class="reference internal" href="#square-wave-velocity-command-disturbances-to-a-velocity-controller-with-fixed-velocity-command">4.5.14.4. Square wave velocity command disturbances to a velocity controller with fixed velocity command</a></li>
+<li><a class="reference internal" href="#square-wave-current-command-disturbances-to-a-velocity-controller-with-fixed-velocity-command">4.5.14.5. Square wave current command disturbances to a velocity controller with fixed velocity command</a></li>
+<li><a class="reference internal" href="#square-wave-current-command-disturbances-to-a-current-controller-with-fixed-current-command">4.5.14.6. Square wave current command disturbances to a current controller with fixed current command</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementation-notes">4.5.15. Implementation Notes</a><ul>
+<li><a class="reference internal" href="#test-harness-feature-support">4.5.15.1. Test harness feature support</a></li>
+<li><a class="reference internal" href="#test-harness-errata">4.5.15.2. Test harness errata</a></li>
+<li><a class="reference internal" href="#modules">4.5.15.3. Modules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="foc.html"
+                        title="previous chapter">4.4. Field-Oriented Control (FOC)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="supervisory.html"
+                        title="next chapter">4.6. Supervisory Algorithms</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="supervisory.html" title="4.6. Supervisory Algorithms"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="foc.html" title="4.4. Field-Oriented Control (FOC)"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" >4. Components</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

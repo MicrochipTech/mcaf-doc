@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>4.1. Main Application &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../_static/preliminary-draft.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.2. ADC Calibration and Compensation" href="adc.html" />
+    <link rel="prev" title="4. Components" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="adc.html" title="4.2. ADC Calibration and Compensation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="4. Components"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">4. Components</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="main-application">
+<span id="component-main"></span><h1>4.1. Main Application<a class="headerlink" href="#main-application" title="Permalink to this headline">¶</a></h1>
+<p>As mentioned in the section on <a class="reference internal" href="../architecture/schedopt.html#scheduling"><span class="std std-ref">scheduling</span></a>, the main application
+consists of a portion of code that executes in <code class="docutils literal notranslate"><span class="pre">main()</span></code>.</p>
+<div class="section" id="implementation-notes">
+<h2>4.1.1. Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="mcaf-r1-r5">
+<h3>4.1.1.1. MCAF R1 - R5<a class="headerlink" href="#mcaf-r1-r5" title="Permalink to this headline">¶</a></h3>
+<p>Prior to MCAF R6, the main application was tightly integrated with MCAF, while keeping
+the responsibility for the user interface entirely within the <a class="reference internal" href="ext-interface.html#ext-interface"><span class="std std-ref">External Interface</span></a> component.</p>
+</div>
+<div class="section" id="mcaf-r6">
+<span id="component-main-r6"></span><h3>4.1.1.2. MCAF R6<a class="headerlink" href="#mcaf-r6" title="Permalink to this headline">¶</a></h3>
+<p>The main application has been rewritten to include a sample application. The sample application interacts
+with MCAF through the <a class="reference internal" href="mcapi.html#mcapi"><span class="std std-ref">Motion Control API (MCAPI)</span></a> to control and obtain feedback from the motor.</p>
+<div class="section" id="sample-application">
+<span id="id1"></span><h4>4.1.1.2.1. Sample Application<a class="headerlink" href="#sample-application" title="Permalink to this headline">¶</a></h4>
+<p>The sample application user interface behavior can be summarized as follows:</p>
+<ul class="simple">
+<li>If the motor is stopped, then the primary pushbutton starts the motor.</li>
+<li>If the motor is starting/running/stopping, then the primary pushbutton stops the motor.</li>
+<li>If the motor is in fault condition, then the primary pushbutton clears all pending faults.</li>
+<li>If MCAF is in one of its test modes, then the primary pushbutton and the secondary pushbutton do
+not have any effect.</li>
+<li>The secondary pushbutton changes the direction of rotation.</li>
+<li>The potentiometer sets the speed reference for the motor, with minimum and maximum limits as defined
+by MCAF and made available through MCAPI functions <code class="docutils literal notranslate"><span class="pre">MCAPI_VelocityReferenceMinimumGet()</span></code> and
+<code class="docutils literal notranslate"><span class="pre">MCAPI_VelocityReferenceMaximumGet()</span></code> respectively.</li>
+<li>The pushbutton and potentiometer user interface can be disabled in the sample application by
+clearing <code class="docutils literal notranslate"><span class="pre">hardwareUiEnabled</span></code> in the application data structure, for instance using a
+real-time diagnostic tool like <a class="reference external" href="https://gallery.microchip.com/packages/x2c-scope/">X2C-Scope</a>.</li>
+</ul>
+<p>See <a class="reference internal" href="ext-interface.html#ext-interface"><span class="std std-ref">External Interface</span></a> for implementation details of the user interface for pushbuttons.</p>
+<p>The user interface for LEDs is defined and implemented by the <a class="reference internal" href="ext-interface.html#ext-interface"><span class="std std-ref">External Interface</span></a> component.</p>
+</div>
+<div class="section" id="modules">
+<h4>4.1.1.2.2. Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h4>
+<span id="index-0"></span><table border="1" class="components-table docutils">
+<colgroup>
+<col width="14%" />
+<col width="14%" />
+<col width="29%" />
+<col width="43%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Module</th>
+<th class="head">Files</th>
+<th class="head">Description</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="first last docutils literal notranslate"><span class="pre">isr</span></code></td>
+<td><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">isr.c</span></code></div>
+</div>
+</td>
+<td>Top-level ISR</td>
+<td><p class="first">The main control <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> function runs on a periodic basis.
+It is triggered at the completion of <a class="reference internal" href="../appendix/glossary.html#term-adc"><span class="xref std std-term">ADC</span></a> sampling,
+which in turn is triggered once per <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> cycle, as mentioned in the
+<a class="reference internal" href="../architecture/schedopt.html#scheduling"><span class="std std-ref">Scheduling</span></a> section. It contains profiling logic:</p>
+<ul class="simple">
+<li>generates a pulse on a GPIO pin that starts on <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> entry and ends on <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> exit</li>
+<li>capture of timer counter (see <a class="reference internal" href="testharness.html#test-timestamps"><span class="std std-ref">test harness</span></a>)</li>
+</ul>
+<p>Various <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> subtasks are executed in rough order of priority (state machine tasks
+first, test harness and diagnostic tasks last).</p>
+<p class="last">The actual name of the <a class="reference internal" href="../appendix/glossary.html#term-adc"><span class="xref std std-term">ADC</span></a> <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> function is hardware-dependent and is encapsulated
+in the <a class="reference internal" href="hal.html#hal"><span class="std std-ref">HAL</span></a> by the <code class="docutils literal notranslate"><span class="pre">HAL_ADC1_ISR</span></code> macro.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><code class="first last docutils literal notranslate"><span class="pre">mcaf_main</span></code></td>
+<td><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mcaf_main.h</span></code></div>
+</div>
+</td>
+<td>Main MCAF entry points called from <code class="docutils literal notranslate"><span class="pre">main()</span></code> (initialization and main loop)</td>
+<td>Provides function prototypes for <code class="docutils literal notranslate"><span class="pre">MCAF_MainInit()</span></code> and <code class="docutils literal notranslate"><span class="pre">MCAF_MainLoop()</span></code>. These are the
+entry points for MCAF from the <code class="docutils literal notranslate"><span class="pre">main()</span></code>.</td>
+</tr>
+<tr class="row-even"><td class="longcolumn-3"><code class="first last docutils literal notranslate"><span class="pre">mcaf_sample_application</span></code></td>
+<td class="longcolumn-3"><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mcaf_sample_application.c</span></code></div>
+</div>
+</td>
+<td>Main MCAF entry points called from <code class="docutils literal notranslate"><span class="pre">main()</span></code> (initialization and main loop)</td>
+<td>MCAF R6 includes a sample application that starts/stops the motor using pushbuttons
+and sets motor speed reference using the potentiometer.</td>
+</tr>
+<tr class="row-odd"><td><code class="first last docutils literal notranslate"><span class="pre">mcaf_traps</span></code></td>
+<td><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mcaf_traps.c</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mcaf_traps.h</span></code></div>
+</div>
+</td>
+<td>Trap interrupt handlers</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><code class="first last docutils literal notranslate"><span class="pre">system_init</span></code></td>
+<td class="longcolumn-1"><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">system_init.c</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">system_init.h</span></code></div>
+</div>
+</td>
+<td>System initialization</td>
+<td><p class="first">Initializes state variables and special function registers prior to the main loop
+(intended to be called in <code class="docutils literal notranslate"><span class="pre">MCAF_MainInit()</span></code>)</p>
+<ul class="last simple">
+<li><code class="docutils literal notranslate"><span class="pre">MCAF_SystemInit</span></code> — called at the beginning of <code class="docutils literal notranslate"><span class="pre">MCAF_MainInit()</span></code> to initialize
+certain SFRs and system-wide state variables as soon as possible.</li>
+<li><code class="docutils literal notranslate"><span class="pre">MCAF_SystemStart</span></code> — called near the end of <code class="docutils literal notranslate"><span class="pre">MCAF_MainInit()</span></code>
+for deferred initialization. This includes code to enable interrupts, and therefore
+main-thread code that executes prior to <code class="docutils literal notranslate"><span class="pre">MCAF_SystemStart</span></code> is not prone to race conditions
+caused by conflicts with an <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> that has just been enabled.</li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><code class="first last docutils literal notranslate"><span class="pre">system_state</span></code></td>
+<td class="longcolumn-1"><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">system_state.h</span></code></div>
+</div>
+</td>
+<td>System state variable type definitions</td>
+<td>Defines the main <code class="docutils literal notranslate"><span class="pre">MCAF_MOTOR_DATA</span></code> and <code class="docutils literal notranslate"><span class="pre">MCAF_SYSTEM_DATA</span></code> structure types.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="trap-handler-module">
+<span id="main-traps"></span><h4>4.1.1.2.3. Trap-handler module<a class="headerlink" href="#trap-handler-module" title="Permalink to this headline">¶</a></h4>
+<p>Hardware trap vectors in dsPIC<sup>®</sup> DSC devices contain handlers for events like
+a stack overflow, or an address alignment error. In the MCAF, these are located
+in the <code class="docutils literal notranslate"><span class="pre">traps</span></code> module. The normal handling logic is to signal a nonrecoverable
+error, by calling the <code class="docutils literal notranslate"><span class="pre">halt_on_error()</span></code>
+function, which records an error code and goes into an endless loop to
+flash the LEDs to indicate an error code via <code class="docutils literal notranslate"><span class="pre">MCAF_UiFlashErrorCodeForever()</span></code>
+as discussed in the UI module.</p>
+<p>Two minor deviations from this behavior:</p>
+<ul class="simple">
+<li><strong>DMA write collision</strong>: this occurs when the CPU and a DMA channel write to the
+same address (in which case the CPU “wins” and the DMA write is ignored). This
+condition is not considered an error in this application, and arises in rare cases
+for one variant of the diagnostic module which utilizes the DMA for reading and
+writing the UART. The DMA trap handler increments a counter for assessing the
+frequency of DMA write collisions.</li>
+<li><strong>Stack overflow</strong>: a stack overflow is a nonrecoverable error, but is slightly
+different in that the stack pointer (W15 on dsPIC<sup>®</sup> DSC devices) may not be valid.
+In this condition, the MCAF takes extra care by using a small “failsafe stack”,
+which is a static area of
+memory reserved for this case, and is large enough to cover the stack requirements
+needed by the <code class="docutils literal notranslate"><span class="pre">MCAF_UiFlashErrorCodeForever()</span></code> function.</li>
+</ul>
+<p>In addition to hardware traps, the <code class="docutils literal notranslate"><span class="pre">traps</span></code> module also includes logic to
+examine cause of reset, so that in the event of a watchdog reset, a nonrecoverable
+error can be signaled via <code class="docutils literal notranslate"><span class="pre">MCAF_UiFlashErrorCodeForever()</span></code>.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">4.1. Main Application</a><ul>
+<li><a class="reference internal" href="#implementation-notes">4.1.1. Implementation Notes</a><ul>
+<li><a class="reference internal" href="#mcaf-r1-r5">4.1.1.1. MCAF R1 - R5</a></li>
+<li><a class="reference internal" href="#mcaf-r6">4.1.1.2. MCAF R6</a><ul>
+<li><a class="reference internal" href="#sample-application">4.1.1.2.1. Sample Application</a></li>
+<li><a class="reference internal" href="#modules">4.1.1.2.2. Modules</a></li>
+<li><a class="reference internal" href="#trap-handler-module">4.1.1.2.3. Trap-handler module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">4. Components</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="adc.html"
+                        title="next chapter">4.2. ADC Calibration and Compensation</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="adc.html" title="4.2. ADC Calibration and Compensation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="4. Components"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" >4. Components</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>
