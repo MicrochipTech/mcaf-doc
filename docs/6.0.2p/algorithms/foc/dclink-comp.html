@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>5.1.3. DC link compensation &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script type="text/javascript" src="../../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../../_static/preliminary-draft.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.1.4. Current loop tuning" href="tuning.html" />
+    <link rel="prev" title="5.1.2. Overmodulation" href="overmodulation.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tuning.html" title="5.1.4. Current loop tuning"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="overmodulation.html" title="5.1.2. Overmodulation"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">5.1. Field-oriented Current Control</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="dc-link-compensation">
+<span id="algorithm-dclinkcompensation"></span><h1>5.1.3. DC link compensation<a class="headerlink" href="#dc-link-compensation" title="Permalink to this headline">¶</a></h1>
+<p>Variability in the DC link voltage manifests itself as a time-varying
+gain of the power electronics block; if the DC link voltage increases
+by 10%, then for the same duty cycles applied to a three-phase bridge,
+the voltage output will also be increased by 10%.</p>
+<p>This affects the behavior of a FOC motor controller in a few significant ways:</p>
+<ul class="simple">
+<li>Current controller loop gain changes proportionally to DC link voltage.
+This variation can degrade the stability of the current controller.</li>
+<li>Voltage transients in the DC link cause a disturbance to the current loop.</li>
+<li>Sensorless estimators that rely only on duty cycle signals will
+also see a gain shift proportional to DC link voltage.</li>
+</ul>
+<p>We can compensate for DC link voltage by converting from voltage to duty cycle
+in the forward path, as shown in <a class="reference internal" href="#fig-dclink-fwdpath"><span class="std std-numref">Figure 5.12</span></a>.</p>
+<div class="figure align-center" id="id1">
+<span id="fig-dclink-fwdpath"></span><a class="reference internal image-reference" href="../../_images/accret-bdiag-fwdpath.png"><img alt="../../_images/accret-bdiag-fwdpath.png" src="../../_images/accret-bdiag-fwdpath.png" style="width: 900px;" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.12 </span><span class="caption-text">Block diagram of MCAF Field Oriented Control, forward path</span></p>
+</div></div>
+<p>Essentially the <span class="math">\(abc\)</span> voltages coming out of the Inverse Clarke
+blocks are multiplied by the reciprocal of the DC link voltage
+and then used as the input of the zero sequence modulation (ZSM) block:</p>
+<div class="math" id="equation-algorithms-foc-dclink-comp-0">
+<span class="eqno">(5.20)</span>\[D_{abc0} = R_V V_{abc0} = \frac{1}{V_{dc}}V_{abc0}\]</div>
+<p>where the subscript <span class="math">\(abc0\)</span> represents the unmodified three-phase
+output of the Inverse Clarke transform, prior to shifting and clipping
+by the ZSM block.</p>
+<p>In addition, we need to make the output limits of the current
+controller scale proportionally to <span class="math">\(V_{dc}\)</span>,
+in order to reflect the physical limits of the three-phase bridge.</p>
+<div class="section" id="transients">
+<h2>5.1.3.1. Transients<a class="headerlink" href="#transients" title="Permalink to this headline">¶</a></h2>
+<p>DC link compensation will work correctly in the
+presence of transients if the dynamics of sensing <span class="math">\(V_{dc}\)</span>
+are much faster than the dynamics of the voltage transient itself.</p>
+<p>On the <a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/dm330021-2">dsPICDEM<sup>®</sup> MCLV‑2 Development Board</a>,
+for example, there is a 188 μs RC filter (see <a class="reference internal" href="#fig-dclink-rc"><span class="std std-numref">Figure 5.13</span></a>)
+that dominates
+the dynamic behavior of sensing. This has a 3 dB bandwidth
+of about 847 Hz, so DC link compensation should be able to
+reject transients with frequency content significantly lower
+than this, and cannot reject transient content around or above
+this frequency. In general, motor drive designs should use
+RC filters with shorter time constants, typically on the order
+of 1-10 μs; antialiasing concerns are usually less
+important than avoiding excessive phase lag, because the DC link
+capacitors already limit high frequency content.</p>
+<div class="figure align-center" id="id2">
+<span id="fig-dclink-rc"></span><img alt="../../_images/mclv2-rcfilt.png" src="../../_images/mclv2-rcfilt.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.13 </span><span class="caption-text">RC filter in MCLV-2</span></p>
+</div></div>
+</div>
+<div class="section" id="implementation-notes">
+<h2>5.1.3.2. Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permalink to this headline">¶</a></h2>
+<p>The reciprocal step of computing <span class="math">\(R_V = 1/V_{dc}\)</span> in fixed-point
+relies on choosing a reasonable scaling factor. In the MCAF, we
+use Q12 representation with a scaling factor of <span class="math">\(1/V_{dcmax}\)</span>,
+which allows accurate computation of <span class="math">\(R_V\)</span>
+over the voltage range <span class="math">\(\frac{V_{dc}}{V_{dcmax}} \in [1/8, 1]\)</span>.
+For the MCLV-2 board’s maximum input voltage range of 52.8 V, this
+allows accurate reciprocal calculations between 6.6 V and 52.8 V.
+For the MCHV-2 and MCHV-3 boards’ maximum input voltage range of 453.3 V,
+this allows accurate reciprocal calculations between 56.7 V and 453.3 V.</p>
+<p>If <span class="math">\(V_{dc} &lt; V_{dcmax}/8\)</span> the reciprocal is clamped at its maximum
+value (32767 counts = <span class="math">\(7.99976/V_{dcmax}\)</span>) and the DC link
+compensation will not be perfect; in this case the overall
+open-loop gain (including the gain of the three-phase bridge in hardware,
+and DC link compensation in software) will be less than one.</p>
+<div class="section" id="feature-support">
+<h3>5.1.3.2.1. Feature support<a class="headerlink" href="#feature-support" title="Permalink to this headline">¶</a></h3>
+<p>DC link compensation was not present in MCAF R1 but has been added in MCAF R2.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5.1.3. DC link compensation</a><ul>
+<li><a class="reference internal" href="#transients">5.1.3.1. Transients</a></li>
+<li><a class="reference internal" href="#implementation-notes">5.1.3.2. Implementation Notes</a><ul>
+<li><a class="reference internal" href="#feature-support">5.1.3.2.1. Feature support</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="overmodulation.html"
+                        title="previous chapter">5.1.2. Overmodulation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tuning.html"
+                        title="next chapter">5.1.4. Current loop tuning</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tuning.html" title="5.1.4. Current loop tuning"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="overmodulation.html" title="5.1.2. Overmodulation"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >5.1. Field-oriented Current Control</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

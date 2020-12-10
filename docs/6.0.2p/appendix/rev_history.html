@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>7.5. Revision History &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../_static/preliminary-draft.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="8. Frequently Asked Questions (FAQ)" href="../faq.html" />
+    <link rel="prev" title="7.4. Related Documents" href="otherdocs.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../faq.html" title="8. Frequently Asked Questions (FAQ)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="otherdocs.html" title="7.4. Related Documents"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">7. Appendix</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="revision-history">
+<span id="appendix-revhistory"></span><h1>7.5. Revision History<a class="headerlink" href="#revision-history" title="Permalink to this headline">¶</a></h1>
+<p>This section covers both the revision history for this documentation
+and for the MCAF itself.</p>
+<div class="section" id="mcaf-documentation-revision-history">
+<h2>7.5.1. MCAF Documentation Revision History<a class="headerlink" href="#mcaf-documentation-revision-history" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="17%" />
+<col width="69%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Revision</th>
+<th class="head">Date</th>
+<th class="head">Notes</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>0.1</td>
+<td>2016 Sep 29</td>
+<td>Preliminary draft</td>
+</tr>
+<tr class="row-odd"><td>0.2</td>
+<td>2016 Nov 8</td>
+<td>Clarifications, glossary, and other minor edits</td>
+</tr>
+<tr class="row-even"><td>0.3</td>
+<td>2016 Dec 15</td>
+<td>Edits based on staff review</td>
+</tr>
+<tr class="row-odd"><td>1.00</td>
+<td>2017 Feb 7</td>
+<td><ul class="first last simple">
+<li>Added subsection on thread safety</li>
+<li>Corrected <code class="docutils literal notranslate"><span class="pre">MCAF_</span></code> prefix in documentation</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>2.0.1</td>
+<td>2017 Oct 9</td>
+<td><ul class="first last simple">
+<li>Fixed test harness documentation issues</li>
+<li>Corrected block diagram (DC link compensation in wrong
+place)</li>
+<li>Added updates for MCAF R2</li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td>2.0.2</td>
+<td>2018 Jul 2</td>
+<td><ul class="first last simple">
+<li>Corrected <a class="reference internal" href="../architecture/numerics.html#normfactors"><span class="std std-ref">scaling factor</span></a> information</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>3.0.1</td>
+<td>2018 Nov 6</td>
+<td>Updated for MCAF R3</td>
+</tr>
+<tr class="row-odd"><td>3.0.2</td>
+<td>2018 Nov 7</td>
+<td><ul class="first last simple">
+<li>Added <a class="reference internal" href="../implementation/codegen.html#impl-codegen"><span class="std std-ref">code generation</span></a> section</li>
+<li>Added <a class="reference internal" href="../components/foc.html#foc-pwm-duty"><span class="std std-ref">pwm duty cycle</span></a> section
+from existing internal documentation</li>
+<li>Minor edits based on staff review</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>4.0.1</td>
+<td>2019 Jul 15</td>
+<td><p class="first">Updated for MCAF R4:</p>
+<ul class="last simple">
+<li>Added <a class="reference internal" href="../algorithms/qei.html#algorithm-qei"><span class="std std-ref">Quadrature encoder support</span></a> section</li>
+<li>Added <a class="reference internal" href="../algorithms/qei.html#qei-sync"><span class="std std-ref">Back-EMF synchronization</span></a> sections</li>
+<li>Added <a class="reference internal" href="../algorithms/startup.html#algorithm-startup"><span class="std std-ref">Startup</span></a> section</li>
+<li>Added <a class="reference internal" href="../implementation/ui-customization.html#impl-customization"><span class="std std-ref">Parameter customization</span></a> section</li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td>5.0.1</td>
+<td>2019 Feb 19</td>
+<td><p class="first">Updated for MCAF R5:</p>
+<ul class="last simple">
+<li>Added <a class="reference internal" href="../algorithms/estimators.html#algorithm-estimators"><span class="std std-ref">Position and Velocity Estimation</span></a> section</li>
+<li>Added <a class="reference internal" href="../algorithms/atpll.html#algorithm-atpll"><span class="std std-ref">Angle-tracking Phase-locked Loop (ATPLL)</span></a> section</li>
+<li>Added <a class="reference internal" href="../algorithms/pll.html#algorithm-pll"><span class="std std-ref">AN1292 Phase-locked Loop (PLL)</span></a> section</li>
+<li>Updated <a class="reference internal" href="../components/hal.html#hal"><span class="std std-ref">HAL</span></a> section to cover ADC timing
+and dsPIC33CK support</li>
+<li>Added test harness section on <a class="reference internal" href="../components/testharness.html#test-pause-in-hold"><span class="std std-ref">Pause at end of open-loop startup</span></a></li>
+<li>Updated
+<a class="reference internal" href="../implementation/ui-customization.html#impl-customization"><span class="std std-ref">customizable parameters</span></a>
+section</li>
+<li>Minor edits based on staff review</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>6.0.1</td>
+<td>2020 Oct 5</td>
+<td><p class="first">Updated for MCAF R6:</p>
+<ul class="last simple">
+<li>Added <a class="reference internal" href="../implementation/sampling-rate.html#impl-sampling-rate"><span class="std std-ref">Sampling Rate and PWM Frequency Implications</span></a> section</li>
+<li>Added <a class="reference internal" href="../algorithms/foc/tuning.html#algorithm-foc-tuning"><span class="std std-ref">Current loop tuning</span></a> section</li>
+<li>Added <a class="reference internal" href="../components/mcapi.html#mcapi"><span class="std std-ref">Motion Control API (MCAPI)</span></a> section</li>
+<li>Added <a class="reference internal" href="../algorithms/flux_control/index.html#algorithm-flux-control"><span class="std std-ref">Flux control</span></a> section</li>
+<li>Added <a class="reference internal" href="../algorithms/dead-time-comp.html#algorithm-deadtimecompensation"><span class="std std-ref">Dead-time Compensation</span></a> section</li>
+<li>Added <a class="reference internal" href="../algorithms/foc/introduction.html#foc-introduction"><span class="std std-ref">introductory section on FOC</span></a></li>
+<li>Rewrote section <a class="reference internal" href="../implementation/integration.html#integration"><span class="std std-ref">Integration with Custom Code</span></a>
+to reflect MCAPI</li>
+<li>Updated <a class="reference internal" href="../components/hal.html#hal"><span class="std std-ref">HAL</span></a> section to include the
+implication of differences in PWM deadtime behavior
+between dsPIC33E and dsPIC33C</li>
+<li>Updated <a class="reference internal" href="../implementation/resource-usage.html#resource-usage-r6"><span class="std std-ref">Usage statistics for MCAF R6</span></a> section</li>
+<li>Updated
+<a class="reference internal" href="../implementation/ui-customization.html#impl-customization"><span class="std std-ref">customizable parameters</span></a>
+section</li>
+<li>Minor edits based on staff review</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="mcaf-revision-history">
+<h2>7.5.2. MCAF Revision History<a class="headerlink" href="#mcaf-revision-history" title="Permalink to this headline">¶</a></h2>
+<p>In brief:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="17%" />
+<col width="69%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Revision</th>
+<th class="head">Date</th>
+<th class="head">Notes</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>R1 RC12</td>
+<td>2017 Feb 28</td>
+<td>Initial release as part of motorBench<sup>®</sup> Development Suite 1.15</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#appendix-revhistory-r2rc9"><span class="std std-ref">R2 RC9</span></a></td>
+<td>2017 Sep 29</td>
+<td><p class="first">Internal release:</p>
+<ul class="last simple">
+<li>Added support for overmodulation</li>
+<li>Added support for DC link compensation</li>
+<li>Added support for wider range of low-voltage motors</li>
+<li><dl class="first docutils">
+<dt><a class="reference internal" href="../architecture/numerics.html#normfactors"><span class="std std-ref">Scaling factors</span></a> updated</dt>
+<dd><ul class="first last">
+<li>All voltages now use scaling factor of maximum ADC
+input for the DC link; R1 used <span class="math">\(24V/\sqrt{3}\)</span>
+for FOC voltages</li>
+<li>Mechanical velocity now uses 1.5 times maximum
+motor velocity; R1 used 30000 electrical RPM</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>Updated HAL for future MCHV-2 support</li>
+<li>Updated Motor Control Library</li>
+<li>Numerous minor fixes</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#appendix-revhistory-r3rc14"><span class="std std-ref">R3 RC14</span></a></td>
+<td>2018 Oct 4</td>
+<td><p class="first">Release intended as part of motorBench<sup>®</sup> Development Suite 2.0</p>
+<ul class="last simple">
+<li>Supports use of MCC for system / oscillator module</li>
+<li>Completed support for MCHV-2 HAL</li>
+<li>Other minor fixes</li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#appendix-revhistory-r4rc12"><span class="std std-ref">R4 RC12</span></a></td>
+<td>2019 Jun 21</td>
+<td><p class="first">Release intended as part of motorBench<sup>®</sup> Development Suite 2.15</p>
+<ul class="last simple">
+<li><a class="reference internal" href="../components/hal.html#hal-mcaf-r4"><span class="std std-ref">MCC peripheral support</span></a></li>
+<li><a class="reference internal" href="../implementation/ui-customization.html#impl-customization"><span class="std std-ref">Parameter customization</span></a></li>
+<li><a class="reference internal" href="../algorithms/qei.html#algorithm-qei"><span class="std std-ref">Quadrature encoder support</span></a></li>
+<li>Added new startup method (<a class="reference internal" href="../algorithms/startup.html#startup-weathervane"><span class="std std-ref">Weathervane startup</span></a>)</li>
+<li>Other minor fixes</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#appendix-revhistory-r5rc11"><span class="std std-ref">R5 RC11</span></a></td>
+<td>2020 Feb 7</td>
+<td><p class="first">Release intended as part of motorBench<sup>®</sup> Development Suite 2.25</p>
+<ul class="last simple">
+<li><a class="reference internal" href="../components/hal.html#hal-mcaf-r5"><span class="std std-ref">dsPIC33CK support</span></a></li>
+<li><a class="reference internal" href="../implementation/ui-customization.html#impl-customization"><span class="std std-ref">Customize page improvements</span></a></li>
+<li><a class="reference internal" href="../algorithms/atpll.html#algorithm-atpll"><span class="std std-ref">Angle-tracking Phase-locked Loop (ATPLL)</span></a></li>
+<li>Other minor fixes and improvements</li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#appendix-revhistory-r6rc8"><span class="std std-ref">R6 RC8</span></a></td>
+<td>2020 Aug 25</td>
+<td><p class="first">Release intended as part of motorBench<sup>®</sup> Development Suite 2.35</p>
+<ul class="last simple">
+<li>Added <a class="reference internal" href="../components/hal.html#hal-mcaf-r6"><span class="std std-ref">device support for new devices in
+dsPIC33CK series</span></a>
+(dsPIC33CK64MC105, dsPIC33CK64MP105)</li>
+<li>Added <code class="docutils literal notranslate"><span class="pre">flux_control</span></code> module with support for
+<a class="reference internal" href="../algorithms/flux_control/flux_weakening.html#algorithm-flux-weakening"><span class="std std-ref">flux weakening</span></a> (FW) and <a class="reference internal" href="../algorithms/flux_control/mtpa.html#algorithm-mtpa"><span class="std std-ref">maximum torque per ampere</span></a>
+(MTPA)</li>
+<li>Added <a class="reference internal" href="../components/mcapi.html#mcapi"><span class="std std-ref">Motion Control API</span></a> (MCAPI)</li>
+<li>Added <a class="reference internal" href="../algorithms/dead-time-comp.html#algorithm-deadtimecompensation"><span class="std std-ref">dead-time compensation</span></a></li>
+<li>Redesigned <a class="reference internal" href="../components/hal.html#board-service-module"><span class="std std-ref">board service module</span></a></li>
+<li>Other minor fixes and improvements</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>In detail:</p>
+<div class="section" id="mcaf-r2-rc9">
+<span id="appendix-revhistory-r2rc9"></span><h3>7.5.2.1. MCAF R2 RC9<a class="headerlink" href="#mcaf-r2-rc9" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="modules-added-removed">
+<h4>7.5.2.1.1. Modules added/removed<a class="headerlink" href="#modules-added-removed" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">atan2cordic</span></code> was removed (not required by any other modules)</li>
+<li><code class="docutils literal notranslate"><span class="pre">board_service</span></code>, <code class="docutils literal notranslate"><span class="pre">filter</span></code>, and <code class="docutils literal notranslate"><span class="pre">units</span></code> added</li>
+</ul>
+</div>
+<div class="section" id="core-foc">
+<h4>7.5.2.1.2. Core FOC<a class="headerlink" href="#core-foc" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>The inverse Clarke transform has been replaced by its conventional
+variant. (MCAF R1 had swapped <span class="math">\(\alpha\)</span> and <span class="math">\(\beta\)</span>)</li>
+<li>Space vector modulation with phase-shifted inputs has been replaced
+by an implementation of <a class="reference internal" href="../components/foc.html#foc-zsm"><span class="std std-ref">zero-sequence modulation</span></a> that includes
+clipping in order to implement <a class="reference internal" href="../algorithms/foc/overmodulation.html#algorithm-overmodulation"><span class="std std-ref">overmodulation</span></a>.</li>
+</ul>
+</div>
+<div class="section" id="overmodulation">
+<h4>7.5.2.1.3. Overmodulation<a class="headerlink" href="#overmodulation" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference internal" href="../algorithms/foc/overmodulation.html#algorithm-overmodulation"><span class="std std-ref">Overmodulation</span></a> support has been added.</p>
+</div>
+<div class="section" id="dc-link-compensation">
+<h4>7.5.2.1.4. DC link compensation<a class="headerlink" href="#dc-link-compensation" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference internal" href="../algorithms/foc/dclink-comp.html#algorithm-dclinkcompensation"><span class="std std-ref">DC link compensation</span></a> support has been added.</p>
+</div>
+<div class="section" id="expanded-range-of-supported-motors">
+<h4>7.5.2.1.5. Expanded range of supported motors<a class="headerlink" href="#expanded-range-of-supported-motors" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Parameter generation tested under a wide range of motor parameters
+to identify and correct range issues.</li>
+<li>Several shift counts changed to be selected at code generation
+time (rather than a fixed Q15).</li>
+<li>Several time delay values (mostly in startup and stall detection)
+changed to utilize 32-bit counts, so that longer time constants
+can be supported.</li>
+<li>Some of the PLL calculations were rewritten to prevent overflow.</li>
+</ul>
+</div>
+<div class="section" id="scaling-factors-and-operating-range">
+<h4>7.5.2.1.6. Scaling factors and operating range<a class="headerlink" href="#scaling-factors-and-operating-range" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>The scaling factors for voltages have been unified to one value
+based on maximum DC link voltage.</li>
+<li>The scaling factor for motor velocity has been changed
+to be 1.5 times the base speed of the motor; the capability has
+been added in MCAF to override this from motorBench<sup>®</sup> Development Suite, although as of
+motorBench<sup>®</sup> Development Suite revision 1.35 this is not yet possible.</li>
+<li>Minimum operating speed is now set based on the minimum
+electrical frequency selected in motorBench<sup>®</sup> Development Suite.</li>
+</ul>
+</div>
+<div class="section" id="fault-detection">
+<h4>7.5.2.1.7. Fault detection<a class="headerlink" href="#fault-detection" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>The torque angle method of stall detection was rewritten
+to improve accuracy over a wider range of motors.</li>
+<li>The Ed method of stall detection was adjusted to remove
+low-pass filtering that was hindering stall detection with some motors.</li>
+<li>The <code class="docutils literal notranslate"><span class="pre">monitor</span></code> module was rewritten as a simple state machine
+to avoid unintentional behavior.</li>
+</ul>
+</div>
+<div class="section" id="test-harness">
+<h4>7.5.2.1.8. Test Harness<a class="headerlink" href="#test-harness" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added ability to <a class="reference internal" href="../components/testharness.html#test-state-change"><span class="std std-ref">force state change</span></a>
+(e.g. <code class="docutils literal notranslate"><span class="pre">STOPPING</span></code> → <code class="docutils literal notranslate"><span class="pre">STOPPED</span></code> )</li>
+</ul>
+</div>
+<div class="section" id="hal">
+<h4>7.5.2.1.9. HAL<a class="headerlink" href="#hal" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added new interfaces for <code class="docutils literal notranslate"><span class="pre">TMR1</span></code> (hardware timer 1)</li>
+<li>Added additional functions for <code class="docutils literal notranslate"><span class="pre">UART1</span></code></li>
+<li>Refactored some of the Application Interfaces in BSP, moved LED and test-point related interfaces to HAF</li>
+<li>Added a new <a class="reference internal" href="../components/hal.html#board-service-module"><span class="std std-ref">board service module</span></a></li>
+</ul>
+</div>
+<div class="section" id="motor-control-library">
+<h4>7.5.2.1.10. Motor Control Library<a class="headerlink" href="#motor-control-library" title="Permalink to this headline">¶</a></h4>
+<p>The version of the Motor Control Library included with MCAF R2
+has added a number of new functions, including zero sequence modulation
+with clipping, and the conventional Inverse Clarke transform.</p>
+<p>Please do not use this version of the Motor Control Library in other
+projects outside the MCAF.</p>
+</div>
+<div class="section" id="miscellaneous">
+<h4>7.5.2.1.11. Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline">¶</a></h4>
+<p>MCAF version information (“R2/RC9” along with a commit id
+and build date) has been added to all C source files outside
+of the libraries.</p>
+</div>
+</div>
+<div class="section" id="mcaf-r3-rc14">
+<span id="appendix-revhistory-r3rc14"></span><h3>7.5.2.2. MCAF R3 RC14<a class="headerlink" href="#mcaf-r3-rc14" title="Permalink to this headline">¶</a></h3>
+<p>Note to the reader: starting with this release, you may see issue tracker keys listed in the revision history in parentheses,
+such as DB_MC-97. These are present to assist Microchip staff in referring to more detailed information as necessary.</p>
+<div class="section" id="id1">
+<h4>7.5.2.2.1. Modules added/removed<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>The <code class="docutils literal notranslate"><span class="pre">meas_curr</span></code> module, written in assembly, has been combined with some functionality
+of the <code class="docutils literal notranslate"><span class="pre">foc</span></code> module to form a new <code class="docutils literal notranslate"><span class="pre">adc_compensation</span></code> module written in C. (DB_MC-97, DB_MC-675)</p>
+</div>
+<div class="section" id="mcc-compatibility">
+<span id="revhistory-r3-mcc"></span><h4>7.5.2.2.2. MCC compatibility<a class="headerlink" href="#mcc-compatibility" title="Permalink to this headline">¶</a></h4>
+<p>MCAF is now compatible with the MCC system module including oscillator setup. (DB_MC-1679,
+DB_MC-1688, DB_MC-1689, DB_MC-1690)</p>
+<ul class="simple">
+<li>The former <code class="docutils literal notranslate"><span class="pre">traps</span></code> and <code class="docutils literal notranslate"><span class="pre">main</span></code> modules of MCAF have been renamed <code class="docutils literal notranslate"><span class="pre">mcaf_traps</span></code> and <code class="docutils literal notranslate"><span class="pre">mcaf_main</span></code>.
+(DB_MC-1685, DB_MC-1686)</li>
+<li>There is now an mcaf_main.h as well to include function declarations. (DB_MC-1846)</li>
+<li>MCAF is no longer responsible for producing <code class="docutils literal notranslate"><span class="pre">main()</span></code>; instead, the MCC <code class="docutils literal notranslate"><span class="pre">main()</span></code> function
+now calls into MCAF for initialization and the main loop.</li>
+<li>MCAF has yielded responsibility to MCC for generating configuration bits</li>
+<li>MCAF has yielded responsibility to MCC for oscillator configuration (DB_MC-1849)</li>
+<li>Some functions in the HAL have been renamed with an <code class="docutils literal notranslate"><span class="pre">MCAF_</span></code> prefix to avoid name conflicts with
+MCC-generated HAL functions.</li>
+</ul>
+<p>MCAF is still not compatible with other modules from MCC, including the ADC, UART, and PWM.
+The HAL within MCAF takes responsibility for configuring and using these modules.</p>
+<p>See the documentation for the <a class="reference internal" href="../components/hal.html#hal-mcaf-r3"><span class="std std-ref">HAL</span></a> for more information.</p>
+</div>
+<div class="section" id="mchv-2-and-mchv-3-compatibility">
+<h4>7.5.2.2.3. MCHV-2 and MCHV-3 compatibility<a class="headerlink" href="#mchv-2-and-mchv-3-compatibility" title="Permalink to this headline">¶</a></h4>
+<p>The HAL generated by MCAF is now fully compatible with the MCHV-2 and MCHV-3 development boards.
+(MCAF R2 did contain the required HAL functions for MCHV-2/MCHV-3 but always generated code for MCLV-2.)</p>
+</div>
+<div class="section" id="id2">
+<h4>7.5.2.2.4. Scaling factors and operating range<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<p>The continuous rated inverter current as entered in motorBench<sup>®</sup> Development Suite is now exactly equal to the maximum dq-frame
+commanded current amplitude. In MCAF R2, there was a 0.824 derating factor applied. (DB_MC-1307)</p>
+</div>
+<div class="section" id="adc-compensation">
+<h4>7.5.2.2.5. ADC compensation<a class="headerlink" href="#adc-compensation" title="Permalink to this headline">¶</a></h4>
+<p>The ADC current gain matrix is now generated dynamically. In MCAF R2 it was fixed to support unmodified
+MCLV-2 boards. It now can handle arbitrary gains setup in motorBench<sup>®</sup> Development Suite. (DB_MC-1332)</p>
+</div>
+<div class="section" id="id3">
+<h4>7.5.2.2.6. Core FOC<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>PLL now uses <code class="docutils literal notranslate"><span class="pre">motor.valphabetaOut</span></code> rather than <code class="docutils literal notranslate"><span class="pre">motor.valphabeta</span></code>. (DB_MC-1164)
+The difference between these state variables is that <code class="docutils literal notranslate"><span class="pre">motor.valphabeta</span></code> represents the
+intended value of <span class="math">\(V_{\alpha\beta}\)</span> prior to <a class="reference internal" href="../components/foc.html#foc-zsm"><span class="std std-ref">zero-sequence modulation</span></a>, whereas
+<code class="docutils literal notranslate"><span class="pre">motor.valphabetaOut</span></code> represents the best estimate of the actual <span class="math">\(V_{\alpha\beta}\)</span>
+based on calculating from PWM duty cycles. The two are identical except when the current controller
+enters into <a class="reference internal" href="../algorithms/foc/overmodulation.html#algorithm-overmodulation"><span class="std std-ref">overmodulation</span></a>. See also <code class="docutils literal notranslate"><span class="pre">MCAF_ComputeVAlphaBetaAtOutput()</span></code>.</li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h4>7.5.2.2.7. Fault detection<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Torque angle stall detection has been disabled by default. (DB_MC-1732)
+See <a class="reference internal" href="../components/supervisory.html#supervisory-errata"><span class="std std-ref">supervisory errata</span></a> for more information.</li>
+<li><code class="docutils literal notranslate"><span class="pre">MCAF_VarianceDetectx16Decimate()</span></code> has been renamed <code class="docutils literal notranslate"><span class="pre">MCAF_VarianceDetectx16PostDecimation()</span></code>
+for clarity. (DB_MC-846)</li>
+</ul>
+</div>
+<div class="section" id="id5">
+<h4>7.5.2.2.8. Test Harness<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added ability to <a class="reference internal" href="../components/testharness.html#test-stack-overflow"><span class="std std-ref">cause stack overflow</span></a>. (DB_MC-1708)</li>
+<li>Added <a class="reference internal" href="../components/testharness.html#test-commutation-onoff"><span class="std std-ref">delay loop for commutation overrides</span></a>. (DB_MC-1280)</li>
+<li>DC link compensation can be disabled by setting the corresponding override bit. (DB_MC-1168)</li>
+</ul>
+</div>
+<div class="section" id="id6">
+<h4>7.5.2.2.9. HAL<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added additional functions for the QEI and PWM modules</li>
+<li>Removed configuration bits and oscillator initialization</li>
+<li>Renamed functions in <code class="docutils literal notranslate"><span class="pre">pin_manager</span></code>, <code class="docutils literal notranslate"><span class="pre">interrupt_manager</span></code>, and <code class="docutils literal notranslate"><span class="pre">mcc</span></code> modules with <code class="docutils literal notranslate"><span class="pre">MCAF_</span></code> prefix
+to avoid name conflicts with MCC-generated HAL functions.</li>
+</ul>
+</div>
+<div class="section" id="id7">
+<h4>7.5.2.2.10. Motor Control Library<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
+<p>A minor error in the inline assembly in <code class="docutils literal notranslate"><span class="pre">MC_adjust_zero_sequence</span></code> has been fixed. (DB_MC-1403)
+This manifested as a build failure (<code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">Invalid</span> <span class="pre">operands</span> <span class="pre">specified</span> <span class="pre">('add</span> <span class="pre">w0,[w15-10],w8').</span></code>) when
+building with <code class="docutils literal notranslate"><span class="pre">-O0</span></code>; as a reminder, please note that MCAF requires optimization level <code class="docutils literal notranslate"><span class="pre">-O1</span></code> or higher
+to meet timing constraints.</p>
+<p>No other changes have been made.</p>
+<p>Updated documentation for the MC Library is not yet available.</p>
+<p>Please do not use this version of the Motor Control Library in other
+projects outside the MCAF.</p>
+</div>
+<div class="section" id="code-generation">
+<h4>7.5.2.2.11. Code generation<a class="headerlink" href="#code-generation" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Improved code generation error messages when an out-of-range error is encountered. (DB_MC-1435)</li>
+<li>Improved internal mechanisms for calculating parameters in code generation. (DB_MC-1706, DB_MC-1760)</li>
+<li>Overvoltage and undervoltage margins are now set to 2V for MCLV-2 and 20V for MCHV-2. (DB_MC-1734)
+Future versions of motorBench<sup>®</sup> Development Suite will allow these values to be edited.</li>
+</ul>
+</div>
+<div class="section" id="auxiliary-reports">
+<h4>7.5.2.2.12. Auxiliary reports<a class="headerlink" href="#auxiliary-reports" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>The list of derived parameters in aux-files/report.html has been expanded. (DB_MC-1178)</li>
+<li>Reports in aux-files/ now include traceability to the corresponding MCAF version. (DB_MC-1364)</li>
+<li>Updated KaTeX to a more recent version. (DB_MC-1517)</li>
+<li>Fixed a bug in report.xml, specifically a missing close tag (DB_MC-1572)</li>
+<li>The file report.xml has been renamed report.xml.txt to avoid triggering an error in MCC. (DB_MC-1868)</li>
+</ul>
+</div>
+<div class="section" id="id8">
+<h4>7.5.2.2.13. Miscellaneous<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>MCAF version information has been updated to “R3/RC14”.</li>
+<li>MCAF copyright date updated to 2018. (DB_MC-1788)</li>
+<li>Types header files have been pulled out of the <code class="docutils literal notranslate"><span class="pre">ui</span></code> and <code class="docutils literal notranslate"><span class="pre">startup</span></code> modules – there is now
+a <code class="docutils literal notranslate"><span class="pre">ui_types.h</span></code> and <code class="docutils literal notranslate"><span class="pre">startup_types.h</span></code>. (DB_MC-470)</li>
+<li>Certain state variables have been updated from <code class="docutils literal notranslate"><span class="pre">int16_t</span></code> to an appropriate units typedef such as
+<code class="docutils literal notranslate"><span class="pre">MCAF_U_VELOCITY</span></code>, <code class="docutils literal notranslate"><span class="pre">MCAF_U_VOLTAGE_ALPHABETA</span></code>, <code class="docutils literal notranslate"><span class="pre">MCAF_U_DIMENSIONLESS_SINCOS</span></code>, etc. (DB_MC-1199, DB_MC-1281)</li>
+<li>Removed unused <code class="docutils literal notranslate"><span class="pre">FindLeadingOne()</span></code> function from the <code class="docutils literal notranslate"><span class="pre">util</span></code> module. (DB_MC-1169)</li>
+<li>Unused <code class="docutils literal notranslate"><span class="pre">MINSPEEDINRPM</span></code> removed. (DB_MC-808)</li>
+</ul>
+</div>
+</div>
+<div class="section" id="mcaf-r4-rc12">
+<span id="appendix-revhistory-r4rc12"></span><h3>7.5.2.3. MCAF R4 RC12<a class="headerlink" href="#mcaf-r4-rc12" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id9">
+<h4>7.5.2.3.1. Modules added/removed<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>The <code class="docutils literal notranslate"><span class="pre">commutation/qei_sync</span></code> module has been added for <a class="reference internal" href="../algorithms/qei.html#qei-sync"><span class="std std-ref">Back-EMF synchronization</span></a></li>
+<li>The <code class="docutils literal notranslate"><span class="pre">pll</span></code> module has been moved to <code class="docutils literal notranslate"><span class="pre">commutation/pll</span></code></li>
+<li>The <code class="docutils literal notranslate"><span class="pre">qei</span></code> module has been moved to <code class="docutils literal notranslate"><span class="pre">commutation/qei</span></code></li>
+<li>The <code class="docutils literal notranslate"><span class="pre">watchdog</span></code> module has been temporarily renamed <code class="docutils literal notranslate"><span class="pre">mcaf_watchdog</span></code> until a conflict with MCC can be resolved. (DB_MC-2175)</li>
+</ul>
+</div>
+<div class="section" id="revhistory-r4-mcc">
+<span id="id10"></span><h4>7.5.2.3.2. MCC compatibility<a class="headerlink" href="#revhistory-r4-mcc" title="Permalink to this headline">¶</a></h4>
+<p>MCAF peripheral and system initialization code generation is completely handled by MCC.
+The only exception to this is the <a class="reference internal" href="glossary.html#term-qei"><span class="xref std std-term">QEI</span></a> peripheral as this is not supported by MCC yet. (DB_MC-2146)</p>
+<ul class="simple">
+<li>HAF functions have been added to use new MCC PWM APIs. (DB_MC-2089)</li>
+<li>HAF function for retrieving interrupt vector number has been added.</li>
+</ul>
+<p>See the documentation for the <a class="reference internal" href="../components/hal.html#hal-mcaf-r4"><span class="std std-ref">HAL</span></a> for more information.</p>
+</div>
+<div class="section" id="quadrature-encoder-support">
+<h4>7.5.2.3.3. Quadrature encoder support<a class="headerlink" href="#quadrature-encoder-support" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Support quadrature encoders as a primary position and velocity estimator (DB_MC-812)</li>
+<li>Velocity estimated from the <a class="reference internal" href="glossary.html#term-qei"><span class="xref std std-term">QEI</span></a>, for use by the velocity control loop, has been corrected to use
+the filtered velocity <span class="math">\(\hat\omega_{LPF}\)</span> rather than the unfiltered velocity <span class="math">\(\hat\omega\)</span>.
+(DB_MC-2254)</li>
+<li>Added <a class="reference internal" href="glossary.html#term-qei"><span class="xref std std-term">QEI</span></a> index capture support (DB_MC-2078)</li>
+</ul>
+</div>
+<div class="section" id="parameter-customization-support">
+<h4>7.5.2.3.4. Parameter customization support<a class="headerlink" href="#parameter-customization-support" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added ability to adjust key MCAF parameters within the motorBench<sup>®</sup> Development Suite user interface. (DB_MC-2156, DB_MC-2057)</li>
+</ul>
+</div>
+<div class="section" id="startup">
+<h4>7.5.2.3.5. Startup<a class="headerlink" href="#startup" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added “weathervane” startup method (DB_MC-1039)</li>
+<li>Fixed bug where startup state machine was initialized to <code class="docutils literal notranslate"><span class="pre">SSM_COMPLETE</span></code> state at device reset (DB_MC-2094)</li>
+</ul>
+</div>
+<div class="section" id="id11">
+<h4>7.5.2.3.6. Core FOC<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Refactored commutation module to support multiple estimators (DB_MC-2076)</li>
+</ul>
+</div>
+<div class="section" id="id12">
+<h4>7.5.2.3.7. Code generation<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Fixed error in startup hold time calculation so that 32-bit values are now supported (DB_MC-2120)</li>
+</ul>
+</div>
+<div class="section" id="id13">
+<h4>7.5.2.3.8. Test Harness<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added ability to <a class="reference internal" href="../components/testharness.html#test-commutation-onoff"><span class="std std-ref">control slew rates with slow commutation steps</span></a> (DB_MC-2113)</li>
+<li>Corrected state initialization when entering a test mode (DB_MC-2107)</li>
+<li>Fixed uninitialized <code class="docutils literal notranslate"><span class="pre">overrideCommutationDelay</span></code> (DB_MC-1918)</li>
+</ul>
+</div>
+<div class="section" id="style-and-readability">
+<h4>7.5.2.3.9. Style and readability<a class="headerlink" href="#style-and-readability" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Startup currents in the <code class="docutils literal notranslate"><span class="pre">startup_params</span></code> module have been renamed for clarify (DB_MC-2227):<ul>
+<li><code class="docutils literal notranslate"><span class="pre">INITIALTORQUE</span></code> → <code class="docutils literal notranslate"><span class="pre">MCAF_STARTUP_CURRENT_INITIAL</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">FINALTORQUE</span></code> → <code class="docutils literal notranslate"><span class="pre">MCAF_STARTUP_CURRENT</span></code></li>
+</ul>
+</li>
+<li>Updated util.h to add assembly comments to inline assembly, for traceability (DB_MC-2011)</li>
+<li>Consistency in MCAF identifier naming:<ul>
+<li>Estimator types changed to <code class="docutils literal notranslate"><span class="pre">MCAF_ESTIMATOR_XYZ_T</span></code> from <code class="docutils literal notranslate"><span class="pre">MCAF_XYZ_ESTIMATOR_T</span></code> (DB_MC-2091)</li>
+<li>Estimator functions changed to <code class="docutils literal notranslate"><span class="pre">MCAF_EstimatorXYZStep()</span></code> from <code class="docutils literal notranslate"><span class="pre">MCAF_XYZEstimatorStep()</span></code> (DB_MC-2093)</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="mcaf-r5-rc11">
+<span id="appendix-revhistory-r5rc11"></span><h3>7.5.2.4. MCAF R5 RC11<a class="headerlink" href="#mcaf-r5-rc11" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id14">
+<h4>7.5.2.4.1. Modules added/removed<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>The <code class="docutils literal notranslate"><span class="pre">commutation/atpll</span></code> module has been added for <a class="reference internal" href="../algorithms/atpll.html#algorithm-atpll"><span class="std std-ref">Angle-tracking Phase-locked Loop (ATPLL)</span></a></li>
+</ul>
+</div>
+<div class="section" id="mcc-compatibility-and-dspic33ck-support">
+<span id="revhistory-r5-mcc"></span><h4>7.5.2.4.2. MCC compatibility and dsPIC33CK support<a class="headerlink" href="#mcc-compatibility-and-dspic33ck-support" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>MCAF R5 now supports dsPIC33CK devices. (DB_MC-2399)
+See the documentation for the <a class="reference internal" href="../components/hal.html#hal-mcaf-r5"><span class="std std-ref">HAL</span></a> for more information.</li>
+</ul>
+</div>
+<div class="section" id="id15">
+<h4>7.5.2.4.3. HAL<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Moved <code class="docutils literal notranslate"><span class="pre">FCY</span></code> definition out of ui.c and into HAL (DB_MC-436);
+utilized MCC-generated value to reflect actual choice of
+oscillator frequency (DB_MC-821)</li>
+<li>Improved proper encapsulation of device-specific issues
+through Hardware Access Functions layer (DB_MC-2368)</li>
+<li>Other miscellaneous improvements – see <a class="reference internal" href="../components/hal.html#hal-mcaf-r5"><span class="std std-ref">HAL</span></a> for more information.</li>
+</ul>
+</div>
+<div class="section" id="diagnostics">
+<h4>7.5.2.4.4. Diagnostics<a class="headerlink" href="#diagnostics" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Updated X2CScope library<ul>
+<li>Added dsPIC33CK support. (DB_MC-2420)</li>
+<li>Now allows application to specify buffer (DB_MC-801)</li>
+<li>Recompiled with <code class="docutils literal notranslate"><span class="pre">-O3</span></code> (DB_MC-804)</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id16">
+<h4>7.5.2.4.5. Quadrature encoder support<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Improve parameter management of pullout synchronization method
+(DB_MC-2255)</li>
+<li>Clarified and corrected angle units in QEI tracking loop (DB_MC-2521)</li>
+</ul>
+</div>
+<div class="section" id="atpll-support">
+<h4>7.5.2.4.6. ATPLL support<a class="headerlink" href="#atpll-support" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added <a class="reference internal" href="../algorithms/atpll.html#algorithm-atpll"><span class="std std-ref">angle-tracking PLL</span></a> (ATPLL) sensorless estimator. (DB_MC-1547)</li>
+</ul>
+</div>
+<div class="section" id="miscellaneous-sensorless-estimator-issues">
+<h4>7.5.2.4.7. Miscellaneous sensorless estimator issues<a class="headerlink" href="#miscellaneous-sensorless-estimator-issues" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Categorized ATPLL and PLL estimator state variables
+to help distinguish core algorithm state from
+auxiliary state used for logging (DB_MC-2579, DB_MC-2580)</li>
+<li>Clarified ATPLL and PLL inductance identifiers and units (DB_MC-2601)</li>
+<li>Fixed issue involving estimator initialization, and provided initialization hooks for all sensorless estimators (DB_MC-2576)</li>
+</ul>
+</div>
+<div class="section" id="id17">
+<h4>7.5.2.4.8. Startup<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Improved naming of <code class="docutils literal notranslate"><span class="pre">STARTUP_THETA_ERROR_STEP</span></code> to <code class="docutils literal notranslate"><span class="pre">STARTUP_THETA_ERROR_CONVERGE_RATE</span></code> (DB_MC-2388)</li>
+<li>Improve support for slower transitions to closed-loop in Classic startup (DB_MC-2513)</li>
+<li>Fixed small residual <code class="docutils literal notranslate"><span class="pre">thetaError</span></code> values in Classic startup (DB_MC-2529)</li>
+<li>Fixed proper assignment of <code class="docutils literal notranslate"><span class="pre">thetaError</span></code> in Weathervane startup (DB_MC-2628)</li>
+<li>Fixed initialization of startup counter in Weathervane startup (DB_MC-2535)</li>
+<li>Allow nonzero ALIGN time (DB_MC-2510)</li>
+</ul>
+</div>
+<div class="section" id="id18">
+<h4>7.5.2.4.9. Test Harness<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Corrected units of <code class="docutils literal notranslate"><span class="pre">overrideOmegaElectrical</span></code> (DB_MC-2543)</li>
+<li>Added feature to allow
+<a class="reference internal" href="../components/testharness.html#test-pause-in-hold"><span class="std std-ref">open-loop mode in test harness after normal startup</span></a> (DB_MC-1527)</li>
+</ul>
+</div>
+<div class="section" id="mb-customize-page-support">
+<h4>7.5.2.4.10. motorBench<sup>®</sup> Development Suite Customize page support<a class="headerlink" href="#mb-customize-page-support" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>MCAF firmware package can now specify transfer functions
+used for autotuning in motorBench<sup>®</sup> Development Suite. (DB_MC-2424)</li>
+<li>Added “Advice” pane for guidance based on motor and system parameters. (DB_MC-2507)</li>
+<li>Added display of normalized values in engineering units. (DB_MC-2519)</li>
+<li>Included additional <a class="reference internal" href="../implementation/ui-customization.html#impl-customization"><span class="std std-ref">customizable parameters</span></a>. (DB_MC-2351)</li>
+<li>Support migration of existing data from previous version of motorBench<sup>®</sup> Development Suite. (DB_MC-2650)</li>
+</ul>
+</div>
+<div class="section" id="id19">
+<h4>7.5.2.4.11. Motor Control Library<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h4>
+<p>Upgraded to Motor Control Library 0.20</p>
+<ul class="simple">
+<li>Adds support for dsPIC33CK devices</li>
+<li>Back-ported additional functions used in MCAF R4</li>
+</ul>
+</div>
+<div class="section" id="id20">
+<h4>7.5.2.4.12. Auxiliary reports<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added section “Normalization factors used in fixed-point representation” (DB_MC-2049)</li>
+</ul>
+</div>
+</div>
+<div class="section" id="mcaf-r6-rc8">
+<span id="appendix-revhistory-r6rc8"></span><h3>7.5.2.5. MCAF R6 RC8<a class="headerlink" href="#mcaf-r6-rc8" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id21">
+<h4>7.5.2.5.1. Modules added/removed<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added <a class="reference internal" href="../components/mcapi.html#mcapi"><span class="std std-ref">Motion Control API</span></a> module (DB_MC-796)</li>
+<li>Added <a class="reference internal" href="../algorithms/flux_control/index.html#algorithm-flux-control"><span class="std std-ref">Flux Control</span></a> module (DB_MC-2853)</li>
+<li>Added <a class="reference internal" href="../algorithms/dead-time-comp.html#algorithm-deadtimecompensation"><span class="std std-ref">Dead-time compensation</span></a> module (DB_MC-1969)</li>
+</ul>
+</div>
+<div class="section" id="adjustable-pwm-frequency">
+<h4>7.5.2.5.2. Adjustable PWM frequency<a class="headerlink" href="#adjustable-pwm-frequency" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added support for adjusting PWM frequency and control frequency as a submultiple of the PWM frequency. (DB_MC-2720, DB_MC-2950)
+Please refer to <a class="reference internal" href="../implementation/sampling-rate.html#impl-sampling-rate"><span class="std std-ref">Sampling Rate and PWM Frequency Implications</span></a> for more information.</li>
+</ul>
+</div>
+<div class="section" id="motion-control-api">
+<h4>7.5.2.5.3. Motion Control API<a class="headerlink" href="#motion-control-api" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added support for <a class="reference internal" href="../components/mcapi.html#mcapi"><span class="std std-ref">Motion Control API</span></a> to provide a high-level abstracted interface for custom applications to control and obtain feedback from the motor. (DB_MC-796)</li>
+<li>Added a <a class="reference internal" href="../components/main.html#component-main-r6"><span class="std std-ref">sample application</span></a>
+that demonstrates the use of <a class="reference internal" href="../components/mcapi.html#mcapi"><span class="std std-ref">Motion Control API</span></a> to implement a simple user interface with pushbuttons and the potentiometer.</li>
+</ul>
+</div>
+<div class="section" id="flux-control">
+<h4>7.5.2.5.4. Flux Control<a class="headerlink" href="#flux-control" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added support for <a class="reference internal" href="../algorithms/flux_control/flux_weakening.html#algorithm-flux-weakening"><span class="std std-ref">flux weakening</span></a> to extend velocity range. (DB_MC-2723)</li>
+<li>Added support for <a class="reference internal" href="../algorithms/flux_control/mtpa.html#algorithm-mtpa"><span class="std std-ref">maximum torque per ampere</span></a> to improve torque and efficiency for <a class="reference internal" href="glossary.html#term-ipm"><span class="xref std std-term">IPM</span></a> motors. (DB_MC-2724)</li>
+<li>Refactored FOC with structural changes to support flux weakening and MTPA. (DB_MC-2861, DB_MC-2863)
+For more information, see <a class="reference internal" href="../components/foc.html#foc-impl-iqlimit"><span class="std std-ref">Velocity loop current limit</span></a> and <a class="reference internal" href="../components/foc.html#foc-impl-sat-antiwindup"><span class="std std-ref">Saturation and anti-windup</span></a>.</li>
+</ul>
+</div>
+<div class="section" id="dead-time-compensation">
+<h4>7.5.2.5.5. Dead-time compensation<a class="headerlink" href="#dead-time-compensation" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added support for <a class="reference internal" href="../algorithms/dead-time-comp.html#algorithm-deadtimecompensation"><span class="std std-ref">dead-time compensation</span></a> to mitigate some of the effects of <a class="reference internal" href="../algorithms/dead-time-comp.html#dtc-distortion"><span class="std std-ref">deadtime distortion</span></a>. (DB_MC-1969)</li>
+</ul>
+</div>
+<div class="section" id="dspic33ck-support">
+<h4>7.5.2.5.6. dsPIC33CK support<a class="headerlink" href="#dspic33ck-support" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added support for dsPIC33CK64MP105 and dsPIC33CK64MC105 (DB_MC-2694, DB_MC-2693)</li>
+</ul>
+</div>
+<div class="section" id="board-service-module">
+<h4>7.5.2.5.7. Board service module<a class="headerlink" href="#board-service-module" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Restructured to improve timing robustness and to interface with the <a class="reference internal" href="../components/mcapi.html#mcapi"><span class="std std-ref">Motion Control API</span></a>.
+(DB_MC-2726, DB_MC-2728, DB_MC-2732) See <a class="reference internal" href="../components/hal.html#hal-mcaf-r6"><span class="std std-ref">board service module</span></a> changes for more information.</li>
+</ul>
+</div>
+<div class="section" id="id22">
+<h4>7.5.2.5.8. Test Harness<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added feature to <a class="reference internal" href="../components/testharness.html#test-fluxctrl-override"><span class="std std-ref">override d-axis current computation</span></a>,
+preventing flux control module from changing it, and allowing it to be changed via real-time diagnostic tools.
+(DB_MC-2855)</li>
+</ul>
+</div>
+<div class="section" id="id23">
+<h4>7.5.2.5.9. motorBench<sup>®</sup> Development Suite Customize page support<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Added read-only parameter calculations such as Saliency ratio (DB_MC-2903)</li>
+<li>Included additional customizable parameters. (DB_MC-2689, DB_MC-2750, DB_MC-2838, DB_MC-2879, DB_MC-2882, DB_MC-2905)</li>
+</ul>
+</div>
+<div class="section" id="improvements-in-modularity">
+<h4>7.5.2.5.10. Improvements in modularity<a class="headerlink" href="#improvements-in-modularity" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>All calls to MCC HAL are now made through HAF (DB_MC-2671)</li>
+<li>Removed directly modifying registers to clear status bits (DB_MC-2696)</li>
+<li>Refactored data flow interface for estimators and flux control module to reduce tight coupling (DB_MC-2854)</li>
+<li>Refactored back-emf calculation for use by estimators and flux control module
+(DB_MC-2106)</li>
+</ul>
+</div>
+<div class="section" id="naming-improvements">
+<h4>7.5.2.5.11. Naming improvements<a class="headerlink" href="#naming-improvements" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Improved names for PWM generators (DB_MC-2807)</li>
+<li>Replaced inconsistent PI parameters (DB_MC-2857)</li>
+<li>Removed <code class="docutils literal notranslate"><span class="pre">NORM_</span></code> prefix from ATPLL constants (DB_MC-2712)</li>
+<li>Rename test harness functions to use verb “Trigger” for clarification
+(TriggerSeizure, TriggerStackOverflow) (DB_MC-1720)</li>
+<li>Addressed potential naming collision between PLL and ATPLL
+(DB_MC-2602)</li>
+</ul>
+</div>
+<div class="section" id="miscellaneous-firmware-issues">
+<h4>7.5.2.5.12. Miscellaneous firmware issues<a class="headerlink" href="#miscellaneous-firmware-issues" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Improve how velocities are represented in generated code in parameters/* files (DB_MC-2915)</li>
+<li>Removed unnecessary and added missing #include statements in several locations (DB_MC-1719)</li>
+<li>Tracking loop Kp value can now vary between a Q8 - Q15 value (DB_MC-2688)</li>
+<li>Fixed half-PWM-cycle short circuit across motor during entry to STOPPING state (DB_MC-2931)</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">7.5. Revision History</a><ul>
+<li><a class="reference internal" href="#mcaf-documentation-revision-history">7.5.1. MCAF Documentation Revision History</a></li>
+<li><a class="reference internal" href="#mcaf-revision-history">7.5.2. MCAF Revision History</a><ul>
+<li><a class="reference internal" href="#mcaf-r2-rc9">7.5.2.1. MCAF R2 RC9</a><ul>
+<li><a class="reference internal" href="#modules-added-removed">7.5.2.1.1. Modules added/removed</a></li>
+<li><a class="reference internal" href="#core-foc">7.5.2.1.2. Core FOC</a></li>
+<li><a class="reference internal" href="#overmodulation">7.5.2.1.3. Overmodulation</a></li>
+<li><a class="reference internal" href="#dc-link-compensation">7.5.2.1.4. DC link compensation</a></li>
+<li><a class="reference internal" href="#expanded-range-of-supported-motors">7.5.2.1.5. Expanded range of supported motors</a></li>
+<li><a class="reference internal" href="#scaling-factors-and-operating-range">7.5.2.1.6. Scaling factors and operating range</a></li>
+<li><a class="reference internal" href="#fault-detection">7.5.2.1.7. Fault detection</a></li>
+<li><a class="reference internal" href="#test-harness">7.5.2.1.8. Test Harness</a></li>
+<li><a class="reference internal" href="#hal">7.5.2.1.9. HAL</a></li>
+<li><a class="reference internal" href="#motor-control-library">7.5.2.1.10. Motor Control Library</a></li>
+<li><a class="reference internal" href="#miscellaneous">7.5.2.1.11. Miscellaneous</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mcaf-r3-rc14">7.5.2.2. MCAF R3 RC14</a><ul>
+<li><a class="reference internal" href="#id1">7.5.2.2.1. Modules added/removed</a></li>
+<li><a class="reference internal" href="#mcc-compatibility">7.5.2.2.2. MCC compatibility</a></li>
+<li><a class="reference internal" href="#mchv-2-and-mchv-3-compatibility">7.5.2.2.3. MCHV-2 and MCHV-3 compatibility</a></li>
+<li><a class="reference internal" href="#id2">7.5.2.2.4. Scaling factors and operating range</a></li>
+<li><a class="reference internal" href="#adc-compensation">7.5.2.2.5. ADC compensation</a></li>
+<li><a class="reference internal" href="#id3">7.5.2.2.6. Core FOC</a></li>
+<li><a class="reference internal" href="#id4">7.5.2.2.7. Fault detection</a></li>
+<li><a class="reference internal" href="#id5">7.5.2.2.8. Test Harness</a></li>
+<li><a class="reference internal" href="#id6">7.5.2.2.9. HAL</a></li>
+<li><a class="reference internal" href="#id7">7.5.2.2.10. Motor Control Library</a></li>
+<li><a class="reference internal" href="#code-generation">7.5.2.2.11. Code generation</a></li>
+<li><a class="reference internal" href="#auxiliary-reports">7.5.2.2.12. Auxiliary reports</a></li>
+<li><a class="reference internal" href="#id8">7.5.2.2.13. Miscellaneous</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mcaf-r4-rc12">7.5.2.3. MCAF R4 RC12</a><ul>
+<li><a class="reference internal" href="#id9">7.5.2.3.1. Modules added/removed</a></li>
+<li><a class="reference internal" href="#revhistory-r4-mcc">7.5.2.3.2. MCC compatibility</a></li>
+<li><a class="reference internal" href="#quadrature-encoder-support">7.5.2.3.3. Quadrature encoder support</a></li>
+<li><a class="reference internal" href="#parameter-customization-support">7.5.2.3.4. Parameter customization support</a></li>
+<li><a class="reference internal" href="#startup">7.5.2.3.5. Startup</a></li>
+<li><a class="reference internal" href="#id11">7.5.2.3.6. Core FOC</a></li>
+<li><a class="reference internal" href="#id12">7.5.2.3.7. Code generation</a></li>
+<li><a class="reference internal" href="#id13">7.5.2.3.8. Test Harness</a></li>
+<li><a class="reference internal" href="#style-and-readability">7.5.2.3.9. Style and readability</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mcaf-r5-rc11">7.5.2.4. MCAF R5 RC11</a><ul>
+<li><a class="reference internal" href="#id14">7.5.2.4.1. Modules added/removed</a></li>
+<li><a class="reference internal" href="#mcc-compatibility-and-dspic33ck-support">7.5.2.4.2. MCC compatibility and dsPIC33CK support</a></li>
+<li><a class="reference internal" href="#id15">7.5.2.4.3. HAL</a></li>
+<li><a class="reference internal" href="#diagnostics">7.5.2.4.4. Diagnostics</a></li>
+<li><a class="reference internal" href="#id16">7.5.2.4.5. Quadrature encoder support</a></li>
+<li><a class="reference internal" href="#atpll-support">7.5.2.4.6. ATPLL support</a></li>
+<li><a class="reference internal" href="#miscellaneous-sensorless-estimator-issues">7.5.2.4.7. Miscellaneous sensorless estimator issues</a></li>
+<li><a class="reference internal" href="#id17">7.5.2.4.8. Startup</a></li>
+<li><a class="reference internal" href="#id18">7.5.2.4.9. Test Harness</a></li>
+<li><a class="reference internal" href="#mb-customize-page-support">7.5.2.4.10. motorBench<sup>®</sup> Development Suite Customize page support</a></li>
+<li><a class="reference internal" href="#id19">7.5.2.4.11. Motor Control Library</a></li>
+<li><a class="reference internal" href="#id20">7.5.2.4.12. Auxiliary reports</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mcaf-r6-rc8">7.5.2.5. MCAF R6 RC8</a><ul>
+<li><a class="reference internal" href="#id21">7.5.2.5.1. Modules added/removed</a></li>
+<li><a class="reference internal" href="#adjustable-pwm-frequency">7.5.2.5.2. Adjustable PWM frequency</a></li>
+<li><a class="reference internal" href="#motion-control-api">7.5.2.5.3. Motion Control API</a></li>
+<li><a class="reference internal" href="#flux-control">7.5.2.5.4. Flux Control</a></li>
+<li><a class="reference internal" href="#dead-time-compensation">7.5.2.5.5. Dead-time compensation</a></li>
+<li><a class="reference internal" href="#dspic33ck-support">7.5.2.5.6. dsPIC33CK support</a></li>
+<li><a class="reference internal" href="#board-service-module">7.5.2.5.7. Board service module</a></li>
+<li><a class="reference internal" href="#id22">7.5.2.5.8. Test Harness</a></li>
+<li><a class="reference internal" href="#id23">7.5.2.5.9. motorBench<sup>®</sup> Development Suite Customize page support</a></li>
+<li><a class="reference internal" href="#improvements-in-modularity">7.5.2.5.10. Improvements in modularity</a></li>
+<li><a class="reference internal" href="#naming-improvements">7.5.2.5.11. Naming improvements</a></li>
+<li><a class="reference internal" href="#miscellaneous-firmware-issues">7.5.2.5.12. Miscellaneous firmware issues</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="otherdocs.html"
+                        title="previous chapter">7.4. Related Documents</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../faq.html"
+                        title="next chapter">8. Frequently Asked Questions (FAQ)</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../faq.html" title="8. Frequently Asked Questions (FAQ)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="otherdocs.html" title="7.4. Related Documents"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" >7. Appendix</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

@@ -1,0 +1,47 @@
+div.highlighted-refs li a:first-child span.std-ref {
+  font-weight: bold;
+}
+
+.literal-block-oneline div.highlight pre,
+.literal-block-oneline div.highlight .o
+{
+  font-size: 0.95em;
+  margin: 0;
+  padding: 0;
+  color: #000;
+  line-height: inherit;
+  border: inherit;
+}
+
+code.literal {
+  white-space: pre;
+}
+
+div.body {
+  background-color: inherit;
+}
+
+div.footer, div.footer a {
+  color: #000;
+}
+
+div.figure p.caption {
+  text-align: justify;
+  display: inline-block;
+}
+
+table.footnote {
+  border: 0;
+}
+
+table.components-table td.longcolumn-1 code {
+  font-size: 90%;
+}
+
+table.components-table td.longcolumn-2 code {
+  font-size: 80%;
+}
+
+table.components-table td.longcolumn-3 code {
+  font-size: 70%;
+}

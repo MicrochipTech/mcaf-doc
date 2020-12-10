@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>4. Components &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../_static/preliminary-draft.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.1. Main Application" href="main.html" />
+    <link rel="prev" title="3.8. Treatment of Numerical Algorithms" href="../architecture/numerics.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="main.html" title="4.1. Main Application"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../architecture/numerics.html" title="3.8. Treatment of Numerical Algorithms"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+     
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="components">
+<span id="id1"></span><h1>4. Components<a class="headerlink" href="#components" title="Permalink to this headline">¶</a></h1>
+<div class="figure align-center" id="fig-components">
+<a class="reference internal image-reference" href="../_images/app-framework-components.svg"><img alt="../_images/app-framework-components.svg" src="../_images/app-framework-components.svg" width="65%" /></a>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="main.html">4.1. Main Application</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="main.html#implementation-notes">4.1.1. Implementation Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="adc.html">4.2. ADC Calibration and Compensation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="adc.html#implementation-notes">4.2.1. Implementation Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="statemach.html">4.3. State Machine</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="statemach.html#states">4.3.1. States</a></li>
+<li class="toctree-l2"><a class="reference internal" href="statemach.html#input-conditions">4.3.2. Input conditions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="statemach.html#miscellaneous-state-machine-issues">4.3.3. Miscellaneous state machine issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="statemach.html#implementation-notes">4.3.4. Implementation Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="foc.html">4.4. Field-Oriented Control (FOC)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="foc.html#velocity-control">4.4.1. Velocity Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="foc.html#current-control">4.4.2. Current Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="foc.html#position-and-velocity-estimator">4.4.3. Position and Velocity Estimator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="foc.html#implementation-notes">4.4.4. Implementation Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="testharness.html">4.5. Test Harness</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="testharness.html#overview">4.5.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testharness.html#accretive-testing">4.5.2. Accretive Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testharness.html#test-harness-parameters">4.5.3. Test Harness Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testharness.html#test-guarding">4.5.4. Test Guarding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testharness.html#test-harness-architecture">4.5.5. Test Harness Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testharness.html#test-harness-modes">4.5.6. Test harness modes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testharness.html#interaction-with-the-system-state-machine">4.5.7. Interaction with the System State Machine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testharness.html#forcing-system-state-machine-transitions">4.5.8. Forcing System State Machine Transitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testharness.html#test-harness-switches-overrides">4.5.9. Test Harness Switches (Overrides)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testharness.html#perturbation-signals">4.5.10. Perturbation Signals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testharness.html#seizures">4.5.11. Seizures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testharness.html#stack-overflow">4.5.12. Stack overflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testharness.html#profiling-timestamps">4.5.13. Profiling Timestamps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testharness.html#example-use-cases">4.5.14. Example use cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testharness.html#implementation-notes">4.5.15. Implementation Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="supervisory.html">4.6. Supervisory Algorithms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="supervisory.html#implementation-notes">4.6.1. Implementation Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ext-interface.html">4.7. External Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ext-interface.html#general-ui-guidelines">4.7.1. General UI guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ext-interface.html#required-features">4.7.2. Required Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ext-interface.html#implemented-behavior">4.7.3. Implemented Behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ext-interface.html#error-codes">4.7.4. Error Codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ext-interface.html#timing-and-fault-clearing-issues-in-ui-indicators">4.7.5. Timing and Fault-Clearing Issues in UI Indicators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ext-interface.html#implementation">4.7.6. Implementation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="diagnostics.html">4.8. Diagnostic Kernel</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="diagnostics.html#implementation-notes">4.8.1. Implementation Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hal.html">4.9. Hardware Abstraction Layer (HAL)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hal.html#hardware-related-behavior">4.9.1. Hardware-related behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hal.html#implementation">4.9.2. Implementation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mcapi.html">4.10. Motion Control API (MCAPI)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mcapi.html#overview">4.10.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mcapi.html#api-description">4.10.2. API Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mcapi.html#usage-notes">4.10.3. Usage Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mcapi.html#implementation-notes">4.10.4. Implementation Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="miscellaneous.html">4.11. Miscellaneous</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="miscellaneous.html#implementation-notes">4.11.1. Implementation Notes</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../architecture/numerics.html"
+                        title="previous chapter">3.8. Treatment of Numerical Algorithms</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="main.html"
+                        title="next chapter">4.1. Main Application</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="main.html" title="4.1. Main Application"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../architecture/numerics.html" title="3.8. Treatment of Numerical Algorithms"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+     
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

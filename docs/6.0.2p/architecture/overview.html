@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>3.1. Architectural Overview &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../_static/preliminary-draft.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3.2. Naming Conventions" href="naming.html" />
+    <link rel="prev" title="3. Architecture" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="naming.html" title="3.2. Naming Conventions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="3. Architecture"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">3. Architecture</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="architectural-overview">
+<span id="architecture-overview"></span><h1>3.1. Architectural Overview<a class="headerlink" href="#architectural-overview" title="Permalink to this headline">¶</a></h1>
+<p>The overall goals of the MCAF code are</p>
+<ul class="simple">
+<li>to spin a motor based on simple user inputs</li>
+<li>to detect and report fault conditions</li>
+<li>to be modular and maintainable</li>
+<li>to be a clear example to Microchip customers for a motor control Application
+using dsPIC<sup>®</sup> DSC devices</li>
+<li>to make efficient use of available CPU time in resource-limited devices</li>
+</ul>
+<p>This section will describe an overview of how these goals are met.</p>
+<div class="section" id="how-to-spin-a-motor-in-brief">
+<h2>3.1.1. How to Spin a Motor (In Brief)<a class="headerlink" href="#how-to-spin-a-motor-in-brief" title="Permalink to this headline">¶</a></h2>
+<p>The MCAF spins a motor using a velocity control loop, with an inner current loop
+using field-oriented control (<a class="reference internal" href="../appendix/glossary.html#term-foc"><span class="xref std std-term">FOC</span></a>) to manage motor current and torque. Sensorless
+estimation techniques are used to estimate motor position for commutation
+and velocity control. User input is provided with a potentiometer and buttons
+to start and stop the motor, or to reverse direction. A state machine
+is used to control the transitions between these different modes of operation.</p>
+<p>The motor startup process involves so-called “open-loop” operation. When the
+motor is at rest or moving very slowly, the sensorless estimator is not
+accurate enough; instead, a special set of states is provided to manage startup,
+in which commutation is forced at a desired acceleration rate, and the
+velocity control loop is disabled.</p>
+<p>Monitoring algorithms run continuously, to detect a motor stall and
+other abnormal conditions such as overcurrent or overvoltage. These conditions
+disable the motor controller. The controller will automatically
+restart, if possible; otherwise, a fault code will be displayed.</p>
+<p>More detailed descriptions are provided in appropriate sections.</p>
+</div>
+<div class="section" id="modules-and-components">
+<span id="architecture-modules"></span><h2>3.1.2. Modules and Components<a class="headerlink" href="#modules-and-components" title="Permalink to this headline">¶</a></h2>
+<p>The MCAF is based on a modular design, and consists of a number of components
+that work together. We use the terms <strong>module</strong> and <strong>component</strong> in specific
+ways in the MCAF:</p>
+<ul class="simple">
+<li><strong>module</strong> refers to a specific set of 1-3 source code files
+with a common base name, and a specific responsibility.</li>
+<li><strong>component</strong> refers to some number of modules that comprise a high-level
+set of features.</li>
+</ul>
+<p>For example, the field-oriented control (<a class="reference internal" href="../appendix/glossary.html#term-foc"><span class="xref std std-term">FOC</span></a>) component, covering velocity
+and current control, contains these modules:</p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">foc</span></code> — top-level <a class="reference internal" href="../appendix/glossary.html#term-foc"><span class="xref std std-term">FOC</span></a></dt>
+<dd><ul class="first last">
+<li><code class="docutils literal notranslate"><span class="pre">foc.c</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">foc.h</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">foc_types.h</span></code></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">sat_PI</span></code> — PI loop saturation management</dt>
+<dd><ul class="first last">
+<li><code class="docutils literal notranslate"><span class="pre">sat_PI.c</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">sat_PI.h</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">sat_PI_types.h</span></code></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">parameters/foc_params</span></code> — <a class="reference internal" href="../appendix/glossary.html#term-foc"><span class="xref std std-term">FOC</span></a> tuning parameters</dt>
+<dd><ul class="first last">
+<li><code class="docutils literal notranslate"><span class="pre">parameters/foc_params.h</span></code></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">parameters/sat_PI_params</span></code> — saturation parameters</dt>
+<dd><ul class="first last">
+<li><code class="docutils literal notranslate"><span class="pre">parameters/sat_PI_params.h</span></code></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p><a class="reference internal" href="#fig-arch-components"><span class="std std-numref">Figure 3.1</span></a> shows the MCAF components, with arrows designating
+component dependencies:</p>
+<div class="figure align-center" id="id1">
+<span id="fig-arch-components"></span><a class="reference internal image-reference" href="../_images/app-framework-components.svg"><img alt="../_images/app-framework-components.svg" src="../_images/app-framework-components.svg" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 3.1 </span><span class="caption-text">Components of Motor Control Application Framework</span></p>
+</div></div>
+<div class="section" id="high-level-component-descriptions">
+<h3>3.1.2.1. High-level component descriptions<a class="headerlink" href="#high-level-component-descriptions" title="Permalink to this headline">¶</a></h3>
+<p>At a high level, a short description of these components is given below; more details
+are provided in appropriate subsections.</p>
+<p><strong>Note</strong>: because this is a general motor control framework, most components have more than one
+implementation option, including some that are intended for the future but which
+have not yet been implemented.</p>
+<p>Modules within these components can be found in a description of the components that
+contain them, and can also be located by name in the <a class="reference internal" href="../genindex.html"><span class="std std-ref">index</span></a> under “modules”.</p>
+<div class="highlighted-refs docutils container">
+<ul class="simple">
+<li><a class="reference internal" href="../components/main.html#component-main"><span class="std std-ref">Main Application</span></a>: The main application depends on a number of components to do
+its job. It is the one in charge: with limited exceptions, it handles all
+scheduling and interactions with the hardware, and takes output from one
+component for use in another, so that the individual components do not need to
+have inter-component dependencies.</li>
+<li><a class="reference internal" href="../components/mcapi.html#mcapi"><span class="std std-ref">Motion Control API (MCAPI)</span></a>: Provides a set of high-level interfaces that can be used by an application to control
+the motor and obtain feedback information from it.</li>
+<li><a class="reference internal" href="../components/adc.html#component-adc"><span class="std std-ref">ADC Calibration and Compensation</span></a>: Handles offset and gain compensation for <a class="reference internal" href="../appendix/glossary.html#term-adc"><span class="xref std std-term">ADC</span></a>
+readings. May also include computation of offset and gain coefficients during
+calibration times.</li>
+<li><a class="reference internal" href="../components/statemach.html#component-statemachine"><span class="std std-ref">State Machine</span></a>: Controls state-dependent behavior of the application that
+changes over time because of different conditions. In a motor control
+application, this usually covers the actions that occur when the motor is
+disabled, starting up, running, and shutting down.</li>
+<li><a class="reference internal" href="../components/foc.html#foc"><span class="std std-ref">Field-Oriented Control</span></a> (<a class="reference internal" href="../appendix/glossary.html#term-foc"><span class="xref std std-term">FOC</span></a>):<ul>
+<li><a class="reference internal" href="../components/foc.html#velocity-control"><span class="std std-ref">Velocity Control</span></a>: Most motor control applications involve a velocity control
+loop that attempts to control the motor to achieve a given desired speed.
+(Some use a position control loop, typically as an outer loop around a
+velocity controller; this is a feature that may be added in the future.)</li>
+<li><a class="reference internal" href="../components/foc.html#current-control"><span class="std std-ref">Current Control</span></a>: Most motor control algorithms require a current control loop
+to manage motor torque and/or current. (Some do not; instead the main velocity
+controller outputs duty cycle directly. Support for these systems may be added
+in the future.) The application framework will initially support
+<a class="reference internal" href="../appendix/glossary.html#term-foc"><span class="xref std std-term">FOC</span></a> of a permanent-magnet synchronous motor, but may
+also support <a class="reference internal" href="../appendix/glossary.html#term-foc"><span class="xref std std-term">FOC</span></a> of induction motors, six-step control, direct torque control,
+etc. as needed.</li>
+</ul>
+</li>
+<li><a class="reference internal" href="../components/foc.html#posvelest"><span class="std std-ref">Commutation and Estimation</span></a>: All permanent-magnet synchronous motors (<a class="reference internal" href="../appendix/glossary.html#term-pmsm"><span class="xref std std-term">PMSM</span></a>),
+switched-reluctance motors (SR), AC induction motors (ACIM), and stepper
+motors require AC waveforms and control of which motor terminals receive
+current at any given time; the only exception are DC motors with a built-in
+commutator. The functions of commutation and estimation are to examine the
+available inputs and come up with estimates of motor position, velocity,
+and/or commutation angle. The commutation angle determines which phases should
+receive current. This component may consist of several alternative
+implementations:<ul>
+<li>Sensorless estimators (<a class="reference internal" href="../appendix/glossary.html#term-pll"><span class="xref std std-term">PLL</span></a>, <a class="reference internal" href="../appendix/glossary.html#term-smo"><span class="xref std std-term">SMO</span></a>, etc.)</li>
+<li>Hall sensor commutation and estimation</li>
+<li>Quadrature encoder commutation and estimation</li>
+<li>Resolver commutation and estimation</li>
+<li>Forced commutation: this is typically used in startup for a system with a
+sensorless estimator, and includes the management of transition between
+forced commutation and closed-loop commutation.</li>
+</ul>
+</li>
+<li><a class="reference internal" href="../components/testharness.html#test-harness"><span class="std std-ref">Test Harness</span></a>: this provides the ability to modify the normal modes of operation
+of the commutation and current controllers, and apply test disturbance signals.</li>
+<li><a class="reference internal" href="../components/supervisory.html#supervisory"><span class="std std-ref">Supervisory Algorithms</span></a>: There are a number of additional algorithms that can
+be used to enhance reliability or performance, including<ul>
+<li>Overvoltage/undervoltage detection</li>
+<li>Overcurrent detection</li>
+<li>Thermal management</li>
+<li>Stall detection and recovery</li>
+<li>Saturation and antiwindup management (if not already present in the velocity
+and current controllers)</li>
+<li>Adaptive estimators (e.g. online resistance estimation)</li>
+<li>Field weakening</li>
+<li>Maximum torque per ampere controllers</li>
+</ul>
+</li>
+<li><a class="reference internal" href="../components/ext-interface.html#ext-interface"><span class="std std-ref">External Interface</span></a>: Facilitates the interface with the outside world.
+This includes either a user interface (pushbuttons/knobs) or
+programmatic control through a communications interface.</li>
+<li><a class="reference internal" href="../components/diagnostics.html#diag-kernel"><span class="std std-ref">Diagnostic Kernel</span></a>: Allows real-time diagnostics and testing through
+interaction with an external host PC. The Motor Control Applications team at
+Microchip uses this to debug and test motor control algorithms.</li>
+<li><a class="reference internal" href="../components/hal.html#hal"><span class="std std-ref">Hardware Abstraction Layer</span></a>: Handles all hardware-specific functions through a
+well-defined interface common across multiple processors and platforms. The
+only components that interact with the HAL are the main (top-level)
+application and the state machine. Other components are given access to system
+state variables which are used as a way to exchange data with the HAL.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="software-design-principles-for-modular-and-maintainable-code">
+<h2>3.1.3. Software Design Principles for Modular and Maintainable Code<a class="headerlink" href="#software-design-principles-for-modular-and-maintainable-code" title="Permalink to this headline">¶</a></h2>
+<p>In addition to organizing the MCAF code into modules, there are a
+number of other design principles we followed, in order to increase
+modularity, maintainability, and readability, which may not be immediately
+apparent. These are outlined briefly below, and described in
+later sections. Overall we aimed to be consistent throughout the codebase,
+so that it is easier for engineers to become familiar with the way it works.</p>
+<ul class="simple">
+<li><a class="reference internal" href="naming.html#naming"><span class="std std-ref">Naming convention</span></a> — MCAF follows a consistent naming
+convention to improve clarity and reduce the possibility of collision
+with customer code.</li>
+<li><a class="reference internal" href="statevar.html#statevar"><span class="std std-ref">State management</span></a> — the way that state variables are structured,
+allocated, and accessed facilitates modularity.</li>
+<li><a class="reference internal" href="config-params.html#config-params"><span class="std std-ref">Configuration parameters</span></a> — there are many different configuration
+parameters in the MCAF, and these are organized to make them accessible
+to, but separate from, the corresponding modules, so that they can be
+easily changed but their associated code remains constant</li>
+<li><a class="reference internal" href="schedopt.html#scheduling"><span class="std std-ref">Scheduling</span></a> and <a class="reference internal" href="schedopt.html#optimization"><span class="std std-ref">Optimization</span></a> —
+MCAF aims to make efficient use
+of embedded CPU time, but still maintain a modular architecture</li>
+<li><a class="reference internal" href="statemach.html#architecture-statemachine"><span class="std std-ref">State machines</span></a> — to implement complex behaviors,
+the MCAF uses
+intentionally-designed state machines and run-to-completion scheduling
+to avoid accidental side effects.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3.1. Architectural Overview</a><ul>
+<li><a class="reference internal" href="#how-to-spin-a-motor-in-brief">3.1.1. How to Spin a Motor (In Brief)</a></li>
+<li><a class="reference internal" href="#modules-and-components">3.1.2. Modules and Components</a><ul>
+<li><a class="reference internal" href="#high-level-component-descriptions">3.1.2.1. High-level component descriptions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#software-design-principles-for-modular-and-maintainable-code">3.1.3. Software Design Principles for Modular and Maintainable Code</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">3. Architecture</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="naming.html"
+                        title="next chapter">3.2. Naming Conventions</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="naming.html" title="3.2. Naming Conventions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="3. Architecture"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" >3. Architecture</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

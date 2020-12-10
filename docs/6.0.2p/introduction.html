@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>1. Introduction &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/svgcrop.js"></script>
+    <script type="text/javascript" src="_static/preliminary-draft.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="2. Getting Started" href="getting-started.html" />
+    <link rel="prev" title="Motor Control Application Framework" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="getting-started.html" title="2. Getting Started"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Motor Control Application Framework"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+     
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="introduction">
+<span id="id1"></span><h1>1. Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>The Motor Control Application Framework (or MCAF) is Microchip’s next-generation
+application firmware for motor control on dsPIC<sup>®</sup> DSC devices. This differs
+from the firmware for previously-published application notes such as
+<a class="reference external" href="http://www.microchip.com/wwwAppNotes/AppNotes.aspx?appnote=en530042">AN1078</a>
+and <a class="reference external" href="http://www.microchip.com/wwwAppNotes/AppNotes.aspx?appnote=en544825">AN1292</a>,
+in a few significant aspects, most notably that the MCAF is integrated with
+<a class="reference external" href="https://www.microchip.com/motorbench">motorBench<sup>®</sup> Development Suite</a>.</p>
+<img alt="_images/code-generation.png" src="_images/code-generation.png" />
+<p>Essentially there is a <strong>firmware package</strong> included with motorBench<sup>®</sup> Development Suite that contains
+the <strong>Motor Control Application Framework</strong>. This package consists of
+files used to generate code into any desired MPLAB<sup>®</sup> X project.
+Think of it as a motor control code factory,
+or as a “prepackaged meal” — but for firmware code instead of dinner —
+that includes both recipes and ingredients. The application framework is “rendered”
+into a particular instance of application source code by motorBench<sup>®</sup> Development Suite,
+based on configuration information, automated motor parameter measurements,
+and the resulting calculations to tune motor control loops.</p>
+<p>This approach provides two major advantages:</p>
+<ul class="simple">
+<li><strong>Management of multiple hardware configurations</strong> — by using code generation,
+the MCAF can support the many combinations of processor, board, <a class="reference internal" href="appendix/glossary.html#term-pim"><span class="xref std std-term">PIM</span></a>,
+motor, and load with a single firmware package.</li>
+<li><strong>Automation of the tuning process</strong> — motorBench<sup>®</sup> Development Suite includes algorithms that will
+automatically tune the current and velocity controllers.</li>
+</ul>
+<p>In addition, Microchip has made many improvements in code quality, to make
+the firmware more readable and modular, and reduce barriers in applying this
+firmware to use in customer applications. We hope you benefit from these
+improvements in your next motor control project.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Motor Control Application Framework</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="getting-started.html"
+                        title="next chapter">2. Getting Started</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="getting-started.html" title="2. Getting Started"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Motor Control Application Framework"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+     
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

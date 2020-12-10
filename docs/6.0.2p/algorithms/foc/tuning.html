@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>5.1.4. Current loop tuning &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script type="text/javascript" src="../../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../../_static/preliminary-draft.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.2. Startup" href="../startup.html" />
+    <link rel="prev" title="5.1.3. DC link compensation" href="dclink-comp.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../startup.html" title="5.2. Startup"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="dclink-comp.html" title="5.1.3. DC link compensation"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">5.1. Field-oriented Current Control</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="current-loop-tuning">
+<span id="algorithm-foc-tuning"></span><h1>5.1.4. Current loop tuning<a class="headerlink" href="#current-loop-tuning" title="Permalink to this headline">¶</a></h1>
+<p>This section provides guidance on the following aspects of tuning the current loop in FOC:</p>
+<ul class="simple">
+<li>What constitutes a well-tuned current controller?</li>
+<li>How do I adjust the current control loop gains in MCAF?</li>
+<li>How can I use autotuning in the Tune page of motorBench<sup>®</sup> Development Suite to make gain tuning easier?</li>
+<li>Are the default current control loop tuning criteria in motorBench<sup>®</sup> Development Suite
+good enough to meet the requirements of most systems?</li>
+</ul>
+<div class="section" id="background">
+<h2>5.1.4.1. Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<p>As mentioned in the <a class="reference internal" href="../../components/foc.html#foc"><span class="std std-ref">FOC component</span></a> section on
+<a class="reference internal" href="../../components/foc.html#current-control"><span class="std std-ref">current control</span></a>, MCAF uses a pair of
+PI controllers with saturation and antiwindup.
+The PI control gains are proportional gain <span class="math">\(k_{ip}\)</span>
+and integral gain <span class="math">\(k_{ii}\)</span>.</p>
+<p>Current loop tuning in FOC can be a challenging task, for a number of related reasons:</p>
+<ul class="simple">
+<li>Control variables of interest (d-axis and q-axis currents) are
+not directly measurable with test equipment, and exist only
+as software variables within the microcontroller</li>
+<li>Aside from directly assessing step responses of dq-frame currents,
+evaluating control performance is an unclear task</li>
+<li>Control problems are not readily apparent<ul>
+<li>a motor may be rotating very smoothly but still exhibiting
+poor current control behavior</li>
+<li>observable effects are usually audible but are unclear indicators
+such as clicks, clunks, chatter, hiss, or screeching</li>
+<li>sinusoidal distortion when measuring phase currents
+may be viewed as a disproportionate concern</li>
+</ul>
+</li>
+<li>FOC is a 2 × 2 <a class="reference internal" href="../../appendix/glossary.html#term-mimo"><span class="xref std std-term">MIMO</span></a> control system with some subtleties
+(inductive cross-coupling and saturation behavior for all <a class="reference internal" href="../../appendix/glossary.html#term-pmsm"><span class="xref std std-term">PMSM</span></a>,
+with anisotropic behavior for motors with <a class="reference internal" href="../../appendix/glossary.html#term-rotor-saliency"><span class="xref std std-term">rotor saliency</span></a>
+or fast mechanical time constants)</li>
+</ul>
+<p>The good news is that tuning a current controller with FOC is usually
+forgiving and does not have to be optimal, and the control
+gains calculated in motorBench<sup>®</sup> Development Suite are usually acceptable and
+conservative.</p>
+</div>
+<div class="section" id="evaluating-control-performance">
+<h2>5.1.4.2. Evaluating control performance<a class="headerlink" href="#evaluating-control-performance" title="Permalink to this headline">¶</a></h2>
+<p>Several goals of the current controller are listed below:</p>
+<ul>
+<li><p class="first"><strong>Reference tracking</strong> — make the measured current follow
+the current reference input with zero steady-state error.</p>
+<ul class="simple">
+<li>Torque generated by the motor is proportional
+to the Q-axis current <span class="math">\(I_q\)</span>, so
+controlling <span class="math">\(I_q\)</span> controls the torque.</li>
+<li>D-axis current <span class="math">\(I_d\)</span> modulates the airgap flux.
+For <a class="reference internal" href="../../appendix/glossary.html#term-spm"><span class="xref std std-term">SPM</span></a> motors, the torque per ampere is maximized
+by <span class="math">\(I_d = 0\)</span>, but for <a class="reference internal" href="../../appendix/glossary.html#term-ipm"><span class="xref std std-term">IPM</span></a> motors,
+a nonzero value of <span class="math">\(I_d &lt; 0\)</span> can be used to
+increase efficiency, as calculated by the <a class="reference internal" href="../flux_control/mtpa.html#algorithm-mtpa"><span class="std std-ref">MTPA</span></a> equations. Any PMSM
+can also utilize <span class="math">\(I_d &lt; 0\)</span> to counteract part
+of the back-emf and extend the operating velocity range,
+when required, through <a class="reference internal" href="../flux_control/flux_weakening.html#algorithm-flux-weakening"><span class="std std-ref">flux weakening</span></a>.</li>
+</ul>
+<p>An important quantity for reference tracking is the
+control bandwidth, along with time-domain metrics
+such as rise time and settling time, shown in <a class="reference internal" href="#fig-ituning-tdmetrics"><span class="std std-numref">Figure 5.14</span></a>.</p>
+</li>
+<li><p class="first"><strong>Overshoot management</strong> — we don’t want undesirable
+transient behavior following a step change
+in reference current; we want it to settle quickly and
+avoid reaching excessive values. Overshoot can be described
+quantitatively as a normalized fraction; for example, if a
+reference current step from -1 A to 1 A (a change of 2 A) leads to a maximum current during the transient of 1.3A, then
+the overshoot is equal to <span class="math">\((1.3 - 1)/(1 - (-1)) = 0.15\)</span>.</p>
+<p>An example of overshoot is shown in <a class="reference internal" href="#fig-ituning-tdmetrics"><span class="std std-numref">Figure 5.14</span></a>.</p>
+<div class="figure align-center" id="id4">
+<span id="fig-ituning-tdmetrics"></span><a class="reference internal image-reference" href="../../_images/tdmetrics.svg"><img alt="../../_images/tdmetrics.svg" src="../../_images/tdmetrics.svg" width="500px" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.14 </span><span class="caption-text">Example of time-domain metrics for the step response of
+the mildly interesting transfer function
+<span class="math">\(H(s) = \dfrac{-400s+40000}{s^4+11s^3+720s^2+5200s+40000}\)</span>.
+Rise time measures the time needed to transition from
+10% of the step change to 90% of the step change.
+Settling time measures the time until the step response
+stays within a given bound, here ±5%.</span></p>
+</div></div>
+</li>
+<li><p class="first"><strong>Disturbance rejection</strong> — noise, back-emf harmonics,
+and dead-time distortion are effects that perturb the motor
+current. A well-tuned current control loop will keep
+the current error small. Disturbance rejection can
+be characterized quantitatively by a stiffness transfer function
+<span class="math">\(H(s) = \partial V/\partial I\)</span> that represents the voltage
+disturbance required to make a particular change in current.
+<a class="footnote-reference" href="#fn-ituning-briz99" id="id1">[1]</a>
+In closed loop at frequencies much lower than the current
+loop bandwidth, this stiffness can be very large,
+but in open loop and at high frequencies it is the
+per-phase impedance <span class="math">\((R+j\omega_e L)\)</span> of the stator.</p>
+</li>
+<li><p class="first"><strong>Stability</strong> — we want oscillations in current to
+decay and not persist or grow. An important quantity
+for stability is phase margin <span class="math">\(\phi_m\)</span>.</p>
+</li>
+</ul>
+<p>More specifically, the tuning goals are to <strong>constrain error</strong>, <strong>constrain overshoot</strong>, and <strong>maximize bandwidth</strong>:</p>
+<ul>
+<li><p class="first">Current control error can cause vibration and audible noise
+within the motor. In extreme cases it can add excess
+thermal dissipation, damage components (if the overcurrent
+is not detected), or cause nuisance faults
+(if the overcurrent is detected).</p>
+</li>
+<li><p class="first">Phase margin should be selected to keep overshoot small.
+Acceptable values of overshoot are typically in the 0-10%
+range. This depends on the application as well as the frequency
+content of the current reference. The worst-case step of full
+negative current to full positive current is not necessarily
+something that occurs in a real application, but if it is,
+causing false overcurrent faults should be avoided.
+For example, a motor drive that can accept reference currents up to 10 A that undergoes a worst-case step from -10 A to +10 A and has a 10% overshoot would reach a maximum current of +12 A.
+There should be enough design margin between this maximum current
+and the minimum overcurrent threshold to allow room for noise
+while still avoiding false overcurrent faults.</p>
+</li>
+<li><p class="first">Current control bandwidth should generally be maximized
+as long as it does not degrade stability or
+introduce excessive noise into the motor current.
+Typical 3dB current bandwidth of industrial motor drives
+are 5-15% of the PWM frequency, or 1-3 kHz for a 20 kHz PWM.
+This is desirable even if the overall motor control bandwidth
+of position or velocity is slow, for example a pump or fan
+operating at constant velocity.
+It improves disturbance rejection and reduces the duration
+of overcurrent events.</p>
+<p>Applications that do require fast acceleration
+(robotics and e-mobility, for example) are constrained by
+the performance of the current loop; the velocity loop bandwidth
+is generally 5-10 times lower than the current loop bandwidth.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="examples-of-poorly-tuned-and-well-tuned-current-loops">
+<h2>5.1.4.3. Examples of poorly-tuned and well-tuned current loops<a class="headerlink" href="#examples-of-poorly-tuned-and-well-tuned-current-loops" title="Permalink to this headline">¶</a></h2>
+<p>The best way to evaluate current loop performance is with a step response test
+at constant velocity. The easiest way of doing this with MCAF is to
+use the <a class="reference internal" href="../../components/testharness.html#test-perturbation"><span class="std std-ref">square-wave perturbation of the test harness</span></a>
+(see <a class="reference internal" href="../../components/testharness.html#test-velctrl-idqpert"><span class="std std-ref">Square wave velocity command disturbances to a velocity controller with fixed velocity command</span></a>) with one of the following:</p>
+<ul class="simple">
+<li>clamping the rotor to prevent movement</li>
+<li>running the motor with open-loop commutation, using a fixed
+commutation angle
+(see section on <a class="reference internal" href="#ituning-commutation"><span class="std std-ref">commutation issues</span></a>)</li>
+<li>controlling the motor to run at constant velocity, with a low-bandwidth velocity loop.
+(This lets the motor accelerate or decelerate slightly;
+rotor inertia will smooth out velocity.)</li>
+</ul>
+<p>A square wave perturbation in the 20 Hz - 200 Hz range is recommended:
+for 20 kHz control rate, this corresponds to values of <code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.halfPeriod</span></code>
+between 500 and 50. In general the period of the square wave should be just long enough
+for transients to complete.</p>
+<p><strong>Note:</strong> Pay special attention to motor commutation.
+Sensorless position estimators add their own sources
+of error to commutation angle, and may not be practical to use at
+zero speed to test current loop tuning.
+Except where noted, all graphs in this section
+show data from a motor using a <a class="reference internal" href="../qei.html#algorithm-qei"><span class="std std-ref">quadrature encoder</span></a> for commutation. See the last section on <a class="reference internal" href="#ituning-commutation"><span class="std std-ref">commutation issues</span></a> for more information.</p>
+<p>Operation with open-loop commutation may also be required
+for current loop tuning
+if <a class="reference internal" href="../startup.html#algorithm-startup"><span class="std std-ref">the normal MCAF startup sequence</span></a>
+fails to run or transition properly into closed-loop commutation.</p>
+<div class="section" id="current-loop-tuning-at-zero-velocity">
+<span id="ituning-zero-velocity"></span><h3>5.1.4.3.1. Current loop tuning at zero velocity<a class="headerlink" href="#current-loop-tuning-at-zero-velocity" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="#fig-ituning-0"><span class="std std-numref">Figure 5.15</span></a> shows an example of the current loop step response of
+the <a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/AC300022">Nidec Hurst DMA0204024B101</a> motor operated with MCAF
+on the <a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/dm330021-2">dsPICDEM<sup>®</sup> MCLV‑2 Development Board</a>, with default tuning in motorBench<sup>®</sup> Development Suite.</p>
+<div class="figure align-center" id="id5">
+<span id="fig-ituning-0"></span><img alt="../../_images/3001-hurst300-0-0.png" src="../../_images/3001-hurst300-0-0.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.15 </span><span class="caption-text">Case 0: Current loop step response with phase margin <span class="math">\(\phi_m = 80^\circ\)</span> and PI phase lag at crossover <span class="math">\(\phi_z = 45^\circ\)</span>
+(<span class="math">\(K_p =\)</span> 0.414&nbsp;V/A, <span class="math">\(K_i =\)</span> 613&nbsp;V/As).
+All cases in this section have dead time reduced from 2 μs to
+1.2 μs to minimize the effects of dead-time distortion.
+Step-response graphs included in this section all contain
+values for phase margin, PI phase lag at crossover
+(see <a class="reference internal" href="#ituning-criteria-definitions"><span class="std std-ref">section on performance criteria</span></a>
+for a definition), and crossover
+frequency <span class="math">\(\omega_c\)</span> in the graph title.</span></p>
+</div></div>
+<p>This current loop has a low bandwidth — so low that current does not
+reach its steady-state value because the velocity is allowed to vary,
+and the changing back-emf, which results from changes in velocity,
+acts as a disturbance to the current loop.
+To avoid this effect, the product of mechanical time constant
+<span class="math">\(\tau_{m1} = \frac{2JR_s}{3K_e{}^2}\)</span>
+and current loop bandwidth should be much greater than 1.
+For the Nidec Hurst DMA0204024B101,
+the mechanical time constant <span class="math">\(\tau_{m1} =\)</span> 3.25 ms,
+and in this particular instance (Case 0)
+the product <span class="math">\(\omega_c\tau_{m1}\)</span> = 4.8, not high enough
+to mitigate the effect of changing back-emf.</p>
+<p>Several other cases, with the same motor and board, are summarized in <a class="reference internal" href="#table-ituning"><span class="std std-numref">Table 5.1</span></a>.</p>
+<table border="1" class="docutils" id="table-ituning">
+<caption><span class="caption-number">Table 5.1 </span><span class="caption-text">Tuning parameters for six different cases.</span><a class="headerlink" href="#table-ituning" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="4%" />
+<col width="13%" />
+<col width="13%" />
+<col width="22%" />
+<col width="15%" />
+<col width="16%" />
+<col width="17%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>case</td>
+<td><span class="math">\(\phi_m\)</span></td>
+<td><span class="math">\(\phi_z\)</span></td>
+<td><span class="math">\(\omega_c\)</span> (rad/s)</td>
+<td><span class="math">\(f_c\)</span> (Hz)</td>
+<td><span class="math">\(K_p\)</span> (V/A)</td>
+<td><span class="math">\(K_i\)</span> (V/As)</td>
+</tr>
+<tr class="row-even"><td>0</td>
+<td>80.0°</td>
+<td>45.0°</td>
+<td>1478</td>
+<td>235</td>
+<td>0.414</td>
+<td>613</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>70.0°</td>
+<td>25.0°</td>
+<td>3709</td>
+<td>590</td>
+<td>1.226</td>
+<td>2121</td>
+</tr>
+<tr class="row-even"><td>2</td>
+<td>45.0°</td>
+<td>12.0°</td>
+<td>12759</td>
+<td>2031</td>
+<td>4.487</td>
+<td>12168</td>
+</tr>
+<tr class="row-odd"><td>3</td>
+<td>30.0°</td>
+<td>5.0°</td>
+<td>19662</td>
+<td>3129</td>
+<td>7.038</td>
+<td>12107</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>55.0°</td>
+<td>3.0°</td>
+<td>12458</td>
+<td>1983</td>
+<td>4.473</td>
+<td>2920</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>80.0°</td>
+<td>45.0°</td>
+<td>1355</td>
+<td>216</td>
+<td>0.418</td>
+<td>566</td>
+</tr>
+</tbody>
+</table>
+<p>The next case (1), shown in <a class="reference internal" href="#fig-ituning-1"><span class="std std-numref">Figure 5.16</span></a>, has slightly lower phase margin and PI phase at crossover, which results in higher bandwidth and a better step response. This looks similar to Case 0 in shape, but the time scale here is 2.5× faster.</p>
+<div class="figure align-center" id="id6">
+<span id="fig-ituning-1"></span><img alt="../../_images/3001-hurst300-1-0.png" src="../../_images/3001-hurst300-1-0.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.16 </span><span class="caption-text">Case 1: Current loop step response with <span class="math">\(\phi_m = 70^\circ,\;\phi_z = 25^\circ\)</span>
+(<span class="math">\(K_p =\)</span> 1.226&nbsp;V/A, <span class="math">\(K_i =\)</span> 2121&nbsp;V/As).</span></p>
+</div></div>
+<p>The early part of the step response (during the first 100 μs or so) is dominated by the proportional gain <span class="math">\(K_p\)</span>.
+This causes a rapid pulse in voltage. As the current approaches its reference value and the error decreases,
+the response becomes dominated by the integral term;
+the integral gain <span class="math">\(K_i\)</span> determines how fast this transition occurs.</p>
+<p>The response of Case 1 can still be improved.</p>
+<p>Case 2, in <a class="reference internal" href="#fig-ituning-2"><span class="std std-numref">Figure 5.17</span></a>, shows a well-tuned current loop.
+This has fast bandwidth of about <span class="math">\(f_s/10\)</span> (where <span class="math">\(f_s\)</span> is the sampling and control rate)
+and a reasonably good step response without overshoot.
+Improving bandwidth beyond <span class="math">\(f_s/10\)</span>
+can be done, but is tricky and requires careful attention to discrete-time design as well
+as the sample-to-output delay.</p>
+<p>Again, note the initial voltage impulse beyond the final value required to maintain current at its reference value.</p>
+<div class="figure align-center" id="id7">
+<span id="fig-ituning-2"></span><img alt="../../_images/3001-hurst300-2-0.png" src="../../_images/3001-hurst300-2-0.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.17 </span><span class="caption-text">Case 2: Well-tuned current loop step response with <span class="math">\(\phi_m = 45^\circ,\;\phi_z = 12^\circ\)</span>
+(<span class="math">\(K_p =\)</span> 4.487&nbsp;V/A, <span class="math">\(K_i =\)</span> 12168&nbsp;V/As).</span></p>
+</div></div>
+<p>Case 3, in <a class="reference internal" href="#fig-ituning-3"><span class="std std-numref">Figure 5.18</span></a>, shows a current loop with gains that are too high, causing excessive overshoot.
+Here the overshoot is only about 12%, but if we operate at <a class="reference internal" href="#ituning-nonzero-velocity"><span class="std std-ref">nonzero velocities</span></a>
+the overshoot will get worse.</p>
+<div class="figure align-center" id="id8">
+<span id="fig-ituning-3"></span><img alt="../../_images/3001-hurst300-3-0.png" src="../../_images/3001-hurst300-3-0.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.18 </span><span class="caption-text">Case 3: High-gain current loop step response with <span class="math">\(\phi_m = 30^\circ,\;\phi_z = 5^\circ\)</span>
+(<span class="math">\(K_p =\)</span> 7.038&nbsp;V/A, <span class="math">\(K_i =\)</span> 12107&nbsp;V/As).</span></p>
+</div></div>
+<p>Case 4, in <a class="reference internal" href="#fig-ituning-4"><span class="std std-numref">Figure 5.19</span></a>, shows a current loop with about the same proportional gain <span class="math">\(K_p\)</span>
+but a much lower integral gain. The proportional gain yields a very good short-term response, but
+the low integral gain causes a much slower settling time towards the final value.</p>
+<div class="figure align-center" id="id9">
+<span id="fig-ituning-4"></span><img alt="../../_images/3001-hurst300-4-0.png" src="../../_images/3001-hurst300-4-0.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.19 </span><span class="caption-text">Case 4: Current loop step response with <span class="math">\(\phi_m = 55^\circ,\;\phi_z = 3^\circ\)</span>
+(<span class="math">\(K_p =\)</span> 4.473&nbsp;V/A, <span class="math">\(K_i =\)</span> 2920&nbsp;V/As).</span></p>
+</div></div>
+<p>Finally, Case 5, in <a class="reference internal" href="#fig-ituning-5"><span class="std std-numref">Figure 5.20</span></a>, shows the same phase margin and PI phase lag at crossover as
+Case 0, but with an external inertial load added to increase the rotor inertia by about a factor of 3.
+Current loop tuning doesn’t change much, but note the improved settling of the current loop caused by the
+reduction in velocity fluctuation.</p>
+<div class="figure align-center" id="id10">
+<span id="fig-ituning-5"></span><img alt="../../_images/3001-hurst300-5-0.png" src="../../_images/3001-hurst300-5-0.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.20 </span><span class="caption-text">Case 5: Current loop step response with <span class="math">\(\phi_m = 80^\circ,\;\phi_z = 45^\circ\)</span> but with <span class="math">\(J \approx 3J_0\)</span>
+(<span class="math">\(K_p =\)</span> 0.418&nbsp;V/A, <span class="math">\(K_i =\)</span> 566&nbsp;V/As)</span></p>
+</div></div>
+</div>
+<div class="section" id="current-loop-tuning-at-nonzero-velocity">
+<span id="ituning-nonzero-velocity"></span><h3>5.1.4.3.2. Current loop tuning at nonzero velocity<a class="headerlink" href="#current-loop-tuning-at-nonzero-velocity" title="Permalink to this headline">¶</a></h3>
+<p>At low velocities, the current loop step response does not change much.</p>
+<p>As the rotor velocity increases, there are cross-axis coupling effects
+between the d- and q-axes that change the step response somewhat. <a class="footnote-reference" href="#fn-ituning-briz00" id="id2">[2]</a>
+<strong>For this reason, it is important to verify current loop tuning
+at the upper end of the velocity range.</strong>
+Avoiding voltage saturation is important for the purposes of tuning,
+so either use an elevated DC link voltage, or choose a velocity that is
+about 80-90% of maximum velocity.</p>
+<p>Below are the step responses of cases 1-3 at 1200 RPM and 2400 RPM.</p>
+<p>In the low-gain controller cases of <a class="reference internal" href="#fig-ituning-1-1200"><span class="std std-numref">Figure 5.21</span></a> and <a class="reference internal" href="#fig-ituning-1-2400"><span class="std std-numref">Figure 5.22</span></a>,
+the voltage disturbances of dead-time distortion and back-emf harmonics can cause
+moderate error, compared to the step response seen at zero velocity.</p>
+<div class="figure align-center" id="id11">
+<span id="fig-ituning-1-1200"></span><img alt="../../_images/3001-hurst300-1-1200.png" src="../../_images/3001-hurst300-1-1200.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.21 </span><span class="caption-text">Case 1: Current loop step response of low-gain controller
+with <span class="math">\(\phi_m = 70^\circ,\;\phi_z = 25^\circ\)</span>
+(<span class="math">\(K_p =\)</span> 1.226&nbsp;V/A, <span class="math">\(K_i =\)</span> 2121&nbsp;V/As) at 1200 RPM.</span></p>
+</div></div>
+<div class="figure align-center" id="id12">
+<span id="fig-ituning-1-2400"></span><img alt="../../_images/3001-hurst300-1-2400.png" src="../../_images/3001-hurst300-1-2400.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.22 </span><span class="caption-text">Case 1: Current loop step response of low-gain controller
+with <span class="math">\(\phi_m = 70^\circ,\;\phi_z = 25^\circ\)</span>
+(<span class="math">\(K_p =\)</span> 1.226&nbsp;V/A, <span class="math">\(K_i =\)</span> 2121&nbsp;V/As) at 2400 RPM.</span></p>
+</div></div>
+<p>In the well-tuned case of <a class="reference internal" href="#fig-ituning-2-1200"><span class="std std-numref">Figure 5.23</span></a> and <a class="reference internal" href="#fig-ituning-2-2400"><span class="std std-numref">Figure 5.24</span></a>,
+the increased gain improves disturbance rejection, reducing the error from the current reference.</p>
+<div class="figure align-center" id="id13">
+<span id="fig-ituning-2-1200"></span><img alt="../../_images/3001-hurst300-2-1200.png" src="../../_images/3001-hurst300-2-1200.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.23 </span><span class="caption-text">Case 2: Well-tuned current loop step response with <span class="math">\(\phi_m = 45^\circ,\;\phi_z = 12^\circ\)</span>
+(<span class="math">\(K_p =\)</span> 4.487&nbsp;V/A, <span class="math">\(K_i =\)</span> 12168&nbsp;V/As) at 1200 RPM.</span></p>
+</div></div>
+<div class="figure align-center" id="id14">
+<span id="fig-ituning-2-2400"></span><img alt="../../_images/3001-hurst300-2-2400.png" src="../../_images/3001-hurst300-2-2400.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.24 </span><span class="caption-text">Case 2: Well-tuned current loop step response with <span class="math">\(\phi_m = 45^\circ,\;\phi_z = 12^\circ\)</span>
+(<span class="math">\(K_p =\)</span> 4.487&nbsp;V/A, <span class="math">\(K_i =\)</span> 12168&nbsp;V/As) at 2400 RPM.</span></p>
+</div></div>
+<p>In the high-gain case of <a class="reference internal" href="#fig-ituning-3-1200"><span class="std std-numref">Figure 5.25</span></a> and <a class="reference internal" href="#fig-ituning-3-2400"><span class="std std-numref">Figure 5.26</span></a>,
+the current overshoot increases with increasing velocity, reaching 20% overshoot at 2400 RPM.
+This is undesirable and may become worse than shown here due to several causes:</p>
+<ul class="simple">
+<li>part-to-part variations in the motor parameters</li>
+<li>part-to-part variations in current sense circuitry in the drive electronics</li>
+<li>resistance and back-emf changes with temperature</li>
+<li>inductance changes with iron saturation</li>
+</ul>
+<p>In short: if at all possible, avoid overshoot and leave design margin for parameter tolerances.</p>
+<div class="figure align-center" id="id15">
+<span id="fig-ituning-3-1200"></span><img alt="../../_images/3001-hurst300-3-1200.png" src="../../_images/3001-hurst300-3-1200.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.25 </span><span class="caption-text">Case 3: High-gain current loop step response with <span class="math">\(\phi_m = 30^\circ,\;\phi_z = 5^\circ\)</span>
+(<span class="math">\(K_p =\)</span> 7.038&nbsp;V/A, <span class="math">\(K_i =\)</span> 12107&nbsp;V/As) at 1200 RPM.</span></p>
+</div></div>
+<div class="figure align-center" id="id16">
+<span id="fig-ituning-3-2400"></span><img alt="../../_images/3001-hurst300-3-2400.png" src="../../_images/3001-hurst300-3-2400.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.26 </span><span class="caption-text">Case 3: High-gain current loop step response with <span class="math">\(\phi_m = 30^\circ,\;\phi_z = 5^\circ\)</span>
+(<span class="math">\(K_p =\)</span> 7.038&nbsp;V/A, <span class="math">\(K_i =\)</span> 12107&nbsp;V/As) at 2400 RPM.</span></p>
+</div></div>
+</div>
+<div class="section" id="effects-of-sample-to-update-delay">
+<span id="ituning-sample-update-delay"></span><h3>5.1.4.3.3. Effects of sample-to-update delay<a class="headerlink" href="#effects-of-sample-to-update-delay" title="Permalink to this headline">¶</a></h3>
+<p>A critical bottleneck in providing stable high-bandwidth current loops is the sample-to-update delay <span class="math">\(T_{su}\)</span>.
+This is the delay between the instant the ADC inputs are sampled, and the instant the duty cycle
+of the transistors changes based on the values of those sampled inputs.</p>
+<p>Reducing the delay <span class="math">\(T_{su}\)</span> allows for a more stable current loop at a given bandwidth,
+or a higher bandwidth for equivalent stability. The difference is most pronounced at high bandwidths
+(5% or more of the sampling frequency, e.g. 1 kHz and greater for a 20 kHz sampling-and-update rate)</p>
+<p>MCAF R6 recommends the use of <a class="reference internal" href="../../components/hal.html#hal-pwm-update-options"><span class="std std-ref">double-update PWM</span></a>
+to help reduce sample-to-update delay.</p>
+</div>
+</div>
+<div class="section" id="tuning-criteria-and-mb">
+<span id="ituning-criteria"></span><h2>5.1.4.4. Tuning criteria and motorBench<sup>®</sup> Development Suite<a class="headerlink" href="#tuning-criteria-and-mb" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="performance-criteria-definitions">
+<span id="ituning-criteria-definitions"></span><h3>5.1.4.4.1. Performance criteria definitions<a class="headerlink" href="#performance-criteria-definitions" title="Permalink to this headline">¶</a></h3>
+<p>The autotuning feature of motorBench<sup>®</sup> Development Suite allows adjustment of two performance criteria for both the
+current and velocity loops:</p>
+<ul class="simple">
+<li><strong>Phase margin</strong> <span class="math">\(\phi_m\)</span> is the difference between
+-180° and the phase of open-loop gain transfer function
+at the crossover frequency <span class="math">\(\omega_c\)</span>,
+where the open-loop gain has magnitude 1.
+This represents design margin from the point of instability.
+Decreased phase margin generally raises
+both proportional gain <span class="math">\(K_p\)</span> and integral gain <span class="math">\(K_i\)</span>.
+This can increase the maximum achievable bandwidth and improve the performance of
+reference tracking and disturbance rejection, but at the cost of decreased stability.</li>
+<li><strong>PI phase lag at crossover</strong> <span class="math">\(\phi_z = \tan^{-1} K_i/K_p\omega_c\)</span>
+is the phase lag of the PI controller at the crossover frequency.
+Decreased PI phase lag at crossover decreases the corner frequency
+(or “zero”) of the PI controller,
+decreasing integral gain <span class="math">\(K_i\)</span> and increasing proportional gain <span class="math">\(K_p\)</span>.
+With a fixed phase margin, this generally increases the current loop bandwidth,
+but at the cost of decreased gain at low frequencies, which reduces the controller’s
+disturbance rejection.</li>
+</ul>
+<p>While phase margin may be familiar to engineers with a
+rudimentary knowledge of control systems, PI phase lag at crossover may not. <a class="reference internal" href="#fig-ituning-bode1"><span class="std std-numref">Figure 5.27</span></a> shows a Bode plot of the current loop
+transfer functions for the Nidec Hurst DMA0204024B101, with the following elements:</p>
+<ul class="simple">
+<li>The plant transfer function G(s), representing voltage-to-current gain,
+is drawn in a thin dash-dot line</li>
+<li>PI controller transfer functions K(s),
+representing current-to-voltage gain, are drawn in dashed lines</li>
+<li>Open-loop gain transfer functions G(s)K(s) are drawn in solid lines</li>
+<li>The transfer functions are evaluated and marked
+with a small dot at the crossover frequency.
+Note that in <a class="reference internal" href="#fig-ituning-bode1"><span class="std std-numref">Figure 5.27</span></a>, the open-loop gain transfer
+function has a phase of -105°,
+in order to meet the phase margin constraint of 75°.</li>
+<li>The PI controller zero, which is the frequency
+where proportional and integral gain are equal and the phase is -45°,
+is marked with an open circle. The ratio of the PI controller zero to
+the crossover frequency is <span class="math">\(\tan \phi_z\)</span>, so that low values
+of PI phase lag at crossover push the controller zero
+to very low frequencies.</li>
+</ul>
+<div class="figure align-center" id="id17">
+<span id="fig-ituning-bode1"></span><img alt="../../_images/3007-bodeplot-1.png" src="../../_images/3007-bodeplot-1.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.27 </span><span class="caption-text">Bode plot of selected PI phase lags at crossover,
+with a phase margin of 75°.</span></p>
+</div></div>
+</div>
+<div class="section" id="bode-plots-of-example-cases">
+<h3>5.1.4.4.2. Bode plots of example cases<a class="headerlink" href="#bode-plots-of-example-cases" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="#fig-ituning-bode2"><span class="std std-numref">Figure 5.28</span></a> shows a Bode plot of
+the examples for cases 0 - 4 discussed earlier in this section.</p>
+<p>Cases 2 (<span class="math">\(\phi_m = 45^\circ,\;\phi_z = 12^\circ\)</span>)
+and 3 (<span class="math">\(\phi_m = 30^\circ,\;\phi_z = 5^\circ\)</span>)
+have the highest low-frequency open-loop gain, but
+the the lower phase margin of case 3 renders it undesirable.</p>
+<div class="figure align-center" id="id18">
+<span id="fig-ituning-bode2"></span><img alt="../../_images/3007-bodeplot-2.png" src="../../_images/3007-bodeplot-2.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.28 </span><span class="caption-text">Bode plot of current loop transfer functions for
+example cases discussed in this section</span></p>
+</div></div>
+</div>
+<div class="section" id="default-values-of-performance-criteria">
+<h3>5.1.4.4.3. Default values of performance criteria<a class="headerlink" href="#default-values-of-performance-criteria" title="Permalink to this headline">¶</a></h3>
+<p>The default values chosen for the current loop in motorBench<sup>®</sup> Development Suite versions 1.15 – 2.35,
+namely <span class="math">\(\phi_m = 80^\circ,\;\phi_z = 45^\circ\)</span>, are stable for a very wide range of motors.
+They are also extremely conservative, and result in a current loop bandwidth that is rather low.</p>
+<p>Microchip staff is re-evaluating these default values for a higher-performance recommendation.
+In the interim, if careful step-response testing is possible,
+consider reducing phase margin to the 50° – 70° range
+and reducing PI phase lag at crossover to the 8° – 20° range.
+<strong>Do not decrease these values below the defaults without testing.</strong>
+PI phase lags below 5° are not recommended without careful study.</p>
+<p>Autotuning uses these performance criteria, rather than PI gains or loop bandwidth,
+as a normalized specification that is somewhat applicable
+across a wide range of motor and drive combinations.
+Are the exact values for phase margin and PI phase lag at crossover
+for the Nidec Hurst DMA0204024B101 shown here in the well-tuned case
+(<span class="math">\(\phi_m = 45^\circ,\;\phi_z = 12^\circ\)</span>) applicable to all motors?
+No. Each motor and drive combination has different characteristics,
+and there are often subtle second-order effects
+that may warrant higher or lower settings.</p>
+<p>If you have a motor that seems difficult to tune, please
+bring it to the attention of Microchip staff so that we can improve
+our recommendations.</p>
+</div>
+</div>
+<div class="section" id="adjusting-current-control-gains-in-mcaf">
+<h2>5.1.4.5. Adjusting current control gains in MCAF<a class="headerlink" href="#adjusting-current-control-gains-in-mcaf" title="Permalink to this headline">¶</a></h2>
+<p>The best way to adjust current control gains in MCAF is
+to change the performance criteria
+(phase margin <span class="math">\(\phi_m\)</span> and PI phase lag at crossover <span class="math">\(\phi_z\)</span>)
+in the Tune page of motorBench<sup>®</sup> Development Suite. This may require repeated iterations of code generation,
+however.</p>
+<p>To fine-tune the current loop more quickly,
+it is possible to change the current loop gains
+at runtime directly, by changing the proportional and integral gains of both
+d-axis and q-axis current loops, using a real-time diagnostic tool
+to adjust the MCAF variables shown in <a class="reference internal" href="#code-ituning-variables"><span class="std std-numref">Listing 5.1</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="code-ituning-variables">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 5.1 </span><span class="caption-text"></span><a class="headerlink" href="#code-ituning-variables" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-none notranslate"><div class="highlight"><pre><span></span>motor.idCtrl.kp
+motor.idCtrl.ki
+motor.iqCtrl.kp
+motor.iqCtrl.ki
+</pre></div>
+</div>
+</div>
+<p>(Note that there are also runtime shift counts with the same
+variable names as the gains, preceded by an <code class="docutils literal notranslate"><span class="pre">n</span></code>, for example
+<code class="docutils literal notranslate"><span class="pre">motor.idCtrl.nkp</span></code> for the shift count corresponding to <code class="docutils literal notranslate"><span class="pre">.kp</span></code>.
+If the desired gain would overflow (above 32767 counts), then
+subtract one from the shift count and divide the gain counts by two.
+<code class="docutils literal notranslate"><span class="pre">.kp</span> <span class="pre">=</span> <span class="pre">38000,</span> <span class="pre">.nkp</span> <span class="pre">=</span> <span class="pre">15</span></code>, which is not representable, is equivalent
+to <code class="docutils literal notranslate"><span class="pre">.kp</span> <span class="pre">=</span> <span class="pre">19000,</span> <span class="pre">.nkp</span> <span class="pre">=</span> <span class="pre">14</span></code>, which is representable.)</p>
+<p>The recommended approach is as follows:</p>
+<ul class="simple">
+<li>Make a copy of the initial gains generated by motorBench<sup>®</sup> Development Suite, found in <code class="docutils literal notranslate"><span class="pre">foc_params.h</span></code></li>
+<li>Adjust current loop gains at runtime, using a real-time diagnostic tool
+to perform step-response testing.
+The most important software variables to watch are<ul>
+<li><code class="docutils literal notranslate"><span class="pre">motor.idq.q</span></code> — Q-axis current</li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.idqCmd.q</span></code> — Q-axis current reference</li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.vdq.q</span></code> — Q-axis voltage output from PI controller</li>
+</ul>
+</li>
+<li>Determine desired software gains empirically</li>
+<li>Compute real-world gains corresponding to the software gains</li>
+<li>Adjust <span class="math">\(\phi_m\)</span> and <span class="math">\(\phi_z\)</span> in the Tune page of motorBench<sup>®</sup> Development Suite
+to produce gains that are close to the desired real-world gains. (At this time,
+entry of PI gains in the Tune page is not possible, but it may be considered
+in future versions.)</li>
+</ul>
+<div class="section" id="example">
+<h3>5.1.4.5.1. Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="#code-ituning-example1"><span class="std std-numref">Listing 5.2</span></a> shows an example set of gains in <code class="docutils literal notranslate"><span class="pre">foc_params.h</span></code> generated by motorBench<sup>®</sup> Development Suite.</p>
+<div class="literal-block-wrapper docutils container" id="code-ituning-example1">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 5.2 </span><span class="caption-text">foc_params.h</span><a class="headerlink" href="#code-ituning-example1" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">//************** PI Coefficients **************</span>
+<span class="c1">//// Current loop</span>
+<span class="c1">// phase margin = 80 deg</span>
+<span class="c1">// PI phase at crossover = 45.000 deg</span>
+<span class="c1">// crossover frequency = 1.478 k rad/s (235.238 Hz)</span>
+<span class="cm">/* Current loop proportional gain */</span>
+<span class="cp">#define KIP                                  2263      </span><span class="c1">// Q15(  0.06906) = +414.36768 mV/A        = +414.42006 mV/A        - 0.0126%</span>
+<span class="cp">#define KIP_Q                                  15</span>
+<span class="cm">/* Current loop integral gain */</span>
+<span class="cp">#define KII                                   167      </span><span class="c1">// Q15(  0.00510) = +611.57227 V/A/s       = +612.53173 V/A/s       - 0.1566%</span>
+<span class="cp">#define KII_Q                                  15</span>
+</pre></div>
+</div>
+</div>
+<p>Suppose that a well-tuned current loop response can be obtained using a real-time diagnostic tool
+with the following software gains:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">motor.idCtrl.kp</span> <span class="pre">=</span> <span class="pre">motor.iqCtrl.kp</span> <span class="pre">=</span> <span class="pre">24500</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">motor.idCtrl.ki</span> <span class="pre">=</span> <span class="pre">motor.iqCtrl.ki</span> <span class="pre">=</span>&#160; <span class="pre">3300</span></code></li>
+</ul>
+<p>The engineering units can be computed by adjusting the original gain in engineering units by the ratio of new to old software values:</p>
+<ul class="simple">
+<li><span class="math">\(K_p\)</span> = (24500/2263) × 0.41437 = 4.4861 V/A</li>
+<li><span class="math">\(K_i\)</span> = (3300/167) × 611.57 = 12085 V/As</li>
+</ul>
+<p>Then adjust phase margin <span class="math">\(\phi_m\)</span> and PI phase lag at crossover <span class="math">\(\phi_z\)</span>
+of the current loop in the Tune page of motorBench<sup>®</sup> Development Suite
+to get close to these values.
+(Again, decreasing phase margin should increase both <span class="math">\(K_p\)</span> and <span class="math">\(K_i\)</span>;
+decreasing PI phase lag at crossover increases <span class="math">\(K_p\)</span> and decreases <span class="math">\(K_i\)</span>.)</p>
+</div>
+</div>
+<div class="section" id="commutation-angle-issues-during-current-loop-tuning">
+<span id="ituning-commutation"></span><h2>5.1.4.6. Commutation angle issues during current loop tuning<a class="headerlink" href="#commutation-angle-issues-during-current-loop-tuning" title="Permalink to this headline">¶</a></h2>
+<p>Commutation angle accuracy is not particularly critical during
+current loop tuning, as long as the total error is manageable.
+Typically a commutation angle error of 15° electrical
+is acceptable for field-oriented control. High-frequency content
+(oscillation in the commutation angle) will show up
+as a disturbance orthogonal to the current vector; in the normal
+case where D-axis current is approximately zero and
+the current vector is primarily along the Q-axis, then
+the D-axis current will show oscillations
+from commutation angle errors, whereas similar oscillations
+in the Q-axis current will be much smaller.</p>
+<p>If possible, perform step-response tuning using a quadrature
+encoder for commutation. Use a tracking loop time constant
+that is relatively slow: 5 ms is a good default choice.</p>
+<p>If a quadrature encoder is not available, then operation at zero
+speed may not be possible with closed-loop commutation.
+(The <a class="reference internal" href="../pll.html#algorithm-pll"><span class="std std-ref">AN1292 PLL estimator</span></a> is generally
+stable at zero speed, but cannot provide useful torque, whereas
+the ATPLL has stability issues around zero speed.)
+If this is the case, use open-loop commutation instead,
+by taking the following steps using the test harness and a
+real-time diagnostic tool:</p>
+<ul class="simple">
+<li>turn on the <a class="reference internal" href="../../components/testharness.html#test-overrides-commutation"><span class="std std-ref">commutation override</span></a></li>
+<li>use a fixed commutation angle by setting
+<code class="docutils literal notranslate"><span class="pre">motor.testing.overrideOmegaElectrical</span> <span class="pre">=</span> <span class="pre">0</span></code>,
+which controls the commutation frequency.</li>
+</ul>
+<p>At zero speed, mechanically clamping the rotor can be
+helpful, but is not necessary, and will not suppress
+small high-frequency vibrations.</p>
+<p>Operation at nonzero speed to check current loop tuning
+should be done with closed-loop commutation. Again, a quadrature
+encoder is recommended, but a sensorless estimator may be used
+for commutation as long as the velocity is large enough for
+good performance.</p>
+<div class="section" id="example-using-the-an1292-pll">
+<h3>5.1.4.6.1. Example using the AN1292 PLL<a class="headerlink" href="#example-using-the-an1292-pll" title="Permalink to this headline">¶</a></h3>
+<p>Similar current loop evaluation can be done using the AN1292 PLL
+at zero speed in closed-loop commutation.
+<a class="reference internal" href="#fig-ituning-pll-2-0"><span class="std std-numref">Figure 5.29</span></a>,
+<a class="reference internal" href="#fig-ituning-pll-2-1200"><span class="std std-numref">Figure 5.30</span></a>,
+and <a class="reference internal" href="#fig-ituning-pll-2-2400"><span class="std std-numref">Figure 5.31</span></a> show current loop evaluation
+of the Nidec Hurst DMA0204024B101 motor with the well-tuned current loop gains
+(<span class="math">\(\phi_m = 45^\circ,\;\phi_z = 12^\circ\)</span>) that were used
+earlier in this section. To keep the
+current reference from changing quickly, the velocity loop
+bandwidth was lowered to around 2.2 Hz from the default tuning, by
+choosing <span class="math">\(\phi_m = 70^\circ,\;\phi_z = 20^\circ\)</span>.
+(This is not necessary in general — it just makes current loop
+tuning easier to avoid unnecessary distractions, and a higher-bandwidth velocity loop can be used after current loop
+tuning is complete.)</p>
+<p>Steps in the current reference at 1 ms intervals are visible
+due to angle and velocity uncertainty from the estimator,
+but otherwise the current loop tuning behaves almost identically
+to the case where a quadrature encoder is used for commutation angle.</p>
+<div class="figure align-center" id="id19">
+<span id="fig-ituning-pll-2-0"></span><img alt="../../_images/3001-hurst300-pll-2-0.png" src="../../_images/3001-hurst300-pll-2-0.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.29 </span><span class="caption-text">Case 2 with PLL: Well-tuned current loop step response with <span class="math">\(\phi_m = 45^\circ,\;\phi_z = 12^\circ\)</span>
+(<span class="math">\(K_p =\)</span> 4.487&nbsp;V/A, <span class="math">\(K_i =\)</span> 12168&nbsp;V/As) at 0 RPM. Velocity tuning has <span class="math">\(\phi_m = 70^\circ,\;\phi_z = 20^\circ\)</span>.</span></p>
+</div></div>
+<div class="figure align-center" id="id20">
+<span id="fig-ituning-pll-2-1200"></span><img alt="../../_images/3001-hurst300-pll-2-1200.png" src="../../_images/3001-hurst300-pll-2-1200.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.30 </span><span class="caption-text">Case 2 with PLL: Well-tuned current loop step response with <span class="math">\(\phi_m = 45^\circ,\;\phi_z = 12^\circ\)</span>
+(<span class="math">\(K_p =\)</span> 4.487&nbsp;V/A, <span class="math">\(K_i =\)</span> 12168&nbsp;V/As) at 1200 RPM. Velocity tuning has <span class="math">\(\phi_m = 70^\circ,\;\phi_z = 20^\circ\)</span>.</span></p>
+</div></div>
+<div class="figure align-center" id="id21">
+<span id="fig-ituning-pll-2-2400"></span><img alt="../../_images/3001-hurst300-pll-2-2400.png" src="../../_images/3001-hurst300-pll-2-2400.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.31 </span><span class="caption-text">Case 2 with PLL: Well-tuned current loop step response with <span class="math">\(\phi_m = 45^\circ,\;\phi_z = 12^\circ\)</span>
+(<span class="math">\(K_p =\)</span> 4.487&nbsp;V/A, <span class="math">\(K_i =\)</span> 12168&nbsp;V/As) at 2400 RPM. Velocity tuning has <span class="math">\(\phi_m = 70^\circ,\;\phi_z = 20^\circ\)</span>.</span></p>
+</div></div>
+</div>
+</div>
+<div class="section" id="references">
+<h2>5.1.4.7. References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<table class="docutils footnote" frame="void" id="fn-ituning-briz99" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>F. B. del Blanco, M. W. Degner and R. D. Lorenz,
+<a class="reference external" href="https://ieeexplore.ieee.org/document/806058">“Dynamic analysis of current regulators for AC motors using complex
+vectors”</a>,
+<em>IEEE Transactions on Industry Applications</em>, vol. 35,
+no. 6, pp. 1424-1432, Nov/Dec. 1999.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="fn-ituning-briz00" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>F. Briz, M. W. Degner and R. D. Lorenz,
+<a class="reference external" href="https://ieeexplore.ieee.org/document/845057">“Analysis and design of current regulators using complex vectors”</a>,
+<em>IEEE Transactions on Industry Applications</em>, vol. 36, no. 3,
+pp. 817-825, May/June 2000.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5.1.4. Current loop tuning</a><ul>
+<li><a class="reference internal" href="#background">5.1.4.1. Background</a></li>
+<li><a class="reference internal" href="#evaluating-control-performance">5.1.4.2. Evaluating control performance</a></li>
+<li><a class="reference internal" href="#examples-of-poorly-tuned-and-well-tuned-current-loops">5.1.4.3. Examples of poorly-tuned and well-tuned current loops</a><ul>
+<li><a class="reference internal" href="#current-loop-tuning-at-zero-velocity">5.1.4.3.1. Current loop tuning at zero velocity</a></li>
+<li><a class="reference internal" href="#current-loop-tuning-at-nonzero-velocity">5.1.4.3.2. Current loop tuning at nonzero velocity</a></li>
+<li><a class="reference internal" href="#effects-of-sample-to-update-delay">5.1.4.3.3. Effects of sample-to-update delay</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tuning-criteria-and-mb">5.1.4.4. Tuning criteria and motorBench<sup>®</sup> Development Suite</a><ul>
+<li><a class="reference internal" href="#performance-criteria-definitions">5.1.4.4.1. Performance criteria definitions</a></li>
+<li><a class="reference internal" href="#bode-plots-of-example-cases">5.1.4.4.2. Bode plots of example cases</a></li>
+<li><a class="reference internal" href="#default-values-of-performance-criteria">5.1.4.4.3. Default values of performance criteria</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#adjusting-current-control-gains-in-mcaf">5.1.4.5. Adjusting current control gains in MCAF</a><ul>
+<li><a class="reference internal" href="#example">5.1.4.5.1. Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#commutation-angle-issues-during-current-loop-tuning">5.1.4.6. Commutation angle issues during current loop tuning</a><ul>
+<li><a class="reference internal" href="#example-using-the-an1292-pll">5.1.4.6.1. Example using the AN1292 PLL</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#references">5.1.4.7. References</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dclink-comp.html"
+                        title="previous chapter">5.1.3. DC link compensation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../startup.html"
+                        title="next chapter">5.2. Startup</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../startup.html" title="5.2. Startup"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="dclink-comp.html" title="5.1.3. DC link compensation"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >5.1. Field-oriented Current Control</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>
