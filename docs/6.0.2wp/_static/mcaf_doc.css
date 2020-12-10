@@ -19,6 +19,7 @@ code.literal {
 
 div.body {
   background-color: inherit;
+  max-width: inherit;
 }
 
 div.footer, div.footer a {
