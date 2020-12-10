@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>6.3. Parameter customization &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../_static/preliminary-draft.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="6.4. Sampling Rate and PWM Frequency Implications" href="sampling-rate.html" />
+    <link rel="prev" title="6.2. Code Generation" href="codegen.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="sampling-rate.html" title="6.4. Sampling Rate and PWM Frequency Implications"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="codegen.html" title="6.2. Code Generation"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">6. General Implementation Issues</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="parameter-customization">
+<span id="impl-customization"></span><h1>6.3. Parameter customization<a class="headerlink" href="#parameter-customization" title="Permalink to this headline">¶</a></h1>
+<p>As of MCAF R4, parameter customization is available through the  Customize page of motorBench<sup>®</sup> Development Suite, which provides
+access to various parameters that affect code generation.</p>
+<p>This section provides additional guidance for setting these parameters.</p>
+<p><strong>Please note:</strong> MCAF has been designed so that the default values
+for customizable parameters are applicable to most motors.
+In the event that it is unclear what to do, the best course
+of action is to use the default value of each parameter.</p>
+<div class="section" id="summary">
+<h2>6.3.1. Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
+<p>The following table describes these parameters briefly.
+Links to detailed guidance are included.</p>
+<table border="1" class="colwidths-given docutils" id="id5">
+<caption><span class="caption-number">Table 6.1 </span><span class="caption-text">Customizable parameters</span><a class="headerlink" href="#id5" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="18%" />
+<col width="22%" />
+<col width="60%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Section</th>
+<th class="head">Parameter</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Estimators</td>
+<td><a class="reference internal" href="#customize-estimator-primary"><span class="std std-ref">Primary estimator</span></a></td>
+<td>Selects which estimator is used for commutation and velocity feedback.</td>
+</tr>
+<tr class="row-odd"><td>Estimators</td>
+<td><a class="reference internal" href="#customize-estimator-active"><span class="std std-ref">Active estimators</span></a></td>
+<td>Selects which estimators are active, in addition to
+the primary estimator used for commutation</td>
+</tr>
+<tr class="row-even"><td>Operating parameters</td>
+<td><a class="reference internal" href="#customize-op-minvel"><span class="std std-ref">Minimum velocity</span></a></td>
+<td>Determines minimum operating velocity</td>
+</tr>
+<tr class="row-odd"><td>Operating parameters</td>
+<td><a class="reference internal" href="#customize-op-coastdown-threshold"><span class="std std-ref">Coastdown: Velocity threshold</span></a></td>
+<td>Determines velocity threshold used to estimate when a motor stops</td>
+</tr>
+<tr class="row-even"><td>Operating parameters</td>
+<td><a class="reference internal" href="#customize-op-coastdown-threshold"><span class="std std-ref">Coastdown: Time</span></a></td>
+<td>Determines time to wait until a motor stops</td>
+</tr>
+<tr class="row-odd"><td>Operating parameters</td>
+<td><a class="reference internal" href="#customize-op-slewrate"><span class="std std-ref">Slew rate: max acceleration</span></a></td>
+<td>Determines maximum velocity slew rate in motoring quadrants</td>
+</tr>
+<tr class="row-even"><td>Operating parameters</td>
+<td><a class="reference internal" href="#customize-op-slewrate"><span class="std std-ref">Slew rate: max deceleration</span></a></td>
+<td>Determines maximum velocity slew rate in generating quadrants</td>
+</tr>
+<tr class="row-odd"><td>Operating parameters</td>
+<td><a class="reference internal" href="#customize-max-velocity"><span class="std std-ref">Max velocity</span></a></td>
+<td>Determines maximum velocity command, as a ratio of nominal motor velocity</td>
+</tr>
+<tr class="row-even"><td>Operating parameters</td>
+<td><a class="reference internal" href="#customize-full-scale-velocity"><span class="std std-ref">Full-scale velocity</span></a></td>
+<td>Determines full-scale velocity, as a ratio of nominal motor velocity</td>
+</tr>
+<tr class="row-odd"><td>Operating parameters</td>
+<td><a class="reference internal" href="#customize-saliency-threshold"><span class="std std-ref">Saliency: Saliency threshold</span></a></td>
+<td>Determines saliency ratio below which the motor’s saliency is neglected</td>
+</tr>
+<tr class="row-even"><td>Flux control</td>
+<td><a class="reference internal" href="#customize-flux-control-method"><span class="std std-ref">Flux control method</span></a></td>
+<td>Selects flux control method (or “None” if disabled)</td>
+</tr>
+<tr class="row-odd"><td>Flux control</td>
+<td><a class="reference internal" href="#customize-current-limit-boundary-type"><span class="std std-ref">Current limit: Boundary type</span></a></td>
+<td>Selects method used for defining the commanded Idq boundary</td>
+</tr>
+<tr class="row-even"><td>Flux control</td>
+<td><a class="reference internal" href="#customize-current-limit-idmax"><span class="std std-ref">Current limit: Idmax</span></a></td>
+<td>Determines the maximum negative d-axis current</td>
+</tr>
+<tr class="row-odd"><td>Flux control</td>
+<td><a class="reference internal" href="#customize-current-limit-iqmax"><span class="std std-ref">Current limit: Iqmax</span></a></td>
+<td>Determines the maximum q-axis current</td>
+</tr>
+<tr class="row-even"><td>Flux control</td>
+<td><a class="reference internal" href="#customize-flux-weakening-voltage-limit"><span class="std std-ref">Flux weakening: Voltage limit</span></a></td>
+<td>Determines the voltage amplitude limit used in flux weakening (FW)</td>
+</tr>
+<tr class="row-odd"><td>Flux control</td>
+<td><a class="reference internal" href="#customize-mtpa-indicators"><span class="std std-ref">MTPA: Idmax-MTPA</span></a></td>
+<td>Displays the maximum d-axis current allocated to MTPA, as a function of (Ld − Lq) and Imax (Indication only)</td>
+</tr>
+<tr class="row-even"><td>Flux control</td>
+<td><a class="reference internal" href="#customize-mtpa-indicators"><span class="std std-ref">MTPA: gain-MTPA</span></a></td>
+<td>Displays the maximum increase in torque due to MTPA (Indication only)</td>
+</tr>
+<tr class="row-odd"><td>Dead-time compensation</td>
+<td><a class="reference internal" href="#customize-dead-time-compensation-method"><span class="std std-ref">Dead-time compensation method</span></a></td>
+<td>Selects dead-time compensation method (or “None” if disabled)</td>
+</tr>
+<tr class="row-even"><td>Dead-time compensation</td>
+<td><a class="reference internal" href="#customize-current-linearity-range"><span class="std std-ref">Current linearity range</span></a></td>
+<td>Determines linear range of currents used for deadtime compensation; larger currents are treated as ±1</td>
+</tr>
+<tr class="row-odd"><td>Dead-time compensation</td>
+<td><a class="reference internal" href="#customize-forward-gain"><span class="std std-ref">Forward gain</span></a></td>
+<td>Determines gain for dead-time compensation in the forward path</td>
+</tr>
+<tr class="row-even"><td>Dead-time compensation</td>
+<td><a class="reference internal" href="#customize-feedback-gain"><span class="std std-ref">Feedback gain</span></a></td>
+<td>Determines gain for dead-time compensation in the feedback path</td>
+</tr>
+<tr class="row-odd"><td>Fault detection</td>
+<td><a class="reference internal" href="#customize-fault-uv"><span class="std std-ref">Undervoltage margin</span></a></td>
+<td>Determines undervoltage threshold margin</td>
+</tr>
+<tr class="row-even"><td>Fault detection</td>
+<td><a class="reference internal" href="#customize-fault-ov"><span class="std std-ref">Overvoltage margin</span></a></td>
+<td>Determines overvoltage threshold margin</td>
+</tr>
+<tr class="row-odd"><td>Startup</td>
+<td><a class="reference internal" href="#customize-startup-istartup"><span class="std std-ref">Startup current</span></a></td>
+<td>Determines current used during startup</td>
+</tr>
+<tr class="row-even"><td>Startup</td>
+<td><a class="reference internal" href="#customize-startup-t-rampup"><span class="std std-ref">Rampup time</span></a></td>
+<td>Determines current rampup time during startup</td>
+</tr>
+<tr class="row-odd"><td>Startup</td>
+<td><a class="reference internal" href="#customize-startup-t-align"><span class="std std-ref">Align time</span></a></td>
+<td>Determines time to remain in the align state during startup</td>
+</tr>
+<tr class="row-even"><td>Startup</td>
+<td><a class="reference internal" href="#customize-startup-min-total-accel-time"><span class="std std-ref">Min accel time</span></a></td>
+<td>Determines minimum acceleration time during startup</td>
+</tr>
+<tr class="row-odd"><td>Startup</td>
+<td><a class="reference internal" href="#customize-startup-torque-scale-accel">Acceleration <span class="math">\(\alpha_1\)</span></a></td>
+<td>Determines fast acceleration rate</td>
+</tr>
+<tr class="row-even"><td>Startup</td>
+<td><a class="reference internal" href="#customize-startup-torque-scale-slow-accel">Acceleration <span class="math">\(\alpha_0\)</span></a></td>
+<td>Determines slow acceleration rate</td>
+</tr>
+<tr class="row-odd"><td>Startup</td>
+<td><a class="reference internal" href="#customize-startup-t-hold"><span class="std std-ref">Hold time</span></a></td>
+<td>Determines time to remain in the hold state during startup</td>
+</tr>
+<tr class="row-even"><td>Startup</td>
+<td><a class="reference internal" href="#customize-startup-omega0">Speed threshold <span class="math">\(\omega_0\)</span></a></td>
+<td>Determines speed threshold for switching to fast acceleration</td>
+</tr>
+<tr class="row-odd"><td>Startup</td>
+<td><a class="reference internal" href="#customize-startup-angle-converge"><span class="std std-ref">Angle converge rate</span></a></td>
+<td>Determines rate of angle convergence during closed-loop transition of classic startup</td>
+</tr>
+<tr class="row-even"><td>Startup</td>
+<td><a class="reference internal" href="#customize-startup-method"><span class="std std-ref">Startup algorithm</span></a></td>
+<td>Selects startup method</td>
+</tr>
+<tr class="row-odd"><td>Startup</td>
+<td><a class="reference internal" href="#customize-startup-damping-imax"><span class="std std-ref">Active damping: max amplitude</span></a></td>
+<td>Determines maximum amplitude of active damping current</td>
+</tr>
+<tr class="row-even"><td>Startup</td>
+<td><a class="reference internal" href="#customize-startup-damping-gainmax"><span class="std std-ref">Active damping: max gain</span></a></td>
+<td>Determines maximum gain of active damping</td>
+</tr>
+<tr class="row-odd"><td>Startup</td>
+<td><a class="reference internal" href="#customize-startup-damping-omega-min"><span class="std std-ref">Active damping: speed threshold</span></a></td>
+<td>Determines the minimum velocity to enable active damping</td>
+</tr>
+<tr class="row-even"><td>Overmodulation</td>
+<td><a class="reference internal" href="#customize-overmodulation-vd-limit"><span class="std std-ref">D-axis limit</span></a></td>
+<td>Determines the maximum d-axis voltage</td>
+</tr>
+<tr class="row-odd"><td>Overmodulation</td>
+<td><a class="reference internal" href="#customize-overmodulation-vq-limit"><span class="std std-ref">Q-axis limit</span></a></td>
+<td>Determines the maximum q-axis voltage</td>
+</tr>
+<tr class="row-even"><td>AN1292 PLL</td>
+<td><a class="reference internal" href="#customize-pll-tau"><span class="std std-ref">Time constant</span></a></td>
+<td>Specifies the velocity estimation time constant</td>
+</tr>
+<tr class="row-odd"><td>AN1292 PLL</td>
+<td><a class="reference internal" href="#customize-pll-omega1"><span class="std std-ref">Loop filter bandwidth</span></a></td>
+<td>Specifies the loop filter bandwidth</td>
+</tr>
+<tr class="row-even"><td>AN1292 PLL</td>
+<td><a class="reference internal" href="#customize-filter-threshold"><span class="std std-ref">Filter threshold</span></a></td>
+<td>Determines maximum velocity for slow filtering in the PLL</td>
+</tr>
+<tr class="row-odd"><td>Quadrature encoder</td>
+<td><a class="reference internal" href="#customize-encoder-lines"><span class="std std-ref">Lines</span></a></td>
+<td>Specifies the number of lines of the encoder</td>
+</tr>
+<tr class="row-even"><td>Quadrature encoder</td>
+<td><a class="reference internal" href="#customize-encoder-index-present"><span class="std std-ref">Index pulse present</span></a></td>
+<td>Specifies whether an index pulse is present</td>
+</tr>
+<tr class="row-odd"><td>Quadrature encoder</td>
+<td><a class="reference internal" href="#customize-encoder-tracking-loop-tau"><span class="std std-ref">Tracking loop time constant</span></a></td>
+<td>Determines bandwidth of tracking loop</td>
+</tr>
+<tr class="row-even"><td>Quadrature encoder</td>
+<td><a class="reference internal" href="#customize-encoder-qei-sync-method"><span class="std std-ref">Synchronization method</span></a></td>
+<td>Selects method of synchronizing encoder with back-emf</td>
+</tr>
+<tr class="row-odd"><td>Quadrature encoder</td>
+<td><a class="reference internal" href="#customize-encoder-qei-sync-align-angle-shift"><span class="std std-ref">Align angle shift</span></a></td>
+<td>Determines angle shift between rampup and align states of startup</td>
+</tr>
+<tr class="row-even"><td>Quadrature encoder</td>
+<td><a class="reference internal" href="#customize-encoder-qei-sync-align-angle-init"><span class="std std-ref">Align initial angle</span></a></td>
+<td>Determines initial angle used in rampup state of startup</td>
+</tr>
+<tr class="row-odd"><td>Quadrature encoder</td>
+<td><a class="reference internal" href="#customize-encoder-qei-sync-align-sweep-sweep-rate-pow"><span class="std std-ref">Align-and-sweep rate</span></a></td>
+<td>Determines rotation rate during align state of startup, when using align-and-sweep method</td>
+</tr>
+<tr class="row-even"><td>Quadrature encoder</td>
+<td><a class="reference internal" href="#customize-encoder-qei-sync-align-sweep-setup-angle"><span class="std std-ref">Align-and-sweep setup angle</span></a></td>
+<td>Determines setup angle of align-and-sweep method, to allow transients to settle prior to measurements</td>
+</tr>
+<tr class="row-odd"><td>Quadrature encoder</td>
+<td><a class="reference internal" href="#customize-encoder-qei-sync-pullout-pullout-slip"><span class="std std-ref">Pullout slip threshold</span></a></td>
+<td>Determines rotor slip threshold used for detecting a pullout condition</td>
+</tr>
+<tr class="row-even"><td>Motion Control API</td>
+<td><a class="reference internal" href="#customize-filter-time-constant-is"><span class="std std-ref">Filter time constant Is</span></a></td>
+<td>Determines the time constant used for calculating low pass filtered value of amplitude of current in the motor (Is)</td>
+</tr>
+<tr class="row-odd"><td>Motion Control API</td>
+<td><a class="reference internal" href="#customize-filter-time-constant-iq"><span class="std std-ref">Filter time constant Iq</span></a></td>
+<td>Determines the time constant used for calculating low pass filtered value of the measured q-axis current in the motor (Iq)</td>
+</tr>
+<tr class="row-even"><td>Board Service</td>
+<td><a class="reference internal" href="#customize-ui-service-period"><span class="std std-ref">UI service period</span></a></td>
+<td>Determines the rate at which the board service ISR tasks get executed.</td>
+</tr>
+<tr class="row-odd"><td>Board Service</td>
+<td><a class="reference internal" href="#customize-button-debounce-time"><span class="std std-ref">Button debounce time</span></a></td>
+<td>Determines the length of time required to register a logical high signal as a button press.</td>
+</tr>
+<tr class="row-even"><td>Board Service</td>
+<td><a class="reference internal" href="#customize-long-button-press-time"><span class="std std-ref">Long button press time</span></a></td>
+<td>Determines the amount of time before a button press is detected as a long button press.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="detailed-information">
+<h2>6.3.2. Detailed information<a class="headerlink" href="#detailed-information" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="estimators">
+<h3>6.3.2.1. Estimators<a class="headerlink" href="#estimators" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="primary-estimator">
+<span id="customize-estimator-primary"></span><h4>6.3.2.1.1. Primary estimator<a class="headerlink" href="#primary-estimator" title="Permalink to this headline">¶</a></h4>
+<p>One position and velocity estimator must be chosen
+for use in commutation and velocity feedback.</p>
+<p>Available estimators in MCAF R5:</p>
+<ul class="simple">
+<li><a class="reference internal" href="../algorithms/pll.html#algorithm-pll"><span class="std std-ref">AN1292 Phase-locked Loop (PLL)</span></a></li>
+<li><a class="reference internal" href="../algorithms/atpll.html#algorithm-atpll"><span class="std std-ref">Angle-tracking Phase-locked Loop (ATPLL)</span></a></li>
+<li><a class="reference internal" href="../algorithms/qei.html#algorithm-qei"><span class="std std-ref">Quadrature encoder</span></a>.</li>
+</ul>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R5.</span></p>
+</div>
+<p>(Previously this choice was made on the Configure page in motorBench<sup>®</sup> Development Suite.)</p>
+</div>
+<div class="section" id="active-estimators">
+<span id="customize-estimator-active"></span><h4>6.3.2.1.2. Active estimators<a class="headerlink" href="#active-estimators" title="Permalink to this headline">¶</a></h4>
+<p>In addition to the primary estimator, additional estimators
+may be selected. (Only the primary estimator is used for commutation
+and velocity feedback.)</p>
+<p>Usage of more than one estimator — particularly the quadrature encoder,
+which has higher angle and velocity accuracy — is recommended for troubleshooting
+or validation purposes. Please note that this will increase
+CPU and memory requirements.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="operating-parameters">
+<h3>6.3.2.2. Operating parameters<a class="headerlink" href="#operating-parameters" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="minimum-velocity">
+<span id="customize-op-minvel"></span><h4>6.3.2.2.1. Minimum velocity<a class="headerlink" href="#minimum-velocity" title="Permalink to this headline">¶</a></h4>
+<p>Minimum velocity <span class="math">\(\omega_1\)</span> was moved in MCAF R5 to the Customize
+page from the Configure page. It is used in MCAF in three ways:</p>
+<ul class="simple">
+<li>Determines the lower limit of the adjustable velocity range</li>
+<li>Determines the transition speed during motor startup,
+from open-loop commutation to closed-loop commutation</li>
+<li>In autotuning, determines dynamics of the sensorless estimator model;
+stability and performance of sensorless estimators are poorer at lower
+velocities, so lowering the minimum velocity will generally result
+in a lower-bandwidth velocity control loop to ensure stability.</li>
+</ul>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R5.</span></p>
+</div>
+</div>
+<div class="section" id="coastdown-parameters">
+<span id="customize-op-coastdown-threshold"></span><h4>6.3.2.2.2. Coastdown parameters<a class="headerlink" href="#coastdown-parameters" title="Permalink to this headline">¶</a></h4>
+<p>There are two interrelated coastdown parameters used to estimate
+the time required to bring the motor to a stop, before it can be
+safely restarted:</p>
+<ul class="simple">
+<li>velocity threshold</li>
+<li>time</li>
+</ul>
+<p>The resulting coastdown time is used in the <code class="docutils literal notranslate"><span class="pre">STOPPING</span></code> <a class="reference internal" href="../components/statemach.html#component-statemachine-states"><span class="std std-ref">state</span></a> before
+proceeding to the <code class="docutils literal notranslate"><span class="pre">STOPPED</span></code> <a class="reference internal" href="../components/statemach.html#component-statemachine-states"><span class="std std-ref">state</span></a>.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R5.</span></p>
+</div>
+</div>
+<div class="section" id="slew-rate-max-acceleration-deceleration">
+<span id="customize-op-slewrate"></span><h4>6.3.2.2.3. Slew rate (max acceleration/deceleration)<a class="headerlink" href="#slew-rate-max-acceleration-deceleration" title="Permalink to this headline">¶</a></h4>
+<p>Maximum acceleration (in motoring quadrants) and deceleration (in generating quadrants)
+can be adjusted. Increasing the slew rates will increase the motor current required during
+acceleration or deceleration.</p>
+<p>Determining maximum deceleration during regeneration must be done with some care: the motor drive
+converts mechanical energy into electrical energy, which must go somewhere, such as a battery
+or a dynamic brake resistor. Without a viable outlet for that energy,
+the DC link voltage will rise until
+the motor controller detects this and shuts down, or until one of the capacitors or transistors
+fails and dissipates this energy destructively.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R5.</span></p>
+</div>
+</div>
+<div class="section" id="max-velocity">
+<span id="customize-max-velocity"></span><h4>6.3.2.2.4. Max velocity<a class="headerlink" href="#max-velocity" title="Permalink to this headline">¶</a></h4>
+<p>Increase or decrease the maximum allowed velocity command, as a ratio of nominal motor velocity. The default value is sufficient in most cases. Increasing may be appropriate for motors with a wide flux weakening range above the nominal velocity.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+<div class="section" id="full-scale-velocity">
+<span id="customize-full-scale-velocity"></span><h4>6.3.2.2.5. Full-scale velocity<a class="headerlink" href="#full-scale-velocity" title="Permalink to this headline">¶</a></h4>
+<p>The full-scale velocity controls the numerical representation of motor velocity. Increase to allow more design margin against overflow.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+<div class="section" id="saliency-threshold">
+<span id="customize-saliency-threshold"></span><h4>6.3.2.2.6. Saliency threshold<a class="headerlink" href="#saliency-threshold" title="Permalink to this headline">¶</a></h4>
+<p>Saliency ratio <span class="math">\(\xi = L_q/L_d\)</span>  helps determine whether the full-saliency motor model is used. This is a more complicated motor model, used in certain algorithms such as the <a class="reference internal" href="../algorithms/atpll.html#algorithm-atpll"><span class="std std-ref">ATPLL</span></a> estimator, <a class="reference internal" href="../algorithms/flux_control/mtpa.html#algorithm-mtpa"><span class="std std-ref">MTPA</span></a>, and <a class="reference internal" href="../algorithms/flux_control/mtpa.html#algorithm-mtpa"><span class="std std-ref">flux weakening</span></a>. The full-saliency motor model takes both inductances into account, but requires slightly more computation. Since most permanent-magnet motors are non-salient, <span class="math">\(\xi \approx 1\)</span> and the saliency can be neglected, saving CPU cycles.</p>
+<p>This threshold sets the minimum saliency to use the full-saliency motor model. Increasing the threshold can be used to neglect saliency if the extra computation is not desirable.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="flux-control">
+<span id="customize-flux-control"></span><h3>6.3.2.3. Flux control<a class="headerlink" href="#flux-control" title="Permalink to this headline">¶</a></h3>
+<p>See the section on <a class="reference internal" href="../algorithms/flux_control/index.html#algorithm-flux-control"><span class="std std-ref">flux control</span></a> for more information.</p>
+<div class="section" id="flux-control-method">
+<span id="customize-flux-control-method"></span><h4>6.3.2.3.1. Flux control method<a class="headerlink" href="#flux-control-method" title="Permalink to this headline">¶</a></h4>
+<p>Selects which <a class="reference internal" href="../algorithms/flux_control/index.html#algorithm-flux-control"><span class="std std-ref">flux control</span></a> method is used, from among the following:</p>
+<ul class="simple">
+<li>“None” — d-axis reference current will be set to zero</li>
+<li>“Equation-based” — determines d-axis reference current from the
+<a class="reference internal" href="../algorithms/flux_control/flux_weakening.html#algorithm-flux-weakening"><span class="std std-ref">flux weakening</span></a> and <a class="reference internal" href="../algorithms/flux_control/mtpa.html#algorithm-mtpa"><span class="std std-ref">MTPA</span></a> algorithms</li>
+</ul>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+<div class="section" id="current-limit-boundary-type">
+<span id="customize-current-limit-boundary-type"></span><h4>6.3.2.3.2. Current limit: Boundary type<a class="headerlink" href="#current-limit-boundary-type" title="Permalink to this headline">¶</a></h4>
+<p>Rectangular type sets d-axis and q-axis current limits independently. Quadratic type sets the q-axis limit based on a quadratic approximation of a circular function.</p>
+<p>See also <a class="reference internal" href="../algorithms/flux_control/flux_weakening_mtpa_integration.html#algorithm-fluxctrl-iqlim"><span class="std std-ref">Calculation of q-axis current limit</span></a> for more information.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+<div class="section" id="current-limit-idmax">
+<span id="customize-current-limit-idmax"></span><h4>6.3.2.3.3. Current limit: Idmax<a class="headerlink" href="#current-limit-idmax" title="Permalink to this headline">¶</a></h4>
+<p>The d-axis current is normalized to maximum current Imax, where Imax = minimum of motor and drive continuous current ratings. It is recommended to set the current limit
+below the demagnetizing current of the motor.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+<div class="section" id="current-limit-iqmax">
+<span id="customize-current-limit-iqmax"></span><h4>6.3.2.3.4. Current limit: Iqmax<a class="headerlink" href="#current-limit-iqmax" title="Permalink to this headline">¶</a></h4>
+<p>The q-axis current limit is allocated as a fraction of current limit Imax, where Imax = minimum of motor and drive continuous current ratings. This is applicable only when rectangular boundary type is enabled.</p>
+<p>See also <a class="reference internal" href="../algorithms/flux_control/flux_weakening_mtpa_integration.html#algorithm-fluxctrl-iqlim"><span class="std std-ref">Calculation of q-axis current limit</span></a> for more information.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+<div class="section" id="flux-weakening-voltage-limit">
+<span id="customize-flux-weakening-voltage-limit"></span><h4>6.3.2.3.5. Flux weakening: voltage limit<a class="headerlink" href="#flux-weakening-voltage-limit" title="Permalink to this headline">¶</a></h4>
+<p>The voltage amplitude limit used in <a class="reference internal" href="../algorithms/flux_control/flux_weakening.html#algorithm-flux-weakening"><span class="std std-ref">flux weakening</span></a> (FW) is normalized to DC link voltage. D-axis current is computed so that the steady-state voltage requirements do not exceed this circular limit.
+Ideally a limit is chosen so that the motor enters FW operation just before entering <a class="reference internal" href="../algorithms/foc/overmodulation.html#algorithm-overmodulation"><span class="std std-ref">overmodulation</span></a>. Higher limits may prevent the motor from entering FW region. Lower limits guarantee FW operation, at the cost of extra power dissipation.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+<div class="section" id="mtpa-display-calculations">
+<span id="customize-mtpa-indicators"></span><h4>6.3.2.3.6. MTPA display calculations<a class="headerlink" href="#mtpa-display-calculations" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference internal" href="../algorithms/flux_control/mtpa.html#algorithm-mtpa"><span class="std std-ref">MTPA</span></a> does not have any user-configurable parameters,
+but does include two display values for indication only:</p>
+<ul class="simple">
+<li><span class="math">\(I_{\textnormal{dmax\_mtpa}}\)</span> — displays the maximum d-axis current
+reference that can occur from MTPA</li>
+<li><span class="math">\(G_{\textnormal{mtpa}}\)</span> — displays the maximum torque gain
+that can occur from the use of MTPA,
+relative to the maximum torque with MTPA disabled (<span class="math">\(I_d = 0\)</span>).</li>
+</ul>
+<p>Both are generally very small, except for motors that have
+significant rotor saliency and high flux utilization.
+The saliency flux utilization coefficient
+<span class="math">\(\alpha_{\textrm{mtpa}} = (L_q-L_d)I_{\max}/\psi_m\)</span>
+is a metric of rotor saliency and flux utilization,
+and represents how much change in air-gap flux can occur, relative
+to the permanent magnet flux.</p>
+<p>The maximum d-axis current and maximum torque gain are approximately
+proportional to <span class="math">\(\alpha_{\textrm{mtpa}}{}^2\)</span>, so doubling
+the overall current capability <span class="math">\(I_{\max}\)</span> roughly quadruples both the d-axis current requested by MPTA and the contribution of MTPA towards torque.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="dead-time-compensation">
+<h3>6.3.2.4. Dead-time compensation<a class="headerlink" href="#dead-time-compensation" title="Permalink to this headline">¶</a></h3>
+<p>See the section on <a class="reference internal" href="../algorithms/dead-time-comp.html#algorithm-deadtimecompensation"><span class="std std-ref">dead-time compensation</span></a> for more information.</p>
+<div class="section" id="dead-time-compensation-method">
+<span id="customize-dead-time-compensation-method"></span><h4>6.3.2.4.1. Dead-time compensation method<a class="headerlink" href="#dead-time-compensation-method" title="Permalink to this headline">¶</a></h4>
+<p>Selects which <a class="reference internal" href="../algorithms/dead-time-comp.html#algorithm-deadtimecompensation"><span class="std std-ref">dead-time compensation</span></a> method is used, from among the following:</p>
+<ul class="simple">
+<li>“None” — no dead-time compensation is required</li>
+<li>“Per-phase” — uses the <a class="reference internal" href="../algorithms/dead-time-comp.html#algorithm-dtc-perphase"><span class="std std-ref">per-phase dead-time compensation algorithm</span></a></li>
+</ul>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+<div class="section" id="current-linearity-range">
+<span id="customize-current-linearity-range"></span><h4>6.3.2.4.2. Current linearity range<a class="headerlink" href="#current-linearity-range" title="Permalink to this headline">¶</a></h4>
+<p>Determines the maximum amplitude <span class="math">\(I_\delta\)</span> for which a linear range of current is used in calculating unit disturbance signals <span class="math">\(\hat{s}_{abc}\)</span> — see <a class="reference internal" href="../algorithms/dead-time-comp.html#algorithm-dtc-perphase"><span class="std std-ref">per-phase dead-time compensation</span></a> and the <a class="reference internal" href="../algorithms/dead-time-comp.html#algorithm-dtc-current-linearity"><span class="std std-ref">current linearity range</span></a>.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+<div class="section" id="forward-gain">
+<span id="customize-forward-gain"></span><h4>6.3.2.4.3. Forward gain<a class="headerlink" href="#forward-gain" title="Permalink to this headline">¶</a></h4>
+<p>Determines the dead-time compensation gain used in the forward path to mitigate the effects of dead time distortion at high electrical frequencies. Unless this type of dead-time compensation is tested carefully with a specific motor, the default value of zero is recommended. See <a class="reference internal" href="../algorithms/dead-time-comp.html#algorithm-dtc-gain-fwd"><span class="std std-ref">forward-path gain</span></a> for more information.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+<div class="section" id="feedback-gain">
+<span id="customize-feedback-gain"></span><h4>6.3.2.4.4. Feedback gain<a class="headerlink" href="#feedback-gain" title="Permalink to this headline">¶</a></h4>
+<p>Determines the dead-time compensation gain used in the feedback path to mitigate the effects of dead time distortion on sensorless estimators at low speeds. Increasing this gain will generally improve sensorless estimator performance at low speeds, but excessive gain may cause the current command to jump to its positive limit. See <a class="reference internal" href="../algorithms/dead-time-comp.html#algorithm-dtc-gain-fb"><span class="std std-ref">feedback-path gain</span></a> for more information.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="fault-detection">
+<h3>6.3.2.5. Fault detection<a class="headerlink" href="#fault-detection" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="undervoltage-margin">
+<span id="customize-fault-uv"></span><h4>6.3.2.5.1. Undervoltage margin<a class="headerlink" href="#undervoltage-margin" title="Permalink to this headline">¶</a></h4>
+<p>Determines the point at which the motor controller shuts down due to insufficient available voltage
+below its minimum operating voltage.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R5.</span></p>
+</div>
+</div>
+<div class="section" id="overvoltage-margin">
+<span id="customize-fault-ov"></span><h4>6.3.2.5.2. Overvoltage margin<a class="headerlink" href="#overvoltage-margin" title="Permalink to this headline">¶</a></h4>
+<p>Determines the point at which the motor controller shuts down due to excessive voltage
+above its maximum operating voltage.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R5.</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="startup">
+<span id="customize-startup"></span><h3>6.3.2.6. Startup<a class="headerlink" href="#startup" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="../algorithms/startup.html#startup-sequence"><span class="std std-ref">startup sequence</span></a> has numerous
+parameters that can be modified. These are shown in
+<a class="reference internal" href="#fig-customize-startup-sequence"><span class="std std-numref">Figure 6.1</span></a>.</p>
+<div class="figure align-center" id="id6">
+<span id="fig-customize-startup-sequence"></span><img alt="../_images/startup-sequence.png" src="../_images/startup-sequence.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 6.1 </span><span class="caption-text">Graph of current and electrical frequency in startup sequence.
+(The Weathervane startup algorithm is shown.)</span></p>
+</div></div>
+<div class="section" id="startup-current">
+<span id="customize-startup-istartup"></span><h4>6.3.2.6.1. Startup current<a class="headerlink" href="#startup-current" title="Permalink to this headline">¶</a></h4>
+<p>Startup current amplitude <span class="math">\(I_{q0}\)</span> represents a tradeoff between
+making startup robust (higher is better) and reducing power dissipation
+in the motor (lower is better). There’s not much value in reducing it
+below 0.5, which specifies half of maximum continuous current.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="rampup-time">
+<span id="customize-startup-t-rampup"></span><h4>6.3.2.6.2. Rampup time<a class="headerlink" href="#rampup-time" title="Permalink to this headline">¶</a></h4>
+<p>Current rampup time <span class="math">\(t_r\)</span> affects only the initial state of startup, in which current increases from zero to its maximum amplitude.
+The current rampup time should be slow compared to <span class="math">\(L/R\)</span>, so that it represents a smooth
+transition, but fast compared to the overall startup time.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="align-time">
+<span id="customize-startup-t-align"></span><h4>6.3.2.6.3. Align time<a class="headerlink" href="#align-time" title="Permalink to this headline">¶</a></h4>
+<p>Some motors, especially those with large inertia and cogging torque,
+may start more reliably with align time <span class="math">\(t_{aln} &gt; 0\)</span>.
+The default value of zero is sufficient in most cases.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R5.</span></p>
+</div>
+</div>
+<div class="section" id="min-accel-time">
+<span id="customize-startup-min-total-accel-time"></span><h4>6.3.2.6.4. Min accel time<a class="headerlink" href="#min-accel-time" title="Permalink to this headline">¶</a></h4>
+<p>Increase the minimum acceleration time <span class="math">\(t_{acc}\)</span> if a slower, less-aggressive startup is desired.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="customize-startup-torque-scale-accel">
+<span id="id1"></span><h4>6.3.2.6.5. Acceleration <span class="math">\(\alpha_1\)</span><a class="headerlink" href="#customize-startup-torque-scale-accel" title="Permalink to this headline">¶</a></h4>
+<p>Increase or decrease the acceleration rate <span class="math">\(\alpha_1\)</span> to control the faster second phase of acceleration.
+Slower acceleration is generally less prone to cycle slips, but takes longer.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="customize-startup-torque-scale-slow-accel">
+<span id="id2"></span><h4>6.3.2.6.6. Acceleration <span class="math">\(\alpha_0\)</span><a class="headerlink" href="#customize-startup-torque-scale-slow-accel" title="Permalink to this headline">¶</a></h4>
+<p>Increase or decrease the acceleration rate <span class="math">\(\alpha_0\)</span> to control the slower first phase of acceleration.
+(Note: this is normalized to <span class="math">\(\alpha_1\)</span>.)
+Slower acceleration is generally less prone to cycle slips, but takes longer.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="hold-time">
+<span id="customize-startup-t-hold"></span><h4>6.3.2.6.7. Hold time<a class="headerlink" href="#hold-time" title="Permalink to this headline">¶</a></h4>
+<p>The hold time <span class="math">\(t_h\)</span> controls how long the startup sequence
+remains in the <code class="docutils literal notranslate"><span class="pre">HOLD</span></code> state where electrical frequency and current
+are both held constant before transitioning to closed-loop commutation.</p>
+<p>A value of zero is fine in most cases.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R5.</span></p>
+</div>
+</div>
+<div class="section" id="customize-startup-omega0">
+<span id="id3"></span><h4>6.3.2.6.8. Speed threshold <span class="math">\(\omega_0\)</span><a class="headerlink" href="#customize-startup-omega0" title="Permalink to this headline">¶</a></h4>
+<p>Decreasing the velocity threshold <span class="math">\(\omega_0\)</span> will switch to the faster second phase of acceleration sooner.</p>
+<p>(Note that the threshold <span class="math">\(\omega_1\)</span> is determined by the <a class="reference internal" href="#customize-op-minvel"><span class="std std-ref">minimum
+velocity setting</span></a> under Operating parameters.)</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="angle-converge-rate">
+<span id="customize-startup-angle-converge"></span><h4>6.3.2.6.9. Angle converge rate<a class="headerlink" href="#angle-converge-rate" title="Permalink to this headline">¶</a></h4>
+<p>The angle converge rate controls how fast the transition from
+open-loop to closed-loop commutation with the <a class="reference internal" href="../algorithms/startup.html#startup-classic"><span class="std std-ref">Classic</span></a> startup method.</p>
+<p>Some motors may require a lower value to ensure a smooth
+transition to closed-loop commutation, typically in the
+range of 0.1°/ms – 1.0°/ms.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R5.</span></p>
+</div>
+</div>
+<div class="section" id="startup-algorithm">
+<span id="customize-startup-method"></span><h4>6.3.2.6.10. Startup algorithm<a class="headerlink" href="#startup-algorithm" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference internal" href="../algorithms/startup.html#startup-classic"><span class="std std-ref">Classic</span></a> is the algorithm provided in MCAF R1-R3. <a class="reference internal" href="../algorithms/startup.html#startup-weathervane"><span class="std std-ref">Weathervane</span></a> transitions to closed-loop more quickly than the Classic algorithm.</p>
+<p>See <a class="reference internal" href="../algorithms/startup.html#startup-which-method"><span class="std std-ref">choice of startup method</span></a>.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="active-damping-max-amplitude">
+<span id="customize-startup-damping-imax"></span><h4>6.3.2.6.11. Active damping: max amplitude<a class="headerlink" href="#active-damping-max-amplitude" title="Permalink to this headline">¶</a></h4>
+<p>Controls the amplitude of active damping <span class="math">\(I_\Delta\)</span>. Reduce this value if startup
+is noisy or unstable. Set to zero to eliminate active damping completely.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="active-damping-max-gain">
+<span id="customize-startup-damping-gainmax"></span><h4>6.3.2.6.12. Active damping: max gain<a class="headerlink" href="#active-damping-max-gain" title="Permalink to this headline">¶</a></h4>
+<p>Controls the feedback gain of active damping. Reduce this value if startup
+is noisy or unstable.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="active-damping-speed-threshold">
+<span id="customize-startup-damping-omega-min"></span><h4>6.3.2.6.13. Active damping: speed threshold<a class="headerlink" href="#active-damping-speed-threshold" title="Permalink to this headline">¶</a></h4>
+<p>Determines the minimum velocity to enable active damping.
+Make sure to choose a velocity where the estimator is stable enough
+to be useful for active damping.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="overmodulation">
+<h3>6.3.2.7. Overmodulation<a class="headerlink" href="#overmodulation" title="Permalink to this headline">¶</a></h3>
+<p>See the section on <a class="reference internal" href="../algorithms/foc/overmodulation.html#algorithm-overmodulation"><span class="std std-ref">overmodulation</span></a> for more information.</p>
+<div class="section" id="d-axis-limit">
+<span id="customize-overmodulation-vd-limit"></span><h4>6.3.2.7.1. D-axis limit<a class="headerlink" href="#d-axis-limit" title="Permalink to this headline">¶</a></h4>
+<p>Determines the maximum d-axis voltage.
+Leaving this at 1.0 is recommended.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="q-axis-limit">
+<span id="customize-overmodulation-vq-limit"></span><h4>6.3.2.7.2. Q-axis limit<a class="headerlink" href="#q-axis-limit" title="Permalink to this headline">¶</a></h4>
+<p>Determines the maximum q-axis voltage.
+A value between 1.05 and 1.25 is recommended.
+Larger values will allow higher output voltage amplitude,
+at the cost of higher distortion in output voltage and current.</p>
+<p>The section on <a class="reference internal" href="../algorithms/foc/overmodulation.html#overmodulation-behavior-dq"><span class="std std-ref">overmodulation behavior in the synchronous frame</span></a>
+has more information on this subject.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="an1292-pll">
+<h3>6.3.2.8. AN1292 PLL<a class="headerlink" href="#an1292-pll" title="Permalink to this headline">¶</a></h3>
+<p>See the section on <a class="reference internal" href="../algorithms/pll.html#algorithm-pll"><span class="std std-ref">AN1292 Phase-locked Loop (PLL)</span></a> for more information.</p>
+<div class="section" id="time-constant">
+<span id="customize-pll-tau"></span><h4>6.3.2.8.1. Time constant<a class="headerlink" href="#time-constant" title="Permalink to this headline">¶</a></h4>
+<p>Determines the time constant <span class="math">\(\tau\)</span> used for velocity estimation. This does not affect estimator stability,
+but it does impact the velocity control loop performance. Lower values of time constant let more noise through,
+but allow higher-bandwidth velocity loops. Higher values of time constant filter out more noise,
+but reduce the achievable velocity loop bandwidth.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R5.</span></p>
+</div>
+</div>
+<div class="section" id="loop-filter-bandwidth">
+<span id="customize-pll-omega1"></span><h4>6.3.2.8.2. Loop filter bandwidth<a class="headerlink" href="#loop-filter-bandwidth" title="Permalink to this headline">¶</a></h4>
+<p>Determines the loop filter bandwidth <span class="math">\(\omega_1\)</span> used for angle estimation in the PLL. (Note: this is a different
+value than the minimum operating velocity, also called <span class="math">\(\omega_1\)</span>)</p>
+<p>Leaving this value at its default is recommended.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R5.</span></p>
+</div>
+</div>
+<div class="section" id="filter-threshold">
+<span id="customize-filter-threshold"></span><h4>6.3.2.8.3. Filter threshold<a class="headerlink" href="#filter-threshold" title="Permalink to this headline">¶</a></h4>
+<p>Determines the maximum velocity for slow filtering in the PLL estimator. Leaving this value at its default is recommended.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="quadrature-encoder">
+<h3>6.3.2.9. Quadrature encoder<a class="headerlink" href="#quadrature-encoder" title="Permalink to this headline">¶</a></h3>
+<p>See the section on <a class="reference internal" href="../algorithms/qei.html#algorithm-qei"><span class="std std-ref">quadrature encoder support</span></a> for more information.</p>
+<div class="section" id="lines">
+<span id="customize-encoder-lines"></span><h4>6.3.2.9.1. Lines<a class="headerlink" href="#lines" title="Permalink to this headline">¶</a></h4>
+<p>This should match the number of lines, or cycles per revolution (CPR),
+listed in the datasheet of the motor or encoder.
+The number of counts per revolution is 4× the number of lines.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="index-pulse-present">
+<span id="customize-encoder-index-present"></span><h4>6.3.2.9.2. Index pulse present<a class="headerlink" href="#index-pulse-present" title="Permalink to this headline">¶</a></h4>
+<p>Select this option if an index pulse signal is present.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="tracking-loop-time-constant">
+<span id="customize-encoder-tracking-loop-tau"></span><h4>6.3.2.9.3. Tracking loop time constant<a class="headerlink" href="#tracking-loop-time-constant" title="Permalink to this headline">¶</a></h4>
+<p>Values in the 1 ms - 10 ms range are recommended.
+Smaller values will increase estimator bandwidth
+but allow more encoder quantization noise to appear in the
+velocity estimate. Larger values will decrease estimator bandwidth,
+along with the achievable velocity loop bandwidth, but will
+decrease the effect of encoder quantization noise.</p>
+<p><strong>Note:</strong> With MCAF R4, out-of-range errors in code generation will occur for certain combinations
+of motors with low speed ratings, and choices of tracking loop time constant. This is expected when <span class="math">\(\omega_{m1} \tau &lt; \theta_L\)</span> where <span class="math">\(\theta_L \approx 0.4\ \text{rad}\)</span>,
+where <span class="math">\(\omega_{m1}\)</span> is the rated motor velocity in rad/s, and <span class="math">\(\tau\)</span> is the tracking loop time constant.
+A viable workaround in most cases is to increase the tracking loop time constant, though this would reduce the velocity loop bandwidth.</p>
+<p>For example, a motor with rated velocity
+of 2000 RPM ≈ 209 rad/s
+is likely to have out-of-range errors if the tracking loop time constant
+is less than approximately <span class="math">\(0.4 / 209 = 0.0019\)</span> s or 1.9 ms.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="synchronization-method">
+<span id="customize-encoder-qei-sync-method"></span><h4>6.3.2.9.4. Synchronization method<a class="headerlink" href="#synchronization-method" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><strong>Align</strong> — best general-purpose synchronization method,
+fastest, sensitive to large cogging torque</li>
+<li><strong>Pullout</strong> — most immune to cogging torque, sensitive to high inertia</li>
+<li><strong>Align-and-sweep</strong> — slow, best accuracy</li>
+</ul>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="customize-encoder-qei-sync-align-t-align">
+<span id="id4"></span><h4>6.3.2.9.5. Align time<a class="headerlink" href="#customize-encoder-qei-sync-align-t-align" title="Permalink to this headline">¶</a></h4>
+<p>This determines the align time used for back-emf synchronization.
+Systems with larger inertia may need longer times.
+Shorter times (less than 0.5 s) may be adequate for very low inertia systems.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="align-angle-shift">
+<span id="customize-encoder-qei-sync-align-angle-shift"></span><h4>6.3.2.9.6. Align angle shift<a class="headerlink" href="#align-angle-shift" title="Permalink to this headline">¶</a></h4>
+<p>Increase this angle for systems with high cogging torque.
+Values of 30° - 60° are recommended.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="align-initial-angle">
+<span id="customize-encoder-qei-sync-align-angle-init"></span><h4>6.3.2.9.7. Align initial angle<a class="headerlink" href="#align-initial-angle" title="Permalink to this headline">¶</a></h4>
+<p>Controls the initial electrical angle used during the rampup state of startup.
+Some angles may be slightly more robust, but this must be determined
+empirically for a particular motor.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="align-and-sweep-rate">
+<span id="customize-encoder-qei-sync-align-sweep-sweep-rate-pow"></span><h4>6.3.2.9.8. Align-and-sweep rate<a class="headerlink" href="#align-and-sweep-rate" title="Permalink to this headline">¶</a></h4>
+<p>4 counts per ISR is the fastest, and is adequate for most motors with low cogging torque.
+Decrease this value for motors with high cogging torque.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="align-and-sweep-setup-angle">
+<span id="customize-encoder-qei-sync-align-sweep-setup-angle"></span><h4>6.3.2.9.9. Align-and-sweep setup angle<a class="headerlink" href="#align-and-sweep-setup-angle" title="Permalink to this headline">¶</a></h4>
+<p>This controls the setup angle prior to making commutation offset measurements.
+Smaller values may not leave enough time for transients to settle.
+Larger values will add more time for transients to settle.
+Increasing it for high-inertia systems may improve accuracy.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+<div class="section" id="pullout-slip-threshold">
+<span id="customize-encoder-qei-sync-pullout-pullout-slip"></span><h4>6.3.2.9.10. Pullout slip threshold<a class="headerlink" href="#pullout-slip-threshold" title="Permalink to this headline">¶</a></h4>
+<p>This parameter controls the slip at which pullout offset is measured for determining commutation offset.
+Slip here is defined as the rate of change of difference in the angle of the stationary frame voltage vector <span class="math">\(V_{\alpha\beta}\)</span>
+and the raw electrical position from the encoder.
+Good choices for this parameter depend on the motor’s mechanical properties, namely inertia <span class="math">\(J\)</span>,
+viscous damping <span class="math">\(B\)</span>, and friction torque <span class="math">\(T_{fr}\)</span>.
+The slip threshold may need to be increased for motors with low inertia, or decreased for motors with higher inertia.
+The recommended range for slip threshold is approximately 0.059 to 0.47 rad/s. (0.5× to 4× the default value)</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R4.</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="motion-control-api">
+<span id="customize-mcapi-section"></span><h3>6.3.2.10. Motion Control API<a class="headerlink" href="#motion-control-api" title="Permalink to this headline">¶</a></h3>
+<p>See the section on <a class="reference internal" href="../components/mcapi.html#mcapi"><span class="std std-ref">Motion Control API</span></a> for more information.</p>
+<div class="section" id="filter-time-constant-is">
+<span id="customize-filter-time-constant-is"></span><h4>6.3.2.10.1. Filter time constant Is<a class="headerlink" href="#filter-time-constant-is" title="Permalink to this headline">¶</a></h4>
+<p>Values of the order of 0.1ms – 10ms are recommended.
+Higher time constant values reduce noise in the Is signal that is made available through <a class="reference internal" href="../appendix/glossary.html#term-mcapi"><span class="xref std std-term">MCAPI</span></a> at the cost of adding some phase delay compared to the sampled value of Is in MCAF.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+<div class="section" id="filter-time-constant-iq">
+<span id="customize-filter-time-constant-iq"></span><h4>6.3.2.10.2. Filter time constant Iq<a class="headerlink" href="#filter-time-constant-iq" title="Permalink to this headline">¶</a></h4>
+<p>Values of the order of 0.1ms – 10ms are recommended.
+Higher time constant values reduce noise in the Iq signal that is made available through <a class="reference internal" href="../appendix/glossary.html#term-mcapi"><span class="xref std std-term">MCAPI</span></a> at the cost of adding some phase delay compared to the sampled value of Iq in MCAF.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+</div>
+<div class="section" id="board-service">
+<h3>6.3.2.11. Board service<a class="headerlink" href="#board-service" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="ui-service-period">
+<span id="customize-ui-service-period"></span><h4>6.3.2.11.1. UI service period<a class="headerlink" href="#ui-service-period" title="Permalink to this headline">¶</a></h4>
+<p>Determines the rate at which board service ISR tasks get executed. For further information on board service module please refer to <a class="reference internal" href="../components/hal.html#board-service-module"><span class="std std-ref">board service module</span></a>.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+<div class="section" id="button-debounce-time">
+<span id="customize-button-debounce-time"></span><h4>6.3.2.11.2. Button debounce time<a class="headerlink" href="#button-debounce-time" title="Permalink to this headline">¶</a></h4>
+<p>This parameter determines the amount of time a logical high signal needs to stay high until it is registered as a button press.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+<div class="section" id="long-button-press-time">
+<span id="customize-long-button-press-time"></span><h4>6.3.2.11.3. Long button press time<a class="headerlink" href="#long-button-press-time" title="Permalink to this headline">¶</a></h4>
+<p>The amount of time it takes for a button press to be registered as a long button press. Increasing this value increases the length of time before a button is recognized as a long button press.</p>
+<div class="versionadded">
+<p><span class="versionmodified">New in version R6.</span></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">6.3. Parameter customization</a><ul>
+<li><a class="reference internal" href="#summary">6.3.1. Summary</a></li>
+<li><a class="reference internal" href="#detailed-information">6.3.2. Detailed information</a><ul>
+<li><a class="reference internal" href="#estimators">6.3.2.1. Estimators</a><ul>
+<li><a class="reference internal" href="#primary-estimator">6.3.2.1.1. Primary estimator</a></li>
+<li><a class="reference internal" href="#active-estimators">6.3.2.1.2. Active estimators</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#operating-parameters">6.3.2.2. Operating parameters</a><ul>
+<li><a class="reference internal" href="#minimum-velocity">6.3.2.2.1. Minimum velocity</a></li>
+<li><a class="reference internal" href="#coastdown-parameters">6.3.2.2.2. Coastdown parameters</a></li>
+<li><a class="reference internal" href="#slew-rate-max-acceleration-deceleration">6.3.2.2.3. Slew rate (max acceleration/deceleration)</a></li>
+<li><a class="reference internal" href="#max-velocity">6.3.2.2.4. Max velocity</a></li>
+<li><a class="reference internal" href="#full-scale-velocity">6.3.2.2.5. Full-scale velocity</a></li>
+<li><a class="reference internal" href="#saliency-threshold">6.3.2.2.6. Saliency threshold</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#flux-control">6.3.2.3. Flux control</a><ul>
+<li><a class="reference internal" href="#flux-control-method">6.3.2.3.1. Flux control method</a></li>
+<li><a class="reference internal" href="#current-limit-boundary-type">6.3.2.3.2. Current limit: Boundary type</a></li>
+<li><a class="reference internal" href="#current-limit-idmax">6.3.2.3.3. Current limit: Idmax</a></li>
+<li><a class="reference internal" href="#current-limit-iqmax">6.3.2.3.4. Current limit: Iqmax</a></li>
+<li><a class="reference internal" href="#flux-weakening-voltage-limit">6.3.2.3.5. Flux weakening: voltage limit</a></li>
+<li><a class="reference internal" href="#mtpa-display-calculations">6.3.2.3.6. MTPA display calculations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dead-time-compensation">6.3.2.4. Dead-time compensation</a><ul>
+<li><a class="reference internal" href="#dead-time-compensation-method">6.3.2.4.1. Dead-time compensation method</a></li>
+<li><a class="reference internal" href="#current-linearity-range">6.3.2.4.2. Current linearity range</a></li>
+<li><a class="reference internal" href="#forward-gain">6.3.2.4.3. Forward gain</a></li>
+<li><a class="reference internal" href="#feedback-gain">6.3.2.4.4. Feedback gain</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fault-detection">6.3.2.5. Fault detection</a><ul>
+<li><a class="reference internal" href="#undervoltage-margin">6.3.2.5.1. Undervoltage margin</a></li>
+<li><a class="reference internal" href="#overvoltage-margin">6.3.2.5.2. Overvoltage margin</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#startup">6.3.2.6. Startup</a><ul>
+<li><a class="reference internal" href="#startup-current">6.3.2.6.1. Startup current</a></li>
+<li><a class="reference internal" href="#rampup-time">6.3.2.6.2. Rampup time</a></li>
+<li><a class="reference internal" href="#align-time">6.3.2.6.3. Align time</a></li>
+<li><a class="reference internal" href="#min-accel-time">6.3.2.6.4. Min accel time</a></li>
+<li><a class="reference internal" href="#customize-startup-torque-scale-accel">6.3.2.6.5. Acceleration <span class="math">\(\alpha_1\)</span></a></li>
+<li><a class="reference internal" href="#customize-startup-torque-scale-slow-accel">6.3.2.6.6. Acceleration <span class="math">\(\alpha_0\)</span></a></li>
+<li><a class="reference internal" href="#hold-time">6.3.2.6.7. Hold time</a></li>
+<li><a class="reference internal" href="#customize-startup-omega0">6.3.2.6.8. Speed threshold <span class="math">\(\omega_0\)</span></a></li>
+<li><a class="reference internal" href="#angle-converge-rate">6.3.2.6.9. Angle converge rate</a></li>
+<li><a class="reference internal" href="#startup-algorithm">6.3.2.6.10. Startup algorithm</a></li>
+<li><a class="reference internal" href="#active-damping-max-amplitude">6.3.2.6.11. Active damping: max amplitude</a></li>
+<li><a class="reference internal" href="#active-damping-max-gain">6.3.2.6.12. Active damping: max gain</a></li>
+<li><a class="reference internal" href="#active-damping-speed-threshold">6.3.2.6.13. Active damping: speed threshold</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#overmodulation">6.3.2.7. Overmodulation</a><ul>
+<li><a class="reference internal" href="#d-axis-limit">6.3.2.7.1. D-axis limit</a></li>
+<li><a class="reference internal" href="#q-axis-limit">6.3.2.7.2. Q-axis limit</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#an1292-pll">6.3.2.8. AN1292 PLL</a><ul>
+<li><a class="reference internal" href="#time-constant">6.3.2.8.1. Time constant</a></li>
+<li><a class="reference internal" href="#loop-filter-bandwidth">6.3.2.8.2. Loop filter bandwidth</a></li>
+<li><a class="reference internal" href="#filter-threshold">6.3.2.8.3. Filter threshold</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#quadrature-encoder">6.3.2.9. Quadrature encoder</a><ul>
+<li><a class="reference internal" href="#lines">6.3.2.9.1. Lines</a></li>
+<li><a class="reference internal" href="#index-pulse-present">6.3.2.9.2. Index pulse present</a></li>
+<li><a class="reference internal" href="#tracking-loop-time-constant">6.3.2.9.3. Tracking loop time constant</a></li>
+<li><a class="reference internal" href="#synchronization-method">6.3.2.9.4. Synchronization method</a></li>
+<li><a class="reference internal" href="#customize-encoder-qei-sync-align-t-align">6.3.2.9.5. Align time</a></li>
+<li><a class="reference internal" href="#align-angle-shift">6.3.2.9.6. Align angle shift</a></li>
+<li><a class="reference internal" href="#align-initial-angle">6.3.2.9.7. Align initial angle</a></li>
+<li><a class="reference internal" href="#align-and-sweep-rate">6.3.2.9.8. Align-and-sweep rate</a></li>
+<li><a class="reference internal" href="#align-and-sweep-setup-angle">6.3.2.9.9. Align-and-sweep setup angle</a></li>
+<li><a class="reference internal" href="#pullout-slip-threshold">6.3.2.9.10. Pullout slip threshold</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#motion-control-api">6.3.2.10. Motion Control API</a><ul>
+<li><a class="reference internal" href="#filter-time-constant-is">6.3.2.10.1. Filter time constant Is</a></li>
+<li><a class="reference internal" href="#filter-time-constant-iq">6.3.2.10.2. Filter time constant Iq</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#board-service">6.3.2.11. Board service</a><ul>
+<li><a class="reference internal" href="#ui-service-period">6.3.2.11.1. UI service period</a></li>
+<li><a class="reference internal" href="#button-debounce-time">6.3.2.11.2. Button debounce time</a></li>
+<li><a class="reference internal" href="#long-button-press-time">6.3.2.11.3. Long button press time</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="codegen.html"
+                        title="previous chapter">6.2. Code Generation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="sampling-rate.html"
+                        title="next chapter">6.4. Sampling Rate and PWM Frequency Implications</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="sampling-rate.html" title="6.4. Sampling Rate and PWM Frequency Implications"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="codegen.html" title="6.2. Code Generation"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" >6. General Implementation Issues</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

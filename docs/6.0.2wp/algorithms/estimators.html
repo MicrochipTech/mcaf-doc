@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>5.3. Position and Velocity Estimation &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../_static/preliminary-draft.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.3.1. AN1292 Phase-locked Loop (PLL)" href="pll.html" />
+    <link rel="prev" title="5.2. Startup" href="startup.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pll.html" title="5.3.1. AN1292 Phase-locked Loop (PLL)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="startup.html" title="5.2. Startup"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">5. Detailed Algorithm Notes</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="position-and-velocity-estimation">
+<span id="algorithm-estimators"></span><span id="index-0"></span><h1>5.3. Position and Velocity Estimation<a class="headerlink" href="#position-and-velocity-estimation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pll.html">5.3.1. AN1292 Phase-locked Loop (PLL)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pll.html#overview">5.3.1.1. Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="qei.html">5.3.2. Quadrature encoder support</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="qei.html#overview">5.3.2.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei.html#index-1">5.3.2.2. Tracking loop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei.html#back-emf-synchronization">5.3.2.3. Back-EMF synchronization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="atpll.html">5.3.3. Angle-tracking Phase-locked Loop (ATPLL)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="atpll.html#overview">5.3.3.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atpll.html#implementation-block-diagram-and-description">5.3.3.2. Implementation Block Diagram and Description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atpll.html#application-to-pmsms-with-saliency">5.3.3.3. Application to PMSMs with Saliency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atpll.html#sample-results">5.3.3.4. Sample Results</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="overview">
+<h2>5.3.4. Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>To facilitate sensorless control of a <a class="reference internal" href="../appendix/glossary.html#term-pmsm"><span class="xref std std-term">PMSM</span></a>, MCAF R5 offers a choice between the AN1292
+Phase-locked Loop (PLL) and the Angle-tracking Phase-locked Loop (ATPLL) estimators. In addition
+to these, support is also provided for Quadrature Encoder through the dsPIC<sup>®</sup> DSC QEI (Quadrature
+Encoder Interface) peripheral.</p>
+</div>
+<div class="section" id="comparative-analysis">
+<span id="index-1"></span><h2>5.3.5. Comparative analysis<a class="headerlink" href="#comparative-analysis" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="summary">
+<h3>5.3.5.1. Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="colwidths-given docutils" id="id5">
+<caption><span class="caption-number">Table 5.5 </span><span class="caption-text">Comparison of estimators</span><a class="headerlink" href="#id5" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="57%" />
+<col width="14%" />
+<col width="14%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Criteria</th>
+<th class="head">AN1292 PLL</th>
+<th class="head">QEI</th>
+<th class="head">ATPLL</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Added in MCAF version</td>
+<td>R1</td>
+<td>R1, R4 <a class="footnote-reference" href="#fn-est-qei" id="id1">[1]</a></td>
+<td>R5 <a class="footnote-reference" href="#fn-est-atpll" id="id2">[2]</a></td>
+</tr>
+<tr class="row-odd"><td>Sensors</td>
+<td>phase currents, voltages <a class="footnote-reference" href="#fn-est-v" id="id3">[3]</a></td>
+<td>quadrature encoder</td>
+<td>phase currents, voltages</td>
+</tr>
+<tr class="row-even"><td>Usable at or near zero speed?</td>
+<td>no</td>
+<td>yes <a class="footnote-reference" href="#fn-est-qei-posctrl" id="id4">[4]</a></td>
+<td>no</td>
+</tr>
+<tr class="row-odd"><td>Supports significant rotor saliency?</td>
+<td>no</td>
+<td>yes</td>
+<td>yes</td>
+</tr>
+<tr class="row-even"><td>Sensitivity to motor parameter inaccuracy</td>
+<td>moderate</td>
+<td>none</td>
+<td>low</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<table class="docutils footnote" frame="void" id="fn-est-qei" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>Quadrature encoder position has been present since MCAF R1, in a limited
+form usable for reference comparison only, but not usable for position or
+velocity feedback. MCAF R4 added <a class="reference internal" href="qei.html#qei-sync"><span class="std std-ref">commutation offset synchronization</span></a>
+to allow its use for commutation.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="fn-est-atpll" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>The ATPLL algorithm is new as of MCAF R5, and may be undergoing some changes
+in future versions to improve some of its performance characteristics.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="fn-est-v" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td>As of MCAF R5, phase voltages are inferred from DC link voltage
+and duty cycle; more accurate results can be obtained from voltage measurements
+but this is neither required nor supported at present.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="fn-est-qei-posctrl" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[4]</a></td><td>Position control and zero-speed control are not presently supported in MCAF.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="additional-details">
+<h3>5.3.5.2. Additional details<a class="headerlink" href="#additional-details" title="Permalink to this headline">¶</a></h3>
+<p>Both the AN1292 Phase-locked Loop (PLL) estimator and the Angle-tracking Phase-locked Loop (ATPLL)
+estimator algorithms operate on the principle that the steady-state value of the d-axis component of
+the back emf is equal to zero. Unlike the AN1292 PLL estimator however, the ATPLL estimator includes
+a PI controller module in its structure. This PI controller needs to be tuned carefully in order to
+operate stably and satisfactorily over the entire operating velocity range. The AN1292 PLL on the
+other hand does not have a PI controller and is easier to implement in practice. At the cost of the
+additional tuning of the PI controller, the ATPLL estimator offers the following advantages over
+the AN1292 PLL estimator.</p>
+<p>One of the advantages offered by the ATPLL estimator is its applicability to motors with both salient and
+non-salient rotors. By choosing the suitable equations for back-emf calculation for motors with salient
+and non-salient rotors, the rotor angle and rotor velocity can be correctly estimated by the ATPLL
+estimator.</p>
+<p>The other major advantage offered by the ATPLL estimator over the AN1292 PLL estimator is its robustness
+with respect to the value of the back-emf constant. For the AN1292 PLL estimator, a discrepancy between the
+values of the back-emf constant used by the estimator and the actual back-emf constant of the motor results
+in a steady-state error in the estimated rotor angle. There is no steady state error in the estimated velocity.
+The ATPLL estimator however is not susceptible to any discrepancy in the back-emf constant and estimates the
+rotor velocity and angle accurately.</p>
+<p><a class="reference internal" href="#fig-atpll-pll-ke80pc-angle"><span class="std std-numref">Figure 5.55</span></a> shows the actual rotor
+angle, the estimated angle by the ATPLL estimator and the estimated angle by AN1292 PLL estimator in steady state,
+when the actual back-emf constant of the motor (<span class="math">\(K_{e\_act}\)</span>) is 20% lower than the value used by the
+estimator (<span class="math">\(K_{e\_estimator}\)</span>). <a class="reference internal" href="#fig-atpll-pll-ke80pc-angle"><span class="std std-numref">Figure 5.55</span></a> also shows the error in the
+estimated angle by the AN1292 PLL estimator and the ATPLL estimator in separate plots. It can be observed
+that there is a significant steady-state error in the estimated angle by the AN1292 PLL estimator, whereas
+there is no steady-state error in the estimated angle by the ATPLL estimator.</p>
+<p>Similar plots are shown in <a class="reference internal" href="#fig-atpll-pll-ke120pc-angle"><span class="std std-numref">Figure 5.56</span></a>
+where the actual back-emf constant of the motor (<span class="math">\(K_{e\_act}\)</span>) is 20% higher than the value used by the
+estimator (<span class="math">\(K_{e\_estimator}\)</span>). It can be observed that there is a steady-state error in the estimated
+rotor angle by the AN1292 PLL estimator in this case as well, however the sign of the error is reversed. The ATPLL
+estimator however does not show any steady-state error in the estimated rotor angle.</p>
+<div class="figure align-center" id="id6">
+<span id="fig-atpll-pll-ke80pc-angle"></span><a class="reference internal image-reference" href="../_images/pll_atpll_angle_err_Ke_80pc.png"><img alt="../_images/pll_atpll_angle_err_Ke_80pc.png" src="../_images/pll_atpll_angle_err_Ke_80pc.png" style="width: 584.0px; height: 495.2px;" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.55 </span><span class="caption-text">Estimated Rotor Angle by the ATPLL and AN1292 PLL for <span class="math">\(K_{e\_act} = 0.8 \times K_{e\_estimator}\)</span></span></p>
+</div></div>
+<div class="figure align-center" id="id7">
+<span id="fig-atpll-pll-ke120pc-angle"></span><a class="reference internal image-reference" href="../_images/pll_atpll_angle_err_Ke_120pc.png"><img alt="../_images/pll_atpll_angle_err_Ke_120pc.png" src="../_images/pll_atpll_angle_err_Ke_120pc.png" style="width: 584.0px; height: 495.2px;" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.56 </span><span class="caption-text">Estimated Rotor Angle by the ATPLL and AN1292 PLL for <span class="math">\(K_{e\_act} = 1.2 \times K_{e\_estimator}\)</span></span></p>
+</div></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5.3. Position and Velocity Estimation</a><ul>
+<li><a class="reference internal" href="#overview">5.3.4. Overview</a></li>
+<li><a class="reference internal" href="#comparative-analysis">5.3.5. Comparative analysis</a><ul>
+<li><a class="reference internal" href="#summary">5.3.5.1. Summary</a></li>
+<li><a class="reference internal" href="#additional-details">5.3.5.2. Additional details</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="startup.html"
+                        title="previous chapter">5.2. Startup</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pll.html"
+                        title="next chapter">5.3.1. AN1292 Phase-locked Loop (PLL)</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pll.html" title="5.3.1. AN1292 Phase-locked Loop (PLL)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="startup.html" title="5.2. Startup"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" >5. Detailed Algorithm Notes</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

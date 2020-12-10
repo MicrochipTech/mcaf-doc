@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>3.6. Scheduling and Optimization &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../_static/preliminary-draft.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3.7. State Machine" href="statemach.html" />
+    <link rel="prev" title="3.5. Configuration Parameters" href="config-params.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="statemach.html" title="3.7. State Machine"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="config-params.html" title="3.5. Configuration Parameters"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">3. Architecture</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="scheduling-and-optimization">
+<span id="schedopt"></span><h1>3.6. Scheduling and Optimization<a class="headerlink" href="#scheduling-and-optimization" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="scheduling">
+<span id="id1"></span><h2>3.6.1. Scheduling<a class="headerlink" href="#scheduling" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="requirements">
+<span id="scheduling-requirements"></span><h3>3.6.1.1. Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h3>
+<p>MCAF has the following set of requirements in terms of scheduling:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">MCAF_MainInit()</span></code> should be called once at system startup</li>
+<li><code class="docutils literal notranslate"><span class="pre">MCAF_MainLoop()</span></code> should be called at each iteration of the main loop.
+This does not have to be executed periodically, but the minimum
+repetition rate should be approximately 100Hz to service the various
+features.</li>
+<li>The board handler function, <code class="docutils literal notranslate"><span class="pre">MCAF_BoardServiceTasks()</span></code>, should be called periodically
+by the application once every 0.1ms – 10ms. This period value should be entered in the Customize
+page of motorBench<sup>®</sup> Development Suite for the customizable parameter “Ui service period”. This function does not have a hard
+real-time requirement.</li>
+<li>MCAF control <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> routines are time-critical, and need to execute synchronously to the <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> cycle.</li>
+</ul>
+</div>
+<div class="section" id="implementation-notes">
+<h3>3.6.1.2. Implementation notes<a class="headerlink" href="#implementation-notes" title="Permalink to this headline">¶</a></h3>
+<p>The MCAF scheduler architecture is fairly simple. It uses cooperative scheduling
+with a main thread (the entry point from the <code class="docutils literal notranslate"><span class="pre">main()</span></code> function) and one <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a>
+each for the application timer interrupt and the ADC interrupt.</p>
+<blockquote>
+<div><div class="figure align-center" id="id8">
+<span id="fig-code-flow-diagram"></span><img alt="../_images/code-flow-diagram.svg" src="../_images/code-flow-diagram.svg" /><div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 3.5 </span><span class="caption-text">Flow diagram showing the main thread, application timer interrupt
+and the ADC interrupt</span></p>
+</div></div>
+</div></blockquote>
+<p>The main thread contains initialization functions that run once at startup,
+and a main loop to execute tasks which are not time-critical.</p>
+<p>The application timer handles periodic application and board-related tasks that do not
+have hard real-time requirements.</p>
+<p>The ADC <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> handles tasks that are time-critical, and executes synchronously
+to the <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> cycle:</p>
+<ul>
+<li><p class="first"><a class="reference internal" href="../appendix/glossary.html#term-adc"><span class="xref std std-term">ADC</span></a> triggered by <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> low center, to reject switching-frequency harmonics</p>
+</li>
+<li><p class="first">ADC <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> triggered when all conversions are complete</p>
+</li>
+<li><p class="first"><a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> timing margin is designed to ensure that time between
+between register assignment and update is sufficient to meet
+critical control latency requirements (see <a class="reference internal" href="#fig-isr-timing"><span class="std std-numref">Figure 3.6</span></a>)</p>
+<blockquote>
+<div><div class="figure align-center" id="id9">
+<span id="fig-isr-timing"></span><img alt="../_images/scheduling1.svg" src="../_images/scheduling1.svg" /><div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 3.6 </span><span class="caption-text"><strong>Timing relationship between control ISR and PWM.</strong> Center-aligned PWM
+can typically be configured either for single or double updates;
+in single-update mode the PWM generators are updated from
+software registers at the beginning of each PWM period, yielding
+symmetrical waveforms, whereas in double-update mode the PWM
+generators are updated from software registers at the beginning
+and at center of each PWM period, yielding potentially asymmetric
+waveforms with twice the update rate. In each case the critical
+code represents calculations from ADC readings needed to
+compute new PWM values, and should complete in time for the next
+PWM generator update.</span></p>
+</div></div>
+</div></blockquote>
+</li>
+<li><p class="first">Most time-critical portion of ADC <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a>:  Read <a class="reference internal" href="../appendix/glossary.html#term-adc"><span class="xref std std-term">ADC</span></a> result, calculate, update <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a></p>
+</li>
+<li><p class="first">Sufficient CPU time is left over for other calculations:</p>
+<ul class="simple">
+<li>tasks which are also time-critical, but their requirements are not as stringent</li>
+<li>tasks which are require some degree of coordination with those tasks
+running at the ADC <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> rate, so that relocation in the main loop is tricky</li>
+</ul>
+</li>
+</ul>
+<p>Some examples of tasks include</p>
+<ul class="simple">
+<li>A current loop that runs once every control ADC <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> (time-critical,
+part of <a class="reference internal" href="../appendix/glossary.html#term-adc"><span class="xref std std-term">ADC</span></a> → <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> latency bottleneck)</li>
+<li>A velocity loop that runs once every N ISRs (for example N=20)</li>
+<li>Other minor tasks, such as monitoring, that run in the ADC <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a></li>
+<li><a class="reference internal" href="../appendix/glossary.html#term-mcapi"><span class="xref std std-term">MCAPI</span></a> service routine that runs from the ADC <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> and synchronizes
+MCAPI motor data with control variables within MCAF motor data</li>
+<li>User interface and diagnostic kernel elements that run more slowly
+in the main loop</li>
+</ul>
+<div class="section" id="cooperative-scheduling">
+<h4>3.6.1.2.1. Cooperative Scheduling<a class="headerlink" href="#cooperative-scheduling" title="Permalink to this headline">¶</a></h4>
+<p>The term “cooperative scheduling” means that each task runs to completion
+without blocking, before the next one executes; there is not an
+operating system which preemptively switches threads of execution
+before a task has completed.</p>
+<p>With this approach, scheduling constraints must be handled explicitly
+by the designer, rather than at run-time as in an operating system.
+Typical constraints are</p>
+<ul class="simple">
+<li>computation of the current control loop between <a class="reference internal" href="../appendix/glossary.html#term-adc"><span class="xref std std-term">ADC</span></a> sampling and <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> update
+must be complete before the end of the <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> period, so that the effective input-output delay
+is one sampling period.</li>
+<li>completion of the ADC <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> must occur prior to the next ADC <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> interrupt, so that the
+next ADC <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> is not delayed</li>
+</ul>
+<p>Scheduling constraints can be checked manually, by using the <a class="reference internal" href="../components/testharness.html#test-timestamps"><span class="std std-ref">timestamp feature of the test harness</span></a>
+to record timer values, in order to make sure that worst-case execution times are acceptable.</p>
+</div>
+<div class="section" id="call-tree">
+<h4>3.6.1.2.2. Call tree<a class="headerlink" href="#call-tree" title="Permalink to this headline">¶</a></h4>
+<p>A sample call tree is shown below in <a class="reference internal" href="#fig-call-tree"><span class="std std-numref">Figure 3.7</span></a>. This shows
+many (but not all) of the function calls that take place in the ADC <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a>.
+The time between reading of <a class="reference internal" href="../appendix/glossary.html#term-adc"><span class="xref std std-term">ADC</span></a> and update of <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> duty cycles should involve
+time-critical tasks; other tasks should generally be deferred. Version 1.0
+of the MCAF includes a few minor routines that we plan on moving after the
+<a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> update to minimize the critical control latency.</p>
+<div class="figure align-center" id="fig-call-tree">
+<img alt="../_images/call-tree.png" src="../_images/call-tree.png" />
+</div>
+</div>
+<div class="section" id="thread-safety">
+<h4>3.6.1.2.3. Thread safety<a class="headerlink" href="#thread-safety" title="Permalink to this headline">¶</a></h4>
+<p>Because the main thread can be interrupted by the control ISR, shared state must be handled carefully.</p>
+<p>This shared state is marked with a <code class="docutils literal notranslate"><span class="pre">volatile</span></code> qualifier, so that the compiler does not make incorrect assumptions. Shared state includes:</p>
+<ul class="simple">
+<li>External interface data in <code class="docutils literal notranslate"><span class="pre">motor.ui</span></code> (system_state.h)</li>
+<li>Test harness information in <code class="docutils literal notranslate"><span class="pre">motor.testing</span></code> and <code class="docutils literal notranslate"><span class="pre">systemData.testing</span></code> (system_state.h)</li>
+<li>Watchdog state in <code class="docutils literal notranslate"><span class="pre">watchdog</span></code> (isr.c and main.c)</li>
+<li><a class="reference internal" href="../appendix/glossary.html#term-mcapi"><span class="xref std std-term">MCAPI</span></a> motor data in <code class="docutils literal notranslate"><span class="pre">motor.apiData</span></code> (system_state.h)</li>
+</ul>
+<p>Thread safety concerns involving this shared state have been addressed in MCAF as follows:</p>
+<ul class="simple">
+<li>No individual items of shared data are larger than 16 bits (each item can be read and written atomically in the dsPIC 16-bit architecture)</li>
+<li>MCAF does not require mutually consistent state across multiple items of data</li>
+<li>The only shared state that has multiple writers is <code class="docutils literal notranslate"><span class="pre">watchdog.isrCount</span></code>, where the interaction
+between main and control ISR threads is simple and not prone to concurrency errors (main thread sets count to zero
+and does not read the count; control ISR increments count and isn’t interrupted by the main thread)</li>
+<li><a class="reference internal" href="../appendix/glossary.html#term-mcapi"><span class="xref std std-term">MCAPI</span></a> functions executing from the main thread use <code class="docutils literal notranslate"><span class="pre">motor.apiData.apiBusy</span></code> flag to
+claim ownership of the shared MCAPI motor data structure while they are executing a critical
+section of code. Refer to MCAPI section, <a class="reference internal" href="../components/mcapi.html#mcapi-handling-concurrency"><span class="std std-ref">Handling Concurrency</span></a>, for more information.</li>
+</ul>
+<p>If a more stringent concurrency requirement is needed in the future, shared state will be protected by
+additional means, for example briefly disabling interrupts, or usage of non-blocking threadsafe data structures.</p>
+</div>
+</div>
+</div>
+<div class="section" id="optimization">
+<span id="id2"></span><h2>3.6.2. Optimization<a class="headerlink" href="#optimization" title="Permalink to this headline">¶</a></h2>
+<p>The MCAF has four requirements that impact execution time requirements:</p>
+<ul class="simple">
+<li>Provide a designated feature set (particular series of algorithms
+running at the control ADC <a class="reference internal" href="../appendix/glossary.html#term-isr"><span class="xref std std-term">ISR</span></a> rate)</li>
+<li>Meet timing requirements with <code class="docutils literal notranslate"><span class="pre">-O1</span></code> compiler optimization level in XC16
+(<code class="docutils literal notranslate"><span class="pre">-O2</span></code> and <code class="docutils literal notranslate"><span class="pre">-O3</span></code> are faster but are only available in the premium
+licenses for XC16)</li>
+<li>Be modular and maintainable: follow good software engineering practices</li>
+<li>Be efficient so that sufficient CPU cycles remain for customer applications</li>
+</ul>
+<p>These pose an interesting dilemma. Good software engineering practices
+encourage refactoring large, complex software functions into small, simple,
+maintainable functions, each handling a single, well-defined purpose. But
+doing so in C adds additional stack frames, which tend to add execution time.
+This can be significant in systems with high update rates.</p>
+<p>For example, the following code contains a function <code class="docutils literal notranslate"><span class="pre">pwm_clip_and_update</span></code>
+for constraining a set of 3 duty cycle values between allowable limits and write
+hardware registers:</p>
+<div class="literal-block-wrapper docutils container" id="code-opt1">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 3.17 </span><span class="caption-text"></span><a class="headerlink" href="#code-opt1" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span> <span class="cp">#include</span> <span class="cpf">&lt;stdint.h&gt;</span><span class="cp"></span>
+ <span class="cp">#include</span> <span class="cpf">&lt;xc.h&gt;</span><span class="cp"></span>
+
+ <span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+     <span class="kt">uint16_t</span> <span class="n">duty</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+ <span class="p">}</span> <span class="n">pwm_t</span><span class="p">;</span>
+
+ <span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+     <span class="kt">uint16_t</span> <span class="n">min</span><span class="p">;</span>
+     <span class="kt">uint16_t</span> <span class="n">max</span><span class="p">;</span>
+ <span class="p">}</span> <span class="n">limits_t</span><span class="p">;</span>
+
+ <span class="kt">void</span> <span class="nf">pwm_clip_and_update</span><span class="p">(</span><span class="n">pwm_t</span> <span class="o">*</span><span class="n">ppwm</span><span class="p">,</span>
+           <span class="k">const</span> <span class="n">limits_t</span> <span class="o">*</span><span class="n">plimits</span><span class="p">)</span>
+ <span class="p">{</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">)</span>
+         <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">;</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">)</span>
+         <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">;</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">)</span>
+         <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">;</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">)</span>
+         <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">;</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">)</span>
+         <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">;</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">)</span>
+         <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">;</span>
+
+     <span class="n">PDC1</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+     <span class="n">PDC2</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+     <span class="n">PDC3</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">pwm_clip_and_update()</span></code> function body is only 16 lines, but it can be
+simplified further into sub-functions that handle clipping and updating the
+hardware registers:</p>
+<div class="literal-block-wrapper docutils container" id="code-opt2">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 3.18 </span><span class="caption-text"></span><a class="headerlink" href="#code-opt2" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span> <span class="kt">void</span> <span class="nf">clip_u16</span><span class="p">(</span><span class="kt">uint16_t</span> <span class="o">*</span><span class="n">px</span><span class="p">,</span> <span class="k">const</span> <span class="n">limits_t</span> <span class="o">*</span><span class="n">plimits</span><span class="p">)</span>
+ <span class="p">{</span>
+     <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">px</span> <span class="o">&gt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">)</span>
+         <span class="o">*</span><span class="n">px</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">;</span>
+     <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">px</span> <span class="o">&lt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">)</span>
+         <span class="o">*</span><span class="n">px</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">;</span>
+ <span class="p">}</span>
+
+ <span class="kt">void</span> <span class="nf">set_pwm</span><span class="p">(</span><span class="k">const</span> <span class="n">pwm_t</span> <span class="o">*</span><span class="n">ppwm</span><span class="p">)</span>
+ <span class="p">{</span>
+     <span class="n">PDC1</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+     <span class="n">PDC2</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+     <span class="n">PDC3</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+ <span class="p">}</span>
+
+ <span class="kt">void</span> <span class="nf">pwm_clip_and_update</span><span class="p">(</span><span class="n">pwm_t</span> <span class="o">*</span><span class="n">ppwm</span><span class="p">,</span> <span class="k">const</span> <span class="n">limits_t</span>
+            <span class="o">*</span><span class="n">plimits</span><span class="p">)</span>
+ <span class="p">{</span>
+     <span class="kt">uint16_t</span> <span class="o">*</span><span class="n">px</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+     <span class="n">clip_u16</span><span class="p">(</span><span class="n">px</span><span class="p">,</span> <span class="n">plimits</span><span class="p">);</span>
+     <span class="n">clip_u16</span><span class="p">(</span><span class="o">++</span><span class="n">px</span><span class="p">,</span> <span class="n">plimits</span><span class="p">);</span>
+     <span class="n">clip_u16</span><span class="p">(</span><span class="o">++</span><span class="n">px</span><span class="p">,</span> <span class="n">plimits</span><span class="p">);</span>
+     <span class="n">set_pwm</span><span class="p">(</span><span class="n">ppwm</span><span class="p">);</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>Now we have functions with a maximum body length of 5 lines, each of which
+are simpler. Furthermore, it is easier to avoid copy-paste errors like
+the ones below:</p>
+<div class="literal-block-wrapper docutils container" id="code-opt3">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 3.19 </span><span class="caption-text"></span><a class="headerlink" href="#code-opt3" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span> <span class="kt">void</span> <span class="nf">pwm_clip_and_update</span><span class="p">(</span><span class="n">pwm_t</span> <span class="o">*</span><span class="n">ppwm</span><span class="p">,</span>
+           <span class="k">const</span> <span class="n">limits_t</span> <span class="o">*</span><span class="n">plimits</span><span class="p">)</span>
+ <span class="p">{</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">)</span>
+         <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">;</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">)</span>
+         <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">;</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">)</span>
+         <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">;</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">)</span>
+         <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">;</span>
+<span class="hll">     <span class="k">if</span> <span class="p">(</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">)</span>    <span class="c1">// OOPS</span>
+</span>         <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">;</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">)</span>
+         <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">;</span>
+
+     <span class="n">PDC1</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+     <span class="n">PDC2</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+     <span class="n">PDC3</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>We compiled the code in <a class="reference internal" href="#code-opt1"><span class="std std-numref">Listing 3.17</span></a> and <a class="reference internal" href="#code-opt2"><span class="std std-numref">Listing 3.18</span></a>
+with XC16 1.25 targeting the dsPIC33E256MC506,
+and analyzed the results for maximum cycle counts:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="43%" />
+<col width="21%" />
+<col width="20%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head">-O1</th>
+<th class="head">-O2</th>
+<th class="head">-O3</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="#code-opt1"><span class="std std-numref">Listing 3.17</span></a>
+— one big function</td>
+<td>56</td>
+<td>49</td>
+<td>49</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#code-opt2"><span class="std std-numref">Listing 3.18</span></a>
+— refactored</td>
+<td>105</td>
+<td>49</td>
+<td>49</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#code-opt4"><span class="std std-numref">Listing 3.20</span></a>
+— refactored + inline</td>
+<td>56</td>
+<td>49</td>
+<td>49</td>
+</tr>
+</tbody>
+</table>
+<p>The refactoring in <a class="reference internal" href="#code-opt2"><span class="std std-numref">Listing 3.18</span></a> added 49 cycles under <code class="docutils literal notranslate"><span class="pre">-O1</span></code> but
+not in <code class="docutils literal notranslate"><span class="pre">-O2</span></code> or <code class="docutils literal notranslate"><span class="pre">-O3</span></code>. Why?</p>
+<p>The cost of a function call in the 33E architecture is</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">RCALL</span></code>: 4 cycles</li>
+<li><code class="docutils literal notranslate"><span class="pre">RETURN</span></code>: 6 cycles</li>
+<li>register setup to comply with function call conventions (<code class="docutils literal notranslate"><span class="pre">W0</span></code> - <code class="docutils literal notranslate"><span class="pre">W7</span></code>
+are caller saved, to allow for arguments and return values; <code class="docutils literal notranslate"><span class="pre">W8</span></code> - <code class="docutils literal notranslate"><span class="pre">W14</span></code>
+are callee saved)</li>
+</ul>
+<p>The refactored version of <code class="docutils literal notranslate"><span class="pre">pwm_clip_and_update</span></code> contains 4 function calls,
+so this adds 40 extra cycles for the <code class="docutils literal notranslate"><span class="pre">RCALL</span></code> and <code class="docutils literal notranslate"><span class="pre">RETURN</span></code> instructions,
+and the other 9 cycles involve register moves to comply with function
+call conventions.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">-O2</span></code> and <code class="docutils literal notranslate"><span class="pre">-O3</span></code> optimizations, the XC16 compiler automatically
+inlines small functions. We can coerce XC16 into doing this under <code class="docutils literal notranslate"><span class="pre">-O1</span></code>
+by adding the <code class="docutils literal notranslate"><span class="pre">inline</span></code> keyword:</p>
+<div class="literal-block-wrapper docutils container" id="code-opt4">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 3.20 </span><span class="caption-text"></span><a class="headerlink" href="#code-opt4" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="hll"> <span class="kr">inline</span> <span class="kt">void</span> <span class="nf">clip_u16</span><span class="p">(</span><span class="kt">uint16_t</span> <span class="o">*</span><span class="n">px</span><span class="p">,</span> <span class="k">const</span> <span class="n">limits_t</span> <span class="o">*</span><span class="n">plimits</span><span class="p">)</span>
+</span> <span class="p">{</span>
+     <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">px</span> <span class="o">&gt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">)</span>
+         <span class="o">*</span><span class="n">px</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">max</span><span class="p">;</span>
+     <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">px</span> <span class="o">&lt;=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">)</span>
+         <span class="o">*</span><span class="n">px</span> <span class="o">=</span> <span class="n">plimits</span><span class="o">-&gt;</span><span class="n">min</span><span class="p">;</span>
+ <span class="p">}</span>
+
+<span class="hll"> <span class="kr">inline</span> <span class="kt">void</span> <span class="nf">set_pwm</span><span class="p">(</span><span class="k">const</span> <span class="n">pwm_t</span> <span class="o">*</span><span class="n">ppwm</span><span class="p">)</span>
+</span> <span class="p">{</span>
+     <span class="n">PDC1</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+     <span class="n">PDC2</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+     <span class="n">PDC3</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+ <span class="p">}</span>
+
+ <span class="kt">void</span> <span class="nf">pwm_clip_and_update</span><span class="p">(</span><span class="n">pwm_t</span> <span class="o">*</span><span class="n">ppwm</span><span class="p">,</span> <span class="k">const</span> <span class="n">limits_t</span>
+            <span class="o">*</span><span class="n">plimits</span><span class="p">)</span>
+ <span class="p">{</span>
+     <span class="kt">uint16_t</span> <span class="o">*</span><span class="n">px</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+     <span class="n">clip_u16</span><span class="p">(</span><span class="n">px</span><span class="p">,</span> <span class="n">plimits</span><span class="p">);</span>
+     <span class="n">clip_u16</span><span class="p">(</span><span class="o">++</span><span class="n">px</span><span class="p">,</span> <span class="n">plimits</span><span class="p">);</span>
+     <span class="n">clip_u16</span><span class="p">(</span><span class="o">++</span><span class="n">px</span><span class="p">,</span> <span class="n">plimits</span><span class="p">);</span>
+     <span class="n">set_pwm</span><span class="p">(</span><span class="n">ppwm</span><span class="p">);</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>This technique is used frequently in the MCAF to keep execution time low,
+but still allow for modular refactoring. You will see <code class="docutils literal notranslate"><span class="pre">inline</span></code> and
+<code class="docutils literal notranslate"><span class="pre">inline</span> <span class="pre">static</span></code> used frequently in functions that are either very simple
+or called only once.</p>
+<p>If you are interested in using <code class="docutils literal notranslate"><span class="pre">inline</span></code> in your own code, please read the following
+section, before you start sprinkling it around haphazardly.</p>
+<div class="section" id="the-compleat-inliner-a-primer">
+<h3>3.6.2.1. The Compleat Inliner: A Primer<a class="headerlink" href="#the-compleat-inliner-a-primer" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">inline</span></code> keyword in C is a tool, and like all tools, it can be used
+both appropriately and inappropriately. Two things to keep in mind are:</p>
+<ul class="simple">
+<li><strong>Please be aware that in C, the</strong> <code class="docutils literal notranslate"><span class="pre">inline</span></code> <strong>keyword is a</strong> <em>hint</em> <strong>to the
+compiler, not a requirement.</strong> In theory the compiler is free to ignore it; in
+practice it can be a useful tool.</li>
+<li><strong>Keep a good sense of proportion, and understand how often your code executes.</strong>
+We discussed an example of reducing
+a function from 105 cycles to 56 cycles. In a 70MIPS dsPIC<sup>®</sup> DSC device,
+this would save 700 nanoseconds.<ul>
+<li>If this is in code that executes once per
+second, it would be an insignificant improvement, and <code class="docutils literal notranslate"><span class="pre">inline</span></code> does have
+some significant disadvantages, discussed later in this section</li>
+<li>If this is in code that executes at a 20 kHz rate, it would save 1.4% of the
+CPU, which is not a huge savings, but it is significant for adding <code class="docutils literal notranslate"><span class="pre">inline</span></code>
+in two simple instances.</li>
+</ul>
+</li>
+</ul>
+<p>With that as a prologue, here are some general rules for inlining in C.</p>
+<ol class="arabic">
+<li><p class="first"><strong>Don’t do it</strong>.</p>
+</li>
+<li><p class="first"><strong>Ignore Rule #1 if a function is very small.</strong> Good candidates for inlining
+are functions that are less than ≈70 cycles, whether that is the total
+time, or the time excluding 2nd-level calls, as in “adapter” functions
+like the one shown below:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kr">inline</span> <span class="kt">void</span> <span class="nf">middle_man</span><span class="p">(</span><span class="kt">int16_t</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int16_t</span> <span class="n">y</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">delegate_to_someone_else</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">);</span>  <span class="c1">// all I do is reverse args</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first"><strong>Ignore Rule #1 if a function is called only once.</strong></p>
+</li>
+<li><p class="first"><strong>Ignore Rule #1 if you are desperate to optimize.</strong> Desperation can
+lead to poor decision-making, so don’t do it lightly.</p>
+</li>
+<li><p class="first"><strong>If you ignore Rule #1, don’t inline blindly.</strong></p>
+<p>5a. Use <code class="docutils literal notranslate"><span class="pre">-save-temps</span></code> (this keeps the intermediate assembly files generated
+by the compiler) and develop habit of spot-checking the compiler output</p>
+<p>5b. Measure execution times — code execution time will be dependent on
+how inline functions are used, and may change unexpectedly upon
+changes in caller code.</p>
+</li>
+<li><p class="first"><strong>Call sites (point of use)</strong> <em>must</em> <strong>be in the same compilation unit as the
+inline function definition</strong></p>
+<ul class="simple">
+<li>Assembly code generation is determined by the compiler</li>
+<li>The compiler processes one compilation unit at a time</li>
+<li>The compiler can’t see the source of other compilation units</li>
+<li>The compiler does not see the source directly; instead it sees the output
+of the preprocessor (effectively one .c file + any <code class="docutils literal notranslate"><span class="pre">#include</span></code>d .h files)</li>
+<li>The linker can only relocate addresses; it can’t change the sequence of
+instructions  (some newer compiler toolchains have link-time /  “whole program” optimization
+which get around this restriction — if you have such a toolchain you should
+probably rethink your use of <code class="docutils literal notranslate"><span class="pre">inline</span></code>)</li>
+</ul>
+<p>6a. <strong>“Local” function definitions</strong> (function definition and call site
+in the same .c file) — <code class="docutils literal notranslate"><span class="pre">inline</span></code> is sufficient.</p>
+<div class="literal-block-wrapper docutils container" id="code-opt5">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 3.21 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">bar.c</span></code></span><a class="headerlink" href="#code-opt5" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span> <span class="kr">inline</span> <span class="kt">void</span> <span class="nf">set_pwm</span><span class="p">(</span><span class="k">const</span> <span class="n">pwm_t</span> <span class="o">*</span><span class="n">ppwm</span><span class="p">)</span>
+ <span class="p">{</span>
+     <span class="n">PDC1</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+     <span class="n">PDC2</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+     <span class="n">PDC3</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+ <span class="p">}</span>
+
+ <span class="kt">void</span> <span class="nf">pwm_clip_and_update</span><span class="p">(</span><span class="n">pwm_t</span> <span class="o">*</span><span class="n">ppwm</span><span class="p">,</span> <span class="k">const</span> <span class="n">limits_t</span>
+            <span class="o">*</span><span class="n">plimits</span><span class="p">)</span>
+ <span class="p">{</span>
+     <span class="kt">uint16_t</span> <span class="o">*</span><span class="n">px</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+     <span class="n">clip_u16</span><span class="p">(</span><span class="n">px</span><span class="p">,</span> <span class="n">plimits</span><span class="p">);</span>
+     <span class="n">clip_u16</span><span class="p">(</span><span class="o">++</span><span class="n">px</span><span class="p">,</span> <span class="n">plimits</span><span class="p">);</span>
+     <span class="n">clip_u16</span><span class="p">(</span><span class="o">++</span><span class="n">px</span><span class="p">,</span> <span class="n">plimits</span><span class="p">);</span>
+     <span class="n">set_pwm</span><span class="p">(</span><span class="n">ppwm</span><span class="p">);</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>6b. <strong>“Shared” function definitions</strong> (call site in a .c file, function
+definition in a .h file) — this requires the use of
+<code class="docutils literal notranslate"><span class="pre">inline</span> <span class="pre">static</span></code>. The <code class="docutils literal notranslate"><span class="pre">static</span></code> keyword prevents the function from being
+referenced from other compilation units, effectively giving each compilation
+unit its own private copy; otherwise, the linker will complain about duplicates.</p>
+<div class="literal-block-wrapper docutils container" id="code-opt6">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 3.22 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">foo.h</span></code></span><a class="headerlink" href="#code-opt6" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span> <span class="kr">inline</span> <span class="k">static</span> <span class="kt">void</span> <span class="nf">set_pwm</span><span class="p">(</span><span class="k">const</span> <span class="n">pwm_t</span> <span class="o">*</span><span class="n">ppwm</span><span class="p">)</span>
+ <span class="p">{</span>
+     <span class="n">PDC1</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+     <span class="n">PDC2</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+     <span class="n">PDC3</span> <span class="o">=</span> <span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="code-opt7">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 3.23 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">bar.c</span></code></span><a class="headerlink" href="#code-opt7" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span> <span class="cp">#include</span> <span class="cpf">&quot;foo.h&quot;</span><span class="cp"></span>
+ <span class="kt">void</span> <span class="nf">pwm_clip_and_update</span><span class="p">(</span><span class="n">pwm_t</span> <span class="o">*</span><span class="n">ppwm</span><span class="p">,</span> <span class="k">const</span> <span class="n">limits_t</span>
+            <span class="o">*</span><span class="n">plimits</span><span class="p">)</span>
+ <span class="p">{</span>
+     <span class="kt">uint16_t</span> <span class="o">*</span><span class="n">px</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">ppwm</span><span class="o">-&gt;</span><span class="n">duty</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+     <span class="n">clip_u16</span><span class="p">(</span><span class="n">px</span><span class="p">,</span> <span class="n">plimits</span><span class="p">);</span>
+     <span class="n">clip_u16</span><span class="p">(</span><span class="o">++</span><span class="n">px</span><span class="p">,</span> <span class="n">plimits</span><span class="p">);</span>
+     <span class="n">clip_u16</span><span class="p">(</span><span class="o">++</span><span class="n">px</span><span class="p">,</span> <span class="n">plimits</span><span class="p">);</span>
+     <span class="n">set_pwm</span><span class="p">(</span><span class="n">ppwm</span><span class="p">);</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</li>
+<li><p class="first"><strong>Understand the consequences</strong> when you <code class="docutils literal notranslate"><span class="pre">inline</span></code> a function</p>
+<ul>
+<li><p class="first">Using <code class="docutils literal notranslate"><span class="pre">inline</span> <span class="pre">static</span></code> in a .h file causes transitive dependencies.
+See the following table: (the → symbol means “depends on”)</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="48%" />
+<col width="52%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">No inline static</th>
+<th class="head">Use of inline static</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first">m1.c → m2.h</p>
+<p class="last">m2.c → m3.h</p>
+</td>
+<td>m1.c → m2.h → m3.h</td>
+</tr>
+<tr class="row-odd"><td><div class="literal-block-wrapper first last docutils container" id="code-inline-1">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 3.24 </span><span class="caption-text">m2.h</span><a class="headerlink" href="#code-inline-1" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">m2_foo</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">);</span>
+<span class="cm">/* function declaration only</span>
+<span class="cm">   Ha ha I don&#39;t have to tell</span>
+<span class="cm">   you how it works */</span>
+</pre></div>
+</div>
+</div>
+</td>
+<td><div class="literal-block-wrapper first last docutils container" id="code-inline-2">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 3.25 </span><span class="caption-text">m2.h</span><a class="headerlink" href="#code-inline-2" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;m3.h&quot;</span><span class="cp"></span>
+<span class="kr">inline</span> <span class="k">static</span> <span class="kt">int</span> <span class="nf">m2_foo</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="k">return</span> <span class="mi">42</span> <span class="o">-</span> <span class="n">m3_bar</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">The function implementation cannot be secret</p>
+</li>
+<li><p class="first">The function cannot be put into a precompiled library, which means,
+for example, that if you are creating a library and you have access to
+the premium version of XC16, you can’t compile it with <code class="docutils literal notranslate"><span class="pre">-O3</span></code> to make
+it available to library customers who do not have access to <code class="docutils literal notranslate"><span class="pre">-O3</span></code></p>
+</li>
+<li><p class="first">More code space is typically needed, in order to support multiple call
+sites. For example, don’t do this:</p>
+<div class="literal-block-wrapper docutils container" id="code-opt8">
+<div class="caption_wrapper"><div class="code-block-caption"><span class="caption-number">Listing 3.26 </span><span class="caption-text"></span><a class="headerlink" href="#code-opt8" title="Permalink to this code">¶</a></div>
+</div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">extern</span> <span class="kt">void</span> <span class="nf">burp</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">);</span>   <span class="c1">// some other function with side effects</span>
+<span class="kr">inline</span> <span class="kt">int</span> <span class="nf">f0</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span>  <span class="p">{</span> <span class="n">burp</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="k">return</span> <span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span>           <span class="p">}</span>  <span class="c1">// 1 burp</span>
+<span class="kr">inline</span> <span class="kt">int</span> <span class="nf">f1</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span>  <span class="p">{</span> <span class="n">burp</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="k">return</span> <span class="n">f0</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>     <span class="p">}</span>  <span class="c1">// 2 burps</span>
+<span class="kr">inline</span> <span class="kt">int</span> <span class="nf">f2</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span>  <span class="p">{</span> <span class="n">burp</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="k">return</span> <span class="n">f1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">f0</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="p">}</span>  <span class="c1">// 4 burps</span>
+<span class="kr">inline</span> <span class="kt">int</span> <span class="nf">f3</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span>  <span class="p">{</span> <span class="n">burp</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="k">return</span> <span class="n">f2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">f1</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="p">}</span>  <span class="c1">// 7 burps</span>
+<span class="kr">inline</span> <span class="kt">int</span> <span class="nf">f4</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span>  <span class="p">{</span> <span class="n">burp</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="k">return</span> <span class="n">f3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">f2</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="p">}</span>  <span class="c1">// 12 burps</span>
+<span class="kr">inline</span> <span class="kt">int</span> <span class="nf">f5</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span>  <span class="p">{</span> <span class="n">burp</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="k">return</span> <span class="n">f4</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">f3</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="p">}</span>  <span class="c1">// 20 burps</span>
+<span class="kr">inline</span> <span class="kt">int</span> <span class="nf">f6</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span>  <span class="p">{</span> <span class="n">burp</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="k">return</span> <span class="n">f5</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">f4</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="p">}</span>  <span class="c1">// 33 burps</span>
+<span class="kr">inline</span> <span class="kt">int</span> <span class="nf">f7</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span>  <span class="p">{</span> <span class="n">burp</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="k">return</span> <span class="n">f6</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">f5</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="p">}</span>  <span class="c1">// 54 burps</span>
+<span class="kr">inline</span> <span class="kt">int</span> <span class="nf">f8</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span>  <span class="p">{</span> <span class="n">burp</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="k">return</span> <span class="n">f7</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">f6</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="p">}</span>  <span class="c1">// 88 burps</span>
+<span class="kr">inline</span> <span class="kt">int</span> <span class="nf">f9</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span>  <span class="p">{</span> <span class="n">burp</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="k">return</span> <span class="n">f8</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">f7</span><span class="p">(</span><span class="n">x</span><span class="p">);</span> <span class="p">}</span>  <span class="c1">// 143 burps</span>
+</pre></div>
+</div>
+</div>
+<p>Aside from producing ambiguously-ordered execution — in expressions like
+<code class="docutils literal notranslate"><span class="pre">f1(x)</span> <span class="pre">+</span> <span class="pre">f0(x)</span></code> <a class="reference external" href="https://en.wikipedia.org/wiki/Sequence_point#Examples_of_ambiguity">there is no guaranteed order</a>:
+the compiler may choose to execute <code class="docutils literal notranslate"><span class="pre">f1(x)</span></code> first
+or it may choose to execute <code class="docutils literal notranslate"><span class="pre">f0(x)</span></code> first, so side-effects like calls
+to <code class="docutils literal notranslate"><span class="pre">burp()</span></code> may not always appear in the same order — calling <code class="docutils literal notranslate"><span class="pre">f9()</span></code>
+will create code that asks the compiler to inline 143 separate calls
+to <code class="docutils literal notranslate"><span class="pre">burp()</span></code>, which is probably a waste of code space.</p>
+</li>
+<li><p class="first"><strong>Execution time is not fixed</strong> — depending on the caller, the compiler
+may produce optimized assembly code differently at each call site.</p>
+</li>
+<li><p class="first"><strong>Inlined functions “lose their identity”</strong>:</p>
+<ul class="simple">
+<li>Debugging may be harder (you don’t see an entry in the call stack,
+and breakpoints may not work)</li>
+<li>They don’t appear separately in the linker map</li>
+</ul>
+</li>
+<li><p class="first"><strong>Language lawyers will say you can’t depend on it</strong>. (in theory they
+are right, in practice they are wrong… at least until the next version
+of the compiler has changes that break your code)</p>
+</li>
+<li><p class="first"><strong>Continued vigilance is required (see Rule #5) to ensure inlining works
+as expected</strong>.</p>
+</li>
+</ul>
+</li>
+</ol>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>Using <code class="docutils literal notranslate"><span class="pre">inline</span></code> can be a powerful tool in programming C on embedded systems, but
+it comes with costs, and should only be used with appropriate care.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3.6. Scheduling and Optimization</a><ul>
+<li><a class="reference internal" href="#scheduling">3.6.1. Scheduling</a><ul>
+<li><a class="reference internal" href="#requirements">3.6.1.1. Requirements</a></li>
+<li><a class="reference internal" href="#implementation-notes">3.6.1.2. Implementation notes</a><ul>
+<li><a class="reference internal" href="#cooperative-scheduling">3.6.1.2.1. Cooperative Scheduling</a></li>
+<li><a class="reference internal" href="#call-tree">3.6.1.2.2. Call tree</a></li>
+<li><a class="reference internal" href="#thread-safety">3.6.1.2.3. Thread safety</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#optimization">3.6.2. Optimization</a><ul>
+<li><a class="reference internal" href="#the-compleat-inliner-a-primer">3.6.2.1. The Compleat Inliner: A Primer</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="config-params.html"
+                        title="previous chapter">3.5. Configuration Parameters</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="statemach.html"
+                        title="next chapter">3.7. State Machine</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="statemach.html" title="3.7. State Machine"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="config-params.html" title="3.5. Configuration Parameters"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" >3. Architecture</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>
