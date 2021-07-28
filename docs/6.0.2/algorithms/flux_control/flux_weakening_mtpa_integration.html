@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>5.4.3. D-axis current reference generation &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script type="text/javascript" src="../../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../../_static/mcaf-styling.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.5. Dead-time Compensation" href="../dead-time-comp.html" />
+    <link rel="prev" title="5.4.2. Maximum Torque Per Ampere (MTPA)" href="mtpa.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../dead-time-comp.html" title="5.5. Dead-time Compensation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="mtpa.html" title="5.4.2. Maximum Torque Per Ampere (MTPA)"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">5.4. Flux control</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="d-axis-current-reference-generation">
+<span id="algorithm-fw-and-mtpa-integration"></span><span id="index-0"></span><h1>5.4.3. D-axis current reference generation<a class="headerlink" href="#d-axis-current-reference-generation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>5.4.3.1. Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The flux-weakening module calculates the d-axis current reference <span class="math">\(I_{d\_fw}\)</span>,
+whereas the MTPA module calculates the d-axis current reference <span class="math">\(I_{d\_mtpa}\)</span>.
+The <span class="math">\(I_{d\_ref}\)</span> generation module chooses the appropriate value between <span class="math">\(I_{d\_fw}\)</span>
+and <span class="math">\(I_{d\_mtpa}\)</span> and generates the d-axis current reference <span class="math">\(I_{d\_ref}\)</span> to be given as an input to
+the current controller.</p>
+<p>The q-axis current limit is computed from the value of <span class="math">\(I_{d\_ref}\)</span>, to keep the overall motor current
+within acceptable bounds.</p>
+</div>
+<div class="section" id="flow-chart-and-description">
+<h2>5.4.3.2. Flow chart and description<a class="headerlink" href="#flow-chart-and-description" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#fig-fc-idref-generation"><span class="std std-numref">Figure 5.66</span></a> shows a flow chart of the <span class="math">\(I_{d\_ref}\)</span> module. This module takes <span class="math">\(I_{d\_mtpa}\)</span>
+and <span class="math">\(I_{d\_fw}\)</span> from the MTPA and FW modules, respectively.</p>
+<div class="figure align-center" id="id1">
+<span id="fig-fc-idref-generation"></span><a class="reference internal image-reference" href="../../_images/fc_idref_generation.png"><img alt="../../_images/fc_idref_generation.png" src="../../_images/fc_idref_generation.png" style="width: 450px;" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.66 </span><span class="caption-text"><span class="math">\(I_{d\_ref}\)</span> generation flow chart</span></p>
+</div></div>
+<ul>
+<li><p class="first">Possible user inputs for enabling/disabling MTPA and FW are listed in the table below. It is observed that the correct choice
+for <span class="math">\(I_{d\_ref}\)</span> is the minimum of <span class="math">\(I_{d\_fw}\)</span> and <span class="math">\(I_{d\_mtpa}\)</span> in all cases. Based on this, after
+calculation of <span class="math">\(I_{d\_fw}\)</span> and <span class="math">\(I_{d\_mtpa}\)</span>, the algorithm calculates the minimum of the two
+(<span class="math">\(I_{d\_min}\)</span>).</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="39%" />
+<col width="39%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">User Selection</th>
+<th class="head">No-FW Region</th>
+<th class="head">FW Region</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first">MTPA Disabled,</p>
+<p class="last">FW Disabled</p>
+</td>
+<td><p class="first"><span class="math">\(I_{d\_mtpa} = 0\)</span>, <span class="math">\(I_{d\_fw}= 0\)</span></p>
+<p class="last"><span class="math">\(I_{d\_fw} = I_{d\_mtpa} = 0\)</span></p>
+</td>
+<td>Does not enter</td>
+</tr>
+<tr class="row-odd"><td><p class="first">MTPA Disabled,</p>
+<p class="last">FW Enabled</p>
+</td>
+<td><p class="first"><span class="math">\(I_{d\_mtpa} = 0\)</span>, <span class="math">\(I_{d\_fw} = 0\)</span></p>
+<p class="last"><span class="math">\(I_{d\_fw} = I_{d\_mtpa} = 0\)</span></p>
+</td>
+<td><p class="first"><span class="math">\(I_{d\_mtpa} = 0\)</span>, <span class="math">\(I_{d\_fw} &lt; 0\)</span></p>
+<p class="last"><span class="math">\(I_{d\_fw} &lt; I_{d\_mtpa}\)</span></p>
+</td>
+</tr>
+<tr class="row-even"><td><p class="first">MTPA Enabled,</p>
+<p class="last">FW Disabled</p>
+</td>
+<td><p class="first"><span class="math">\(I_{d\_mtpa} &lt; 0\)</span>, <span class="math">\(I_{d\_fw} = 0\)</span></p>
+<p class="last"><span class="math">\(I_{d\_mtpa} &lt; I_{d\_fw}\)</span></p>
+</td>
+<td>Does not enter</td>
+</tr>
+<tr class="row-odd"><td><p class="first">MTPA Enabled,</p>
+<p class="last">FW Enabled</p>
+</td>
+<td><p class="first"><span class="math">\(I_{d\_mtpa} &lt; 0\)</span>, <span class="math">\(I_{d\_fw} = 0\)</span></p>
+<p class="last"><span class="math">\(I_{d\_mtpa} &lt; I_{d\_fw}\)</span></p>
+</td>
+<td><p class="first"><span class="math">\(I_{d\_mtpa} &lt; 0\)</span>, <span class="math">\(I_{d\_fw} &lt; 0\)</span></p>
+<p class="last"><span class="math">\(I_{d\_fw} &lt; I_{d\_mtpa}\)</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p class="first">The calculated <span class="math">\(I_{d\_min}\)</span> is checked against a user-defined minimum value (<span class="math">\(I_{d\_refmin}\)</span>), and if found lower
+than <span class="math">\(I_{d\_refmin}\)</span>, it is limited to <span class="math">\(I_{d\_refmin}\)</span>.</p>
+</li>
+<li><p class="first">The value thus obtained (<span class="math">\(I_{d\_refcalc}\)</span>) is passed through a first-order low pass filter,
+and the output <span class="math">\(I_{d\_ref}\)</span> gives the d-axis reference as an input to the current controller.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="calculation-of-q-axis-current-limit">
+<span id="algorithm-fluxctrl-iqlim"></span><h2>5.4.3.3. Calculation of q-axis current limit<a class="headerlink" href="#calculation-of-q-axis-current-limit" title="Permalink to this headline">¶</a></h2>
+<p>Similar to the limit on the d-axis current, a limit is also imposed on the q-axis current in the motor. In MCAF R6, two
+different methods of limiting the motor current are implemented viz. rectangular limits and quadratic limits. This choice can be
+made in <a class="reference internal" href="../../implementation/ui-customization.html#impl-customization"><span class="std std-ref">Parameter Customization</span></a>.</p>
+<ul>
+<li><p class="first">Rectangular current limits: In this method, the limits on the d-axis and q-axis currents are defined independently. The limits
+are specified in <a class="reference internal" href="../../implementation/ui-customization.html#impl-customization"><span class="std std-ref">Parameter Customization</span></a>.</p>
+</li>
+<li><p class="first">Quadratic current limits: In this method, after generation of the d-axis current reference (<span class="math">\(I_{d\_ref}\)</span>), the q-axis
+current limit is calculated with the help of a quadratic approximation of a circular function as given below.</p>
+<div class="math" id="equation-quadratic-approx">
+<span class="eqno">(5.51)</span>\[\begin{aligned}
+I_{q\_lim} &amp;= \sqrt{I_{\max}{}^2 - I_{d\_ref}{}^2}\\
+           &amp;\approx I_{\max}\left(1 - \frac{1}{2} \left(\frac{I_{d\_ref}}{I_{\max}}\right)^2 \right)
+\end{aligned}\]</div>
+<p>The calculated q-axis current limit is used by the velocity controller in the FOC path to limit the q-axis current reference.</p>
+<p>An illustration of these two methods is shown in <a class="reference internal" href="#fig-fluxctrl-qaxislimits"><span class="std std-numref">Figure 5.67</span></a>.</p>
+<div class="figure align-center" id="id2">
+<span id="fig-fluxctrl-qaxislimits"></span><a class="reference internal image-reference" href="../../_images/fw_q_axis_current_limit.svg"><img alt="../../_images/fw_q_axis_current_limit.svg" src="../../_images/fw_q_axis_current_limit.svg" width="500px" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.67 </span><span class="caption-text"><span class="math">\(I_{q\_lim}\)</span> calculation as a function of <span class="math">\(I_{d\_ref}\)</span></span></p>
+</div></div>
+<p>The striped curve represents a maximum amplitude of 1.0 normalized to <span class="math">\(I_{\max}\)</span>,
+with thinner circular contours shown in steps of 0.01 amplitude above and below it.
+A rectangular limit is shown in orange, and a quadratic limit is shown in blue.
+Limits should be chosen to minimize the excursions above 1.0 amplitude.
+With the limits shown, a rectangular limit keeps the maximum amplitude below about 1.05
+for <span class="math">\(|I_q/I_{\max}| &lt; 0.95,\;|I_d/I_{\max}| &lt; 0.45\)</span>; a quadratic limit keeps
+the maximum amplitude below about 1.03 for <span class="math">\(|I_d/I_{\max}| &lt; 0.7\)</span>.</p>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5.4.3. D-axis current reference generation</a><ul>
+<li><a class="reference internal" href="#overview">5.4.3.1. Overview</a></li>
+<li><a class="reference internal" href="#flow-chart-and-description">5.4.3.2. Flow chart and description</a></li>
+<li><a class="reference internal" href="#calculation-of-q-axis-current-limit">5.4.3.3. Calculation of q-axis current limit</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="mtpa.html"
+                        title="previous chapter">5.4.2. Maximum Torque Per Ampere (MTPA)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../dead-time-comp.html"
+                        title="next chapter">5.5. Dead-time Compensation</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../dead-time-comp.html" title="5.5. Dead-time Compensation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="mtpa.html" title="5.4.2. Maximum Torque Per Ampere (MTPA)"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >5.4. Flux control</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>5.4.1. Flux weakening &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script type="text/javascript" src="../../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../../_static/mcaf-styling.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.4.1.3.1. Equation based flux-weakening" href="fw_types/fw_eq_based.html" />
+    <link rel="prev" title="5.4. Flux control" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="fw_types/fw_eq_based.html" title="5.4.1.3.1. Equation based flux-weakening"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="5.4. Flux control"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">5.4. Flux control</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="flux-weakening">
+<span id="algorithm-flux-weakening"></span><span id="index-0"></span><h1>5.4.1. Flux weakening<a class="headerlink" href="#flux-weakening" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="motivation">
+<h2>5.4.1.1. Motivation<a class="headerlink" href="#motivation" title="Permalink to this headline">¶</a></h2>
+<p>Many applications require the motor to be run at a velocity greater than the rated velocity of the motor. In a <a class="reference internal" href="../../appendix/glossary.html#term-pmsm"><span class="xref std std-term">PMSM</span></a>,
+the back emf increases in proportion to the rotor velocity. Steady-state stator voltage equations for a typical <a class="reference internal" href="../../appendix/glossary.html#term-pmsm"><span class="xref std std-term">PMSM</span></a>
+are given by <a class="reference internal" href="#equation-voltage-equations-steadystate">5.37</a>. Here, <span class="math">\(R_{s}\)</span> is per-phase stator resistance, <span class="math">\(L_{d}\)</span> and
+<span class="math">\(L_{q}\)</span> are motor inductance values in the d and the q axes, respectively, while <span class="math">\(V_{ds}\)</span> and <span class="math">\(V_{qs}\)</span> are
+stator voltage components in the d and the q axes, respectively. Back emf <span class="math">\(E_{Mag}\)</span> lies in the q axis and is given by
+<a class="reference internal" href="#equation-backemf">5.38</a>. Here, <span class="math">\(\omega_e\)</span> is the rotor velocity in electrical rad/s and <span class="math">\(\Psi_{PM}\)</span> is the back emf
+constant in volts per electrical rad/s.</p>
+<div class="math" id="equation-voltage-equations-steadystate">
+<span class="eqno">(5.37)</span>\[    \begin{aligned}
+    V_{ds} &amp;= R_{s}I_{d} - \omega_e L_{q} I_{q} \\
+V_{qs} &amp;= R_{s}I_{q} + \omega_e L_{d} I_{d} + E_{Mag}
+\end{aligned}\]</div>
+<div class="math" id="equation-backemf">
+<span class="eqno">(5.38)</span>\[E_{Mag} = \omega_e \Psi_{PM}\]</div>
+<p><a class="reference internal" href="#equation-voltage-equations-steadystate">5.37</a> shows that the q-axis stator voltage will increase as the back emf increases.
+This is depicted in <a class="reference internal" href="#fig-vector-no-fw"><span class="std std-numref">Figure 5.57</span></a>. At around the rated motor velocity, the voltage reaches the motor’s
+rated voltage value and it cannot be increased further. Often, this rated voltage also corresponds to the maximum possible
+voltage that can be obtained from the inverter due to DC link voltage limitations.</p>
+<div class="figure align-center" id="id1">
+<span id="fig-vector-no-fw"></span><a class="reference internal image-reference" href="../../_images/vector_no_fw.png"><img alt="../../_images/vector_no_fw.png" src="../../_images/vector_no_fw.png" style="width: 250px;" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.57 </span><span class="caption-text">PMSM vector diagram: <span class="math">\(I_{d} = 0\)</span></span></p>
+</div></div>
+<p>In order to allow a further increase in motor velocity, it is necessary to restrict the increase in <span class="math">\(V_{qs}\)</span> while
+allowing <span class="math">\(E_{Mag}\)</span> to increase. For a positive velocity, this is achieved by making the <span class="math">\(\omega_e L_{d} I_{d}\)</span> term
+negative, which in turn is done by making <span class="math">\(I_{d}\)</span> negative. <a class="reference internal" href="#fig-vector-fw"><span class="std std-numref">Figure 5.58</span></a> shows the vector diagram with a negative <span class="math">\(I_{d}\)</span>
+injected in the motor. Here, <span class="math">\(V_{s}\)</span> (dashed black arrow) shows the stator voltage vector with <span class="math">\(I_{d} = 0\)</span>, whereas
+<span class="math">\(V_{s\_fw}\)</span> (solid black arrow) shows the stator voltage vector with <span class="math">\(I_{d} &lt; 0\)</span>. Due to the opposing effect of the
+negative <span class="math">\(\omega_e L_{d} I_{d}\)</span> term, the magnitude of <span class="math">\(V_{s\_fw}\)</span> is lower than the magnitude of <span class="math">\(V_{s}\)</span>, for
+the same values of <span class="math">\(E_{Mag}\)</span> and <span class="math">\(I_{q}\)</span>.</p>
+<div class="figure align-center" id="id2">
+<span id="fig-vector-fw"></span><a class="reference internal image-reference" href="../../_images/vector_fw.png"><img alt="../../_images/vector_fw.png" src="../../_images/vector_fw.png" style="width: 250px;" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.58 </span><span class="caption-text">PMSM vector diagram: <span class="math">\(I_{d} &lt; 0\)</span></span></p>
+</div></div>
+<p>Since injecting a negative <span class="math">\(I_{d}\)</span> in the motor effectively weakens the air-gap flux, the name flux-weakening (FW) is
+used. The function of the FW algorithm is the calculation of a suitable reference value for negative <span class="math">\(I_{d}\)</span>
+to operate the motor at a particular velocity and load.</p>
+</div>
+<div class="section" id="effect-on-torque-capability">
+<h2>5.4.1.2. Effect on torque capability<a class="headerlink" href="#effect-on-torque-capability" title="Permalink to this headline">¶</a></h2>
+<p>Electromagnetic torque produced in a <a class="reference internal" href="../../appendix/glossary.html#term-pmsm"><span class="xref std std-term">PMSM</span></a> with no saliency is given by <a class="reference internal" href="#equation-torque-equation-nonsalient">5.39</a>. Here,
+<span class="math">\(P\)</span> is the number of poles in the motor. When <span class="math">\(I_{d} = 0\)</span> (i.e. no flux-weakening), the q-axis current
+<span class="math">\(I_{q}\)</span> is allowed to increase up to the total rated current of the motor. This results in the rated torque output
+from the motor.</p>
+<div class="math" id="equation-torque-equation-nonsalient">
+<span class="eqno">(5.39)</span>\[    T_{em} = \frac{3}{2} \frac{P}{2} \Psi_{PM}I_{q}\]</div>
+<p>However, with a negative <span class="math">\(I_{d}\)</span>, the maximum allowed value of the q-axis current reduces to limit the
+total current magnitude of the motor as per <a class="reference internal" href="#equation-iq-limit">5.40</a> given below. Here, <span class="math">\(I_{\max}\)</span> is the maximum current
+amplitude, which is determined by the rated current of the motor or of the drive.</p>
+<div class="math" id="equation-iq-limit">
+<span class="eqno">(5.40)</span>\[    I_{q\_limit} = \sqrt{I_{\max}{}^2 - I_{d}{}^2}\]</div>
+<p>With the reduction in <span class="math">\(I_{q\_limit}\)</span>, the torque capability of the motor also reduces. This reduction is more as the
+motor velocity increases. <a class="reference internal" href="#fig-torque-capability-nonsalient"><span class="std std-numref">Figure 5.59</span></a> shows normalized plots of torque versus velocity for a
+non-salient motor. The per unit motor parameters are indicated at the top of the figure. <a class="reference internal" href="#equation-r-l-normalisation">5.41</a> is
+used for calculating the per unit values of motor parameters. Here, <span class="math">\(I_{1}\)</span> is the maximum current and <span class="math">\(V_{1}\)</span> is
+the nominal back-emf voltage at nominal speed.</p>
+<div class="math" id="equation-r-l-normalisation">
+<span class="eqno">(5.41)</span>\[    \begin{aligned}
+    \bar{R} &amp;= \frac{I_{1} R}{V_{1}}\\
+    \bar{L}_d &amp;= \frac{I_{1} L_d}{\Psi_{PM}}
+    \end{aligned}\]</div>
+<p>The outermost dashed red curve shows
+the maximum possible torque as a function of velocity. The solid red
+curves are constant-current plots and the solid black curves are constant-voltage plots. The region shaded light blue is without
+any FW, while the region shaded pink is the FW region. The dashed curve <span class="math">\(A-D_1-O-A'\)</span> shows the transition between FW and
+no-FW regions, while the dashed curve <span class="math">\(P-D_2-B-C-P'\)</span> shows the limiting boundary of the FW region. It can be seen that
+the maximum torque value in the FW region is lower than that in the no-FW region, and it reduces as the velocity increases.</p>
+<div class="figure align-center" id="id3">
+<span id="fig-torque-capability-nonsalient"></span><a class="reference internal image-reference" href="../../_images/fw_torque_capability_nonsalient.png"><img alt="../../_images/fw_torque_capability_nonsalient.png" src="../../_images/fw_torque_capability_nonsalient.png" style="width: 500px;" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.59 </span><span class="caption-text">Torque-Velocity Plots: Non-salient Motor</span></p>
+</div></div>
+<p>For a salient-pole motor, the torque equation is given by <a class="reference internal" href="#equation-torque-equation-salient">5.42</a>. In this equation, there is an
+additional reluctance torque term which arises due to motor saliency.</p>
+<div class="math" id="equation-torque-equation-salient">
+<span class="eqno">(5.42)</span>\[    T_{em} = \frac{3}{2} \frac{P}{2} \Psi_{PM}I_{q} + \frac{3}{2} \frac{P}{2} (L_{d}-L_{q}) I_{q} I_{d}\]</div>
+<p>With a negative <span class="math">\(I_{d}\)</span>, even though the reluctance
+torque term gives a positive value, there is a reduction in the first term due to the reduction in <span class="math">\(I_{q\_limit}\)</span>.
+The reduction in the first term dominates over the increase in the second term, thereby reducing the overall torque
+capability of the motor. The torque-velocity plots for a salient-pole motor are similar to those for a non-salient motor.</p>
+</div>
+<div class="section" id="flux-weakening-algorithms">
+<h2>5.4.1.3. Flux-weakening algorithms<a class="headerlink" href="#flux-weakening-algorithms" title="Permalink to this headline">¶</a></h2>
+<p>The flux-weakening algorithm could be implemented in different ways. Some of these methods use an open-loop approach
+based on motor equations. Other methods implement a closed-loop approach by adding a controller in the FW algorithm.
+In MCAF R6, an equation-based FW algorithm is implemented. This equation-based algorithm is an open-loop algorithm based
+on motor equations and does not include an additional controller. Details of this algorithm are given in the section below.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fw_types/fw_eq_based.html">5.4.1.3.1. Equation based flux-weakening</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fw_types/fw_eq_based.html#overview">5.4.1.3.1.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fw_types/fw_eq_based.html#flow-chart-and-description">5.4.1.3.1.2. Flow chart and description</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fw_types/fw_eq_based.html#implementation-notes">5.4.1.3.1.3. Implementation notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fw_types/fw_eq_based.html#factors-affecting-flux-weakening-operation">5.4.1.3.1.4. Factors affecting flux-weakening operation</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5.4.1. Flux weakening</a><ul>
+<li><a class="reference internal" href="#motivation">5.4.1.1. Motivation</a></li>
+<li><a class="reference internal" href="#effect-on-torque-capability">5.4.1.2. Effect on torque capability</a></li>
+<li><a class="reference internal" href="#flux-weakening-algorithms">5.4.1.3. Flux-weakening algorithms</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">5.4. Flux control</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="fw_types/fw_eq_based.html"
+                        title="next chapter">5.4.1.3.1. Equation based flux-weakening</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="fw_types/fw_eq_based.html" title="5.4.1.3.1. Equation based flux-weakening"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="5.4. Flux control"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >5.4. Flux control</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

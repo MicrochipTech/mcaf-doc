@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>7.2. Error code list &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../_static/mcaf-styling.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="7.3. MCLV-2 Sense Resistors" href="mclv2.html" />
+    <link rel="prev" title="7.1. Glossary" href="glossary.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="mclv2.html" title="7.3. MCLV-2 Sense Resistors"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="glossary.html" title="7.1. Glossary"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">7. Appendix</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="error-code-list">
+<span id="appendix-error-codes"></span><h1>7.2. Error code list<a class="headerlink" href="#error-code-list" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="docutils">
+<colgroup>
+<col width="5%" />
+<col width="10%" />
+<col width="24%" />
+<col width="24%" />
+<col width="38%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">#</th>
+<th class="head">Blink Pattern</th>
+<th class="head">ID</th>
+<th class="head">Description</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td colspan="5"><strong class="first last">Traps</strong></td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>2</td>
+<td>ERR_OSC_FAIL</td>
+<td>oscillator failure</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>2</td>
+<td>3</td>
+<td>ERR_ADDRESS_ERROR</td>
+<td>address error (e.g. alignment)</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>3</td>
+<td>4</td>
+<td>ERR_HARD_TRAP</td>
+<td>hard trap</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>4</td>
+<td>1 2</td>
+<td>ERR_STACK_ERROR</td>
+<td>stack pointer error</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>5</td>
+<td>2 2</td>
+<td>ERR_MATH</td>
+<td>arithmetic error</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>6</td>
+<td>3 2</td>
+<td>ERR_RESERVED_TRAP5</td>
+<td>code for trap 5 unused</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>7</td>
+<td>4 2</td>
+<td>ERR_SOFT_TRAP</td>
+<td>hard trap</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>8</td>
+<td>1 3</td>
+<td>ERR_RESERVED_TRAP7</td>
+<td>reserved trap #7</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>255</td>
+<td>4 4 4 4</td>
+<td>ERR_UNEXPECTED_TRAP</td>
+<td>unexpected trap from MCC trap handler</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td colspan="5"><strong class="first last">Application errors</strong></td>
+</tr>
+<tr class="row-odd"><td>16</td>
+<td>1 1 2</td>
+<td>ERR_STALL_RETRY_EXCEEDED</td>
+<td>number of stall retries exceeded</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>17</td>
+<td>2 1 2</td>
+<td>ERR_INVALID_STARTUP_FSM_STATE</td>
+<td>invalid startup FSM state</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>18</td>
+<td>3 1 2</td>
+<td>ERR_HW_OVERCURRENT</td>
+<td>hardware overcurrent</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>19</td>
+<td>4 1 2</td>
+<td>ERR_DCLINK_OVERVOLTAGE</td>
+<td>DC link overvoltage</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>20</td>
+<td>1 2 2</td>
+<td>ERR_DCLINK_UNDERVOLTAGE</td>
+<td>DC link undervoltage</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>32</td>
+<td>1 1 3</td>
+<td>MCAF_ERR_RCON_TRAPR</td>
+<td>trap conflict</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>33</td>
+<td>2 1 3</td>
+<td>MCAF_ERR_RCON_IOPUWR</td>
+<td>IOPUWR illegal opcode / uninitialized W</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>34</td>
+<td>3 1 3</td>
+<td>MCAF_ERR_RCON_CM</td>
+<td>configuration mismatch</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>35</td>
+<td>4 1 3</td>
+<td>MCAF_ERR_RCON_WDTO_ISR</td>
+<td>watchdog timeout, ISR</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>36</td>
+<td>1 2 3</td>
+<td>ERR_RCON_WDTO_MAINLOOP</td>
+<td>watchdog timeout, main loop</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>37</td>
+<td>2 2 3</td>
+<td>ERR_BOARD_CONFIG_FAIL</td>
+<td>board configuration failed</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>38</td>
+<td>3 2 3</td>
+<td>ERR_BOARD_FAULT</td>
+<td>board fault detected</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td colspan="5"><strong class="first last">Unexpected interrupt errors</strong></td>
+</tr>
+<tr class="row-even"><td>256</td>
+<td>1 1 1 1 2</td>
+<td>ERR_UNEXPECTED_INTERRUPT_BASE</td>
+<td>&#160;</td>
+<td>This covers a range of codes; if you encounter blink patterns
+in a similar range, please contact Microchip support, as this
+indicates an unexpected error that may be caused by a software bug.</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="glossary.html"
+                        title="previous chapter">7.1. Glossary</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="mclv2.html"
+                        title="next chapter">7.3. MCLV-2 Sense Resistors</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="mclv2.html" title="7.3. MCLV-2 Sense Resistors"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="glossary.html" title="7.1. Glossary"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" >7. Appendix</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>
