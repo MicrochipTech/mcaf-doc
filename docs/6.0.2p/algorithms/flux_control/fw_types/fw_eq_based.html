@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>5.4.1.3.1. Equation based flux-weakening &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../../../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script type="text/javascript" src="../../../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../../../_static/mcaf-styling.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../../../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="5.4.2. Maximum Torque Per Ampere (MTPA)" href="../mtpa.html" />
+    <link rel="prev" title="5.4.1. Flux weakening" href="../flux_weakening.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../mtpa.html" title="5.4.2. Maximum Torque Per Ampere (MTPA)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../flux_weakening.html" title="5.4.1. Flux weakening"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../../index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >5.4. Flux control</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../flux_weakening.html" accesskey="U">5.4.1. Flux weakening</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="equation-based-flux-weakening">
+<span id="algorithm-fw-eqn-based"></span><span id="index-0"></span><h1>5.4.1.3.1. Equation based flux-weakening<a class="headerlink" href="#equation-based-flux-weakening" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>5.4.1.3.1.1. Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The flux-weakening (FW) module is required to calculate a suitable d-axis current reference <span class="math">\(I_{d\_fw}\)</span> so as to operate
+the motor at a velocity higher than the rated velocity without increasing the motor voltage. In MCAF R6, an equation-based
+algorithm is implemented for flux-weakening. This algorithm is based on an open-loop approach of calculating the current reference
+for FW operation (<span class="math">\(I_{d\_fw}\)</span>) using the motor voltage equations. Depending on the application requirements, the user can
+enable or disable flux-weakening.</p>
+</div>
+<div class="section" id="flow-chart-and-description">
+<h2>5.4.1.3.1.2. Flow chart and description<a class="headerlink" href="#flow-chart-and-description" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#fig-fw-implementation"><span class="std std-numref">Figure 5.60</span></a> shows the flow chart of the flux-weakening algorithm.</p>
+<div class="figure align-center" id="id1">
+<span id="fig-fw-implementation"></span><a class="reference internal image-reference" href="../../../_images/fw_eq_based_implementation.png"><img alt="../../../_images/fw_eq_based_implementation.png" src="../../../_images/fw_eq_based_implementation.png" style="width: 650px;" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.60 </span><span class="caption-text">Flux-weakening algorithm flow chart</span></p>
+</div></div>
+<p>The equation-based FW algorithm performs two important tasks. First, it checks if there is a need for injecting a negative
+<span class="math">\(I_{d}\)</span> in the motor. This is done by considering the q-axis voltage equation of the motor in the steady state
+given by <a class="reference internal" href="#equation-vq-equation-steadystate">5.43</a>. If the available q-axis voltage (<span class="math">\(V_{qs\_fw}\)</span>) is enough to overcome the
+addition of <span class="math">\(R_{s}I_{q} + E_{mag}\)</span>, there is no need for FW and <span class="math">\(I_{d\_fw}\)</span> is made equal to zero. Here,
+<span class="math">\(E_{Mag}\)</span> is the back emf magnitude.</p>
+<div class="math" id="equation-vq-equation-steadystate">
+<span class="eqno">(5.43)</span>\[V_{qs\_fw} = R_{s}I_{q} + \omega L_{d} I_{d} + E_{Mag}\]</div>
+<p>The available q-axis voltage (<span class="math">\(V_{qs\_fw}\)</span>) is calculated by taking the d-axis stator voltage (<span class="math">\(V_{ds}\)</span>) as an
+input and performing the following calculation. Here, <span class="math">\(V_{\max}\)</span> is the maximum possible voltage that can be safely
+applied to the motor. This is calculated based on the value of DC link voltage <span class="math">\(V_{dc}\)</span> and a voltage limit multiplier
+<span class="math">\(V_{lim,ll}\)</span> as mentioned in <a class="reference internal" href="../../../implementation/ui-customization.html#impl-customization"><span class="std std-ref">Parameter Customization</span></a>.</p>
+<div class="math" id="equation-vqs-fw-calc">
+<span class="eqno">(5.44)</span>\[V_{qs\_fw} = \sqrt{V_{\max}{}^2 - V_{ds}{}^2}\]</div>
+<p>The terms on the right hand side of <a class="reference internal" href="#equation-vq-equation-steadystate">5.43</a> are calculated by adding <span class="math">\(E_{Mag}\)</span>
+to <span class="math">\(R_{s}I_{q}\)</span>. The difference between <span class="math">\(V_{qs\_fw}\)</span> and (<span class="math">\(R_{s}I_{q} + E_{Mag}\)</span>) is then calculated.
+If this difference is positive, it means that there is sufficient q-axis voltage available to operate at that velocity and load.
+In this case, <span class="math">\(I_{d\_fw}\)</span> is made equal to zero.</p>
+<p>If this difference comes out to be negative, there is a need for flux-weakening and the algorithm then proceeds to calculate
+the reference current <span class="math">\(I_{d\_fw}\)</span>. As seen from <a class="reference internal" href="#equation-vq-equation-steadystate">5.43</a>, the calculated difference should match
+the term <span class="math">\(\omega L_{d} I_{d}\)</span> so as to satisfy this equation. This difference term is divided by <span class="math">\(\omega L_{d}\)</span>
+to find <span class="math">\(I_{d\_fw}\)</span>. After calculation, <span class="math">\(I_{d\_fw}\)</span> is an input to the <a class="reference internal" href="../flux_weakening_mtpa_integration.html#algorithm-fw-and-mtpa-integration"><span class="std std-ref">D-axis current reference generation</span></a>
+module, where it is used for <span class="math">\(I_{d\_ref}\)</span> generation.</p>
+</div>
+<div class="section" id="implementation-notes">
+<h2>5.4.1.3.1.3. Implementation notes<a class="headerlink" href="#implementation-notes" title="Permalink to this headline">¶</a></h2>
+<p>Following are some important points related to equation-based FW implementation.</p>
+<ul class="simple">
+<li>Filter on <span class="math">\(E_{Mag}\)</span>: After calculation, the back emf magnitude <span class="math">\(E_{Mag}\)</span> is passed through a low-pass filter to
+smooth it out. This filtered value is then used for the calculation of <span class="math">\(I_{d\_fw}\)</span>.</li>
+<li>Voltage limit: The maximum voltage magnitude (<span class="math">\(V_{\max}\)</span>) is the limit on the magnitude of voltage. This is also equal to
+the voltage that is applied to the motor in the flux-weakening region of operation. It is calculated from the DC link voltage
+magnitude and the voltage limit parameter (<span class="math">\(V_{lim,ll}\)</span>). The calculation is based on the following equation. The
+<span class="math">\(\sqrt{3}\)</span> in the denominator appears due to the conversion from the line-line voltage to the line-neutral voltage.</li>
+</ul>
+<div class="math" id="equation-vmax-calc">
+<span class="eqno">(5.45)</span>\[V_{\max} = V_{dc} \frac{V_{lim,ll}}{\sqrt{3}}\]</div>
+</div>
+<div class="section" id="factors-affecting-flux-weakening-operation">
+<h2>5.4.1.3.1.4. Factors affecting flux-weakening operation<a class="headerlink" href="#factors-affecting-flux-weakening-operation" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">Effect of <span class="math">\(V_{\max}\)</span>: The value of <span class="math">\(V_{\max}\)</span> plays an essential role in the FW operation. It affects
+the calculated value of the available q-axis voltage (<span class="math">\(V_{qs\_fw}\)</span>), which in turn affects the velocity at which the
+motor makes a transition to the FW region of operation. It should be noted that this value is calculated based on the DC
+link voltage (<span class="math">\(V_{dc}\)</span>) and voltage limit parameter (<span class="math">\(V_{lim,ll}\)</span>). The maximum value of <span class="math">\(V_{lim,ll}\)</span> is
+1.</p>
+<p>A simplified set of equations is given below to understand the relation between the value of <span class="math">\(V_{\max}\)</span> and the
+velocity at which a transition is made to the FW region. <a class="reference internal" href="#equation-vmax-transition">5.46</a> gives steady-state motor voltage equations
+along with the calculation of the available q-axis voltage (<span class="math">\(V_{qs\_fw}\)</span>).</p>
+<div class="math" id="equation-vmax-transition">
+<span class="eqno">(5.46)</span>\[\begin{aligned}
+V_{ds} &amp;= - \omega L_q I_q \\
+    V_{qs\_fw} &amp;= \sqrt{V_{\max}{}^2 - V_{ds}{}^2} \\
+V_{qs\_fw} &amp;= R_s I_q + \omega L_{d} I_{d} + E_{Mag}\\
+    E_{Mag} &amp;= \omega_e \Psi_{PM}
+\end{aligned}\]</div>
+<p>As the motor velocity (considered to be positive here) increases, magnitude of
+<span class="math">\(V_{ds}\)</span> increases and as a result, the magnitude of <span class="math">\(V_{qs\_fw}\)</span> reduces. Due to this, the initially positive term
+<span class="math">\(\omega L_{d} I_{d}\)</span> as calculated from <span class="math">\(V_{qs\_fw}\)</span> equation reduces in magnitude. At the boundary of transition
+to the FW region, this term becomes zero. If the stator resistance term (<span class="math">\(R_{s} I_{q}\)</span>) is neglected for simplification,
+the velocity at which the transition happens to the FW region (<span class="math">\(\omega_{fw\_tr}\)</span>) can be given by <a class="reference internal" href="#equation-vel-transition">5.47</a>.
+Thus, as <span class="math">\(V_{\max}\)</span> increases, <span class="math">\(\omega_{fw\_tr}\)</span> increases.</p>
+<div class="math" id="equation-vel-transition">
+<span class="eqno">(5.47)</span>\[\omega_{fw\_tr} = \frac{V_{\max}}{\sqrt{(L_q I_q)^2 + \Psi_{PM}{}^2}}\]</div>
+<p>For a given <span class="math">\(V_{lim,ll}\)</span>, if the DC link voltage is higher, <span class="math">\(V_{\max}\)</span> will also increase in proportion
+(<a class="reference internal" href="#equation-vmax-calc">5.45</a>). This will result in the motor making a transition to the FW region at a higher velocity. Likewise, reduction in the value of DC
+link voltage or the value of <span class="math">\(V_{lim,ll}\)</span> will cause the transition to the FW region to happen at a lower velocity.</p>
+</li>
+<li><p class="first">Velocity extension in FW region: The limit on velocity extension in the FW region depends on factors such as motor’s
+rated current, inductance and back emf constant. <a class="reference internal" href="#equation-v-gain">5.48</a> shows the relation between the approximate gain in
+velocity as a function of motor maximum current <span class="math">\(I_{\max}\)</span>, <span class="math">\(L_{d}\)</span> and <span class="math">\(\Psi_{PM}\)</span>. For motors with larger inductance and larger
+rated current, the velocity extension in FW region is more, while for motors with lower back emf constant, the extension in
+the FW region is found to be more.</p>
+<div class="math" id="equation-v-gain">
+<span class="eqno">(5.48)</span>\[\frac{\omega_{\max}}{\omega_{rated}} = \frac{1}{1 - \frac{L_d I_{\max}}{\Psi_{PM}}}\]</div>
+<p><a class="reference internal" href="#fig-fw-plot-nonsalient-original"><span class="std std-numref">Figure 5.61</span></a> shows the torque-velocity capability
+curves for a non-salient motor. The per unit motor parameters are indicated at the top of the figure. The outermost
+dashed red curve shows the maximum possible torque as a function of
+velocity. The solid red curves are constant-current plots and the solid black plots are constant-voltage plots. The region
+shaded light blue is without any FW, while the region shaded pink is the FW region. The shaded curve <span class="math">\(A-D_1-O-A'\)</span>
+shows the boundary between FW and no-FW regions, while the shaded curve <span class="math">\(P-D_2-B-C-P'\)</span> shows the limiting boundary
+of the FW region. Point B and point C show the velocity at no-load condition in the FW motoring and FW generating regions,
+respectively. These values are the theoretical maximum achievable velocity values in absence of Coulomb friction and viscous
+drag. In <a class="reference internal" href="#fig-fw-plot-nonsalient-original"><span class="std std-numref">Figure 5.61</span></a>, the maximum velocity in motoring region is around 1.28 per unit.</p>
+<p><a class="reference internal" href="#fig-fw-plot-nonsalient-ldlq1pt5"><span class="std std-numref">Figure 5.62</span></a> shows the torque-velocity capability curves
+for the same motor, however with a 50% increase in motor inductance values. It can be seen that the velocity limit in the
+FW motoring region is increased and is around 1.5 per unit.</p>
+<p><a class="reference internal" href="#fig-fw-plot-nonsalient-imax1pt5"><span class="std std-numref">Figure 5.63</span></a> shows the torque-velocity
+capability curves for the same motor with original inductance values, however with a 50% increase in motor current rating.
+The velocity limit in the FW motoring region is around 1.48 per unit and is larger as compared to the value of
+1.28 per unit in <a class="reference internal" href="#fig-fw-plot-nonsalient-original"><span class="std std-numref">Figure 5.61</span></a>.</p>
+<p><a class="reference internal" href="#fig-fw-plot-nonsalient-ke0pt75"><span class="std std-numref">Figure 5.64</span></a> shows the torque-velocity capability curves for the same motor with original
+inductance values and motor current rating, however with a back emf constant reduced to 75% of its original value.
+The velocity limit in the FW motoring region is around 1.4 per unit and is larger as compared to the value of
+1.28 per unit in <a class="reference internal" href="#fig-fw-plot-nonsalient-original"><span class="std std-numref">Figure 5.61</span></a>.</p>
+</li>
+</ul>
+<div class="figure align-center" id="id2">
+<span id="fig-fw-plot-nonsalient-original"></span><a class="reference internal image-reference" href="../../../_images/fw_plot_nonsalient_original.png"><img alt="../../../_images/fw_plot_nonsalient_original.png" src="../../../_images/fw_plot_nonsalient_original.png" style="width: 500px;" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.61 </span><span class="caption-text">Torque-velocity capability curves for a non-salient motor</span></p>
+</div></div>
+<div class="figure align-center" id="id3">
+<span id="fig-fw-plot-nonsalient-ldlq1pt5"></span><a class="reference internal image-reference" href="../../../_images/fw_plot_nonsalient_LdLq1pt5.png"><img alt="../../../_images/fw_plot_nonsalient_LdLq1pt5.png" src="../../../_images/fw_plot_nonsalient_LdLq1pt5.png" style="width: 500px;" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.62 </span><span class="caption-text">Torque-velocity capability curves for a non-salient motor, with higher inductance</span></p>
+</div></div>
+<div class="figure align-center" id="id4">
+<span id="fig-fw-plot-nonsalient-imax1pt5"></span><a class="reference internal image-reference" href="../../../_images/fw_plot_nonsalient_Imax1pt5.png"><img alt="../../../_images/fw_plot_nonsalient_Imax1pt5.png" src="../../../_images/fw_plot_nonsalient_Imax1pt5.png" style="width: 500px;" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.63 </span><span class="caption-text">Torque-velocity capability curves for a non-salient motor, with higher current rating</span></p>
+</div></div>
+<div class="figure align-center" id="id5">
+<span id="fig-fw-plot-nonsalient-ke0pt75"></span><a class="reference internal image-reference" href="../../../_images/fw_plot_nonsalient_Ke0pt75.png"><img alt="../../../_images/fw_plot_nonsalient_Ke0pt75.png" src="../../../_images/fw_plot_nonsalient_Ke0pt75.png" style="width: 500px;" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.64 </span><span class="caption-text">Torque-velocity capability curves for a non-salient motor, with lower back emf constant</span></p>
+</div></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5.4.1.3.1. Equation based flux-weakening</a><ul>
+<li><a class="reference internal" href="#overview">5.4.1.3.1.1. Overview</a></li>
+<li><a class="reference internal" href="#flow-chart-and-description">5.4.1.3.1.2. Flow chart and description</a></li>
+<li><a class="reference internal" href="#implementation-notes">5.4.1.3.1.3. Implementation notes</a></li>
+<li><a class="reference internal" href="#factors-affecting-flux-weakening-operation">5.4.1.3.1.4. Factors affecting flux-weakening operation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../flux_weakening.html"
+                        title="previous chapter">5.4.1. Flux weakening</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../mtpa.html"
+                        title="next chapter">5.4.2. Maximum Torque Per Ampere (MTPA)</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../mtpa.html" title="5.4.2. Maximum Torque Per Ampere (MTPA)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../flux_weakening.html" title="5.4.1. Flux weakening"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../../index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >5.4. Flux control</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../flux_weakening.html" >5.4.1. Flux weakening</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

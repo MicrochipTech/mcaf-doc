@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>4.2. ADC Calibration and Compensation &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../_static/mcaf-styling.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.3. State Machine" href="statemach.html" />
+    <link rel="prev" title="4.1. Main Application" href="main.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="statemach.html" title="4.3. State Machine"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="main.html" title="4.1. Main Application"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">4. Components</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="adc-calibration-and-compensation">
+<span id="component-adc"></span><h1>4.2. ADC Calibration and Compensation<a class="headerlink" href="#adc-calibration-and-compensation" title="Permalink to this headline">¶</a></h1>
+<p>Certain aspects of the MCAF are sensitive to gain and offset variation. At this
+time of writing, only the motor phase current readings are compensated:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="36%" />
+<col width="42%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Compensation topic</th>
+<th class="head">Calibration type</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Phase current offset</td>
+<td>Runtime, at startup</td>
+<td>Phase currents are measured and filtered at
+startup, when <a class="reference internal" href="../appendix/glossary.html#term-pwm"><span class="xref std std-term">PWM</span></a> outputs are
+in a safe
+state, and currents are known to be zero.</td>
+</tr>
+<tr class="row-odd"><td>Phase current gain</td>
+<td>Not calibrated at present, reserved
+for future use by Self-Commissioning in motorBench<sup>®</sup> Development Suite, or other
+runtime methods</td>
+<td>Includes compensation for cross-phase
+coupling.</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="implementation-notes">
+<h2>4.2.1. Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permalink to this headline">¶</a></h2>
+<p>Since MCAF R3, all <a class="reference internal" href="../appendix/glossary.html#term-adc"><span class="xref std std-term">ADC</span></a> calibration and compensation functionality is located in the <code class="docutils literal notranslate"><span class="pre">adc_compensation</span></code> module.
+(In MCAF R1 and R2, some portions were located in the <code class="docutils literal notranslate"><span class="pre">meas_curr</span></code> module and others in the <code class="docutils literal notranslate"><span class="pre">foc</span></code> module.)</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">currentCalibration</span></code> field of <code class="docutils literal notranslate"><span class="pre">MCAF_MOTOR_DATA</span></code> contains four gain terms:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">Kaa</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">Kab</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">Kba</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">Kbb</span></code></li>
+</ul>
+<p>These represent a 2x2 gain matrix:</p>
+<div class="math" id="equation-components-adc-0">
+<span class="eqno">(4.1)</span>\[\begin{bmatrix}
+  I_a \cr
+  I_b
+\end{bmatrix}
+ =
+\begin{bmatrix}
+  K_{aa} &amp; K_{ab} \cr
+  K_{ba} &amp; K_{bb}
+\end{bmatrix}
+\begin{bmatrix}
+  I_{a0} - I_{a,\text{ofs}} \cr
+  I_{b0} - I_{b,\text{ofs}}
+\end{bmatrix}\]</div>
+<p>or (more concisely)</p>
+<div class="math" id="equation-components-adc-1">
+<span class="eqno">(4.2)</span>\[\mathbf{I}_{ab} \,=\, \mathbf{K}_\text{comp}(\mathbf{I}_{ab0} \,-\, \mathbf{I}_{ab,\text{ofs}})\]</div>
+<p>This gain matrix is used to compensate for part-to-part variation and to
+correct for any board layout issues, such as those described in <a class="reference internal" href="../appendix/mclv2.html#appendix-mclv2"><span class="std std-ref">MCLV-2 Sense Resistors</span></a>.</p>
+<div class="section" id="modules">
+<h3>4.2.1.1. Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h3>
+<span id="index-0"></span><table border="1" class="components-table docutils">
+<colgroup>
+<col width="14%" />
+<col width="14%" />
+<col width="29%" />
+<col width="43%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Module</th>
+<th class="head">Files</th>
+<th class="head">Description</th>
+<th class="head">Comments</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td class="longcolumn-3"><code class="first last docutils literal notranslate"><span class="pre">parameters/adc_params</span></code></td>
+<td class="longcolumn-3"><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">parameters/adc_params.h</span></code></div>
+</div>
+</td>
+<td>ADC compensation parameters</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td class="longcolumn-1"><code class="first last docutils literal notranslate"><span class="pre">adc_compensation</span></code></td>
+<td class="longcolumn-3"><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">adc_compensation.c</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">adc_compensation.h</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">adc_compensation_types.h</span></code></div>
+</div>
+</td>
+<td>ADC compensation including current offset calibration</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">4.2. ADC Calibration and Compensation</a><ul>
+<li><a class="reference internal" href="#implementation-notes">4.2.1. Implementation Notes</a><ul>
+<li><a class="reference internal" href="#modules">4.2.1.1. Modules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="main.html"
+                        title="previous chapter">4.1. Main Application</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="statemach.html"
+                        title="next chapter">4.3. State Machine</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="statemach.html" title="4.3. State Machine"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="main.html" title="4.1. Main Application"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" >4. Components</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

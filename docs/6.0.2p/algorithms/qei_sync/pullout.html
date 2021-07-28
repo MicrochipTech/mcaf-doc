@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>5.3.2.3.4. Pullout torque method &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script type="text/javascript" src="../../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../../_static/mcaf-styling.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.3.3. Angle-tracking Phase-locked Loop (ATPLL)" href="../atpll.html" />
+    <link rel="prev" title="5.3.2.3.3. Align-and-sweep method" href="align-sweep.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../atpll.html" title="5.3.3. Angle-tracking Phase-locked Loop (ATPLL)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="align-sweep.html" title="5.3.2.3.3. Align-and-sweep method"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../estimators.html" >5.3. Position and Velocity Estimation</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../qei.html" accesskey="U">5.3.2. Quadrature encoder support</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="pullout-torque-method">
+<span id="qei-sync-pullout"></span><h1>5.3.2.3.4. Pullout torque method<a class="headerlink" href="#pullout-torque-method" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>5.3.2.3.4.1. Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>At startup, when the motor is spinning in open loop, the rotor lags the voltage vector at an unknown angle. This is because there is more
+than required current to meet the load torque. In other words there is a non-zero component of the <span class="math">\(I_d\)</span> current. When the current magnitude
+is reduced gradually the value of <span class="math">\(I_d\)</span> automatically goes towards zero with <span class="math">\(I_q\)</span> remaining the same until the pullout torque angle is reached.
+The raw reading from the QEI position counter at the instance of pullout corresponds to <span class="math">\(\pi/2\)</span> plus a small load angle behind the voltage vector depending on the the direction of rotation. This reading
+is called ‘pullout position’ in equation <a class="reference internal" href="#equation-eqn-pullout-1">5.25</a>. The rotor offset is calculated as</p>
+<div class="math" id="equation-eqn-pullout-1">
+<span class="eqno">(5.25)</span>\[\operatorname{rotor\ offset} = \tan^{-1} V_{\alpha\beta} - \operatorname{pullout\ position} - \pi/2 - \operatorname{load\ angle}.\]</div>
+<p>The load angle is insignificant owing to very small currents (<span class="math">\(I_d=0\)</span> at pullout) during no load and lower speeds.</p>
+<p>The critical factor therefore with this approach is that the <span class="math">\(T_{fr}/J\)</span> value of the mechanical parameters must be high enough to bring the motor to
+standstill unassisted in a few seconds approximately. If it takes several seconds other methods should be explored.</p>
+<p>The <a class="reference internal" href="../startup.html#algorithm-startup"><span class="std std-ref">startup</span></a> sequence’s “SPIN” state
+(where the rotor has been accelerated to the open loop max. speed) is utilized
+to allow a suitable settling time to reach mechanical equilibrium, and
+at the end of this time, the current <span class="math">\(I_q\)</span> is reduced to the point of pullout when the pullout position which is the difference between
+the applied commutation angle (<span class="math">\(\tan^{-1} V_{\alpha\beta}\)</span>) and the raw encoder count is computed.
+Once the rotor offset is computed actual rotor position is computed while running as</p>
+<div class="math" id="equation-algorithms-qei-sync-pullout-0">
+<span class="eqno">(5.26)</span>\[\operatorname{actual\ rotor\ position} =  \operatorname{raw\ position} + \operatorname{rotor\ offset}.\]</div>
+</div>
+<div class="section" id="limitations">
+<h2>5.3.2.3.4.2. Limitations<a class="headerlink" href="#limitations" title="Permalink to this headline">¶</a></h2>
+<p>When the rotor is approaching the pullout offset relative to commutation angle, the electromagnetic torque is just enough to balance the
+load torque. Any minor disturbance or cogging effects could stall the motor beyond recovery. This requires the rotor not be subjected to any torque
+disturbances during measurement. This method is robust to steady frictional or viscous torques, however.</p>
+<p>This method of offset measurement has certain drawbacks.
+High inertia motors will not show rapid changes in speed when <span class="math">\(I_d\)</span> approaches zero. Since the firmware looks for an abnormal rate of increase in this relative angular position there will be larger errors for motors with
+high inertia.
+The method relies on gradual current reduction and multiple retries for accurate pullout detection which consumes a lot of time.
+The pullout method typically takes 30-45 seconds to complete.</p>
+<p>Cogging torque effects, limited resolution of sensors, and slower rotational speeds can all cause the relative angle between the voltage vector and QEI position counter
+to abruptly change which poses challenges to the filtering software.</p>
+</div>
+<div class="section" id="practical-implementation-issues">
+<h2>5.3.2.3.4.3. Practical implementation issues<a class="headerlink" href="#practical-implementation-issues" title="Permalink to this headline">¶</a></h2>
+<p>The pullout slip threshold was chosen to keep the absolute error for a wide range of motors within limits. With motors having low inertia the error will be on the positive side and for ones with high inertia the error is on the negative.
+A future implementation could configure the velocity threshold used to detect pullout to the motor, which will further reduce the absolute error in
+most cases.</p>
+<p>The time it takes to complete the measurement is based on 4 trials which makes the measurement duration high. With lower resolution encoders a larger number
+of trials are needed for the same accuracy. For example, with a 250 line encoder 8 re-tries had better results.</p>
+<p>Since a retry has to be started before the motor actually stalls, the exact point of pullout is only approached and never attained which makes this method
+always have some small non-zero error.</p>
+</div>
+<div class="section" id="example-data">
+<h2>5.3.2.3.4.4. Example data<a class="headerlink" href="#example-data" title="Permalink to this headline">¶</a></h2>
+<p>The tests are done on 4 different motors equipped with an encoder and Index. The index is only used to compute the difference between measured
+and precomputed offsets for the motor.  This value is used only for test purposes.</p>
+<p><a class="reference internal" href="#fig-qei-pullout1"><span class="std std-numref">Figure 5.48</span></a> shows the use of the pullout method with the Anaheim Automation
+BLWS232D-24V-1350-1024SI5, which has a 1024-line encoder and fairly low cogging torque.
+For this motor, the pullout method works very well with low error.
+The yellow highlight shows the speed ramp up states (speed not shown), once speed has stabilized in the “SPIN” state,
+<span class="math">\(I_q\)</span> current is reduced until it reaches the maximum value of pullout torque angle. During the first iteration the current
+reduction happens at a higher rate and is primarily to arrive in the proximity of the pullout. The subsequent iterations
+will then repeat the same procedure at a much reduced rate for better accuracy. The plot shows 4 more re-tries, the results
+of which are averaged to obtain the commutation offset.
+Note <span class="math">\(\Delta \theta _e\)</span> goes close to 0 after the retry stage in each of the plots when the “SPIN” state is completed.</p>
+<div class="figure align-center" id="id1">
+<span id="fig-qei-pullout1"></span><img alt="../../_images/pullout-blws232d_24V.png" src="../../_images/pullout-blws232d_24V.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.48 </span><span class="caption-text">Pullout method with BLWS232D-24V-1350-1024SI5</span></p>
+</div></div>
+<p><a class="reference internal" href="#fig-qei-pullout2"><span class="std std-numref">Figure 5.49</span></a> shows the use of the pullout method with the Anaheim Automation
+BLY342D-24V-3200-1024SI5, which has a 1024-line encoder and substantial cogging torque.</p>
+<div class="figure align-center" id="id2">
+<span id="fig-qei-pullout2"></span><img alt="../../_images/pullout-bly342d_24V.png" src="../../_images/pullout-bly342d_24V.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.49 </span><span class="caption-text">pullout method with BLY342D-24V-3000-1024SI5</span></p>
+</div></div>
+<p><a class="reference internal" href="#fig-qei-pullout3"><span class="std std-numref">Figure 5.50</span></a> shows the use of the pullout method with the Anaheim Automation
+BLY171D-24V-4000, which has a 4096-line encoder and almost no cogging torque.</p>
+<div class="figure align-center" id="id3">
+<span id="fig-qei-pullout3"></span><img alt="../../_images/pullout-bly171d_24V.png" src="../../_images/pullout-bly171d_24V.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.50 </span><span class="caption-text">Pullout method with BLY171D-24V-4000</span></p>
+</div></div>
+<p>In this case due to lesser inertia the default slip threshold results in detecting pullout late or past the actual pullout
+point. This results in the errors having an opposite sign ( see <a class="reference internal" href="#table-qei-sync-pullout-accuracy"><span class="std std-numref">Table 5.4</span></a>) compared to the other motors for which the slip threshold is optimal.
+This motor is an example for a larger value of the slip threshold.</p>
+</div>
+<div class="section" id="accuracy-and-repeatability-tests">
+<h2>5.3.2.3.4.5. Accuracy and repeatability tests<a class="headerlink" href="#accuracy-and-repeatability-tests" title="Permalink to this headline">¶</a></h2>
+<p>The pullout method was tested with MCAF R4, and the resulting commutation offset from index
+(<code class="docutils literal notranslate"><span class="pre">motor.estimator.qei.position.commutationOffsetFromIndex</span></code>) was compared against a reference
+method using open-circuit voltage measurements of the motor terminals with the motor
+rotated mechanically at constant speed.</p>
+<p><a class="reference internal" href="#table-qei-sync-pullout-accuracy"><span class="std std-numref">Table 5.4</span></a> describes the results.
+In each case, 8 iterations of the pullout method were performed. Each motor was
+tested in both directions which are indicated by CW and CCW suffixes. All motors
+were tested with the default slip threshold value.</p>
+<table border="1" class="docutils align-center" id="table-qei-sync-pullout-accuracy">
+<caption><span class="caption-number">Table 5.4 </span><span class="caption-text">Accuracy and repeatability metrics for the pullout method</span><a class="headerlink" href="#table-qei-sync-pullout-accuracy" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="16%" />
+<col width="16%" />
+<col width="16%" />
+<col width="16%" />
+<col width="37%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">mean <span class="math">\(\tilde\theta_{ofs}\)</span></th>
+<th class="head">max <span class="math">\(\tilde\theta_{ofs}\)</span></th>
+<th class="head">stdev <span class="math">\(\hat\theta_{ofs}\)</span></th>
+<th class="head">span <span class="math">\(\hat\theta_{ofs}\)</span></th>
+<th class="head">Test case</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>-0.15°</td>
+<td>0.20°</td>
+<td>0.03°</td>
+<td>0.09°</td>
+<td>BLWS232D-24V-1350_CW-1024SI5</td>
+</tr>
+<tr class="row-odd"><td>0.43°</td>
+<td>0.47°</td>
+<td>0.03°</td>
+<td>0.10°</td>
+<td>BLWS232D-24V-1350_CCW-1024SI5</td>
+</tr>
+<tr class="row-even"><td>4.68°</td>
+<td>4.87°</td>
+<td>0.19°</td>
+<td>0.52°</td>
+<td>BLY171D-24V-4000_CW with 4096-line encoder</td>
+</tr>
+<tr class="row-odd"><td>-4.52°</td>
+<td>4.67°</td>
+<td>0.13°</td>
+<td>0.29°</td>
+<td>BLY171D-24V-4000_CCW with 4096-line encoder</td>
+</tr>
+<tr class="row-even"><td>-1.05°</td>
+<td>1.24°</td>
+<td>0.09°</td>
+<td>0.30°</td>
+<td>BLY342D-24V-3000_CW-1024SI5</td>
+</tr>
+<tr class="row-odd"><td>0.77°</td>
+<td>0.89°</td>
+<td>0.23°</td>
+<td>0.72°</td>
+<td>BLY342D-24V-3000_CCW-1024SI5</td>
+</tr>
+<tr class="row-even"><td>-1.03°</td>
+<td>1.11°</td>
+<td>0.04°</td>
+<td>0.12°</td>
+<td>BLY342D-48V-3200_CW-1024SI5</td>
+</tr>
+<tr class="row-odd"><td>1.04°</td>
+<td>1.12°</td>
+<td>0.06°</td>
+<td>0.20°</td>
+<td>BLY342D-48V-3200_CCW-1024SI5</td>
+</tr>
+</tbody>
+</table>
+<p>The error metrics are as follows:</p>
+<ul class="simple">
+<li>mean <span class="math">\(\tilde\theta_{ofs}\)</span> — mean value of the commutation offset difference between the pullout method and the reference method</li>
+<li>max <span class="math">\(\tilde\theta_{ofs}\)</span> — maximum value of the commutation offset difference between the pullout method and the reference method</li>
+<li>stdev <span class="math">\(\hat\theta_{ofs}\)</span> — standard deviation of commutation offset estimated by the pullout method</li>
+<li>span <span class="math">\(\hat\theta_{ofs}\)</span> — difference between minimum and maximum commutation offset estimated by the pullout method</li>
+</ul>
+<p>Motors with low inertia, such as the BLY171D-24V-4000, could benefit from a higher value of slip threshold for better accuracy.
+Please refer to the parameter customization notes on <a class="reference internal" href="../../implementation/ui-customization.html#customize-encoder-qei-sync-pullout-pullout-slip"><span class="std std-ref">pullout slip threshold</span></a> for more information.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5.3.2.3.4. Pullout torque method</a><ul>
+<li><a class="reference internal" href="#overview">5.3.2.3.4.1. Overview</a></li>
+<li><a class="reference internal" href="#limitations">5.3.2.3.4.2. Limitations</a></li>
+<li><a class="reference internal" href="#practical-implementation-issues">5.3.2.3.4.3. Practical implementation issues</a></li>
+<li><a class="reference internal" href="#example-data">5.3.2.3.4.4. Example data</a></li>
+<li><a class="reference internal" href="#accuracy-and-repeatability-tests">5.3.2.3.4.5. Accuracy and repeatability tests</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="align-sweep.html"
+                        title="previous chapter">5.3.2.3.3. Align-and-sweep method</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../atpll.html"
+                        title="next chapter">5.3.3. Angle-tracking Phase-locked Loop (ATPLL)</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../atpll.html" title="5.3.3. Angle-tracking Phase-locked Loop (ATPLL)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="align-sweep.html" title="5.3.2.3.3. Align-and-sweep method"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../estimators.html" >5.3. Position and Velocity Estimation</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../qei.html" >5.3.2. Quadrature encoder support</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

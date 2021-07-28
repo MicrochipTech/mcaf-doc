@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>5.3.1. AN1292 Phase-locked Loop (PLL) &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../_static/mcaf-styling.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.3.2. Quadrature encoder support" href="qei.html" />
+    <link rel="prev" title="5.3. Position and Velocity Estimation" href="estimators.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="qei.html" title="5.3.2. Quadrature encoder support"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="estimators.html" title="5.3. Position and Velocity Estimation"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="estimators.html" accesskey="U">5.3. Position and Velocity Estimation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="an1292-phase-locked-loop-pll">
+<span id="algorithm-pll"></span><span id="index-0"></span><h1>5.3.1. AN1292 Phase-locked Loop (PLL)<a class="headerlink" href="#an1292-phase-locked-loop-pll" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>5.3.1.1. Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The sensorless estimator used to estimate position and velocity is essentially
+the same one described in application note <a class="reference external" href="http://www.microchip.com/wwwAppNotes/AppNotes.aspx?appnote=en544825">AN1292</a>.</p>
+<div class="figure align-center" id="id1">
+<span id="fig-pll-impl1"></span><img alt="../_images/an1292-pll-blkdiag.png" src="../_images/an1292-pll-blkdiag.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.36 </span><span class="caption-text">AN1292 Phase-locked loop block diagram</span></p>
+</div></div>
+<p>Stationary-frame voltages <span class="math">\(V_{\alpha\beta}\)</span> and currents <span class="math">\(I_{\alpha\beta}\)</span>
+are used to estimate back-emf components <span class="math">\(E_{\alpha\beta}\)</span> using a discrete-time
+approximation of the equation</p>
+<div class="math" id="equation-eq-pll-backemf">
+<span class="eqno">(5.21)</span>\[E_{\alpha\beta} = V_{\alpha\beta} - R_sI_{\alpha\beta} - L_s\tfrac{d}{dt}I_{\alpha\beta}\]</div>
+<p>The feedback loop shown in <a class="reference internal" href="#fig-pll-impl1"><span class="std std-numref">Figure 5.36</span></a> is then used to rotate <span class="math">\(E_{\alpha\beta}\)</span> into the synchronous (dq) frame to produce an error signal and update the electrical angle <span class="math">\(\theta_e\)</span> (rather than <span class="math">\(\rho_{estim}\)</span> shown in the diagram) used for rotation, where</p>
+<div class="math" id="equation-eq-pll-rotation">
+<span class="eqno">(5.22)</span>\[\theta_e = \rho_{estim} + \rho_{ofs}\]</div>
+<p>and <span class="math">\(\rho_{ofs}\)</span> (<code class="docutils literal notranslate"><span class="pre">motor.estimator.pll.rhoOffset</span></code> in firmware) is a parameter
+that defaults to zero, but can be adjusted manually
+with <a class="reference internal" href="../components/diagnostics.html#diag-kernel"><span class="std std-ref">real-time diagnostic tools</span></a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5.3.1. AN1292 Phase-locked Loop (PLL)</a><ul>
+<li><a class="reference internal" href="#overview">5.3.1.1. Overview</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="estimators.html"
+                        title="previous chapter">5.3. Position and Velocity Estimation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="qei.html"
+                        title="next chapter">5.3.2. Quadrature encoder support</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="qei.html" title="5.3.2. Quadrature encoder support"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="estimators.html" title="5.3. Position and Velocity Estimation"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="estimators.html" >5.3. Position and Velocity Estimation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

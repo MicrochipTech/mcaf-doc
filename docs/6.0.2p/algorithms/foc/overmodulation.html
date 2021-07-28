@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>5.1.2. Overmodulation &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script type="text/javascript" src="../../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../../_static/mcaf-styling.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.1.3. DC link compensation" href="dclink-comp.html" />
+    <link rel="prev" title="5.1.1. Introduction" href="introduction.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="dclink-comp.html" title="5.1.3. DC link compensation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="5.1.1. Introduction"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">5.1. Field-oriented Current Control</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="overmodulation">
+<span id="algorithm-overmodulation"></span><span id="index-0"></span><h1>5.1.2. Overmodulation<a class="headerlink" href="#overmodulation" title="Permalink to this headline">¶</a></h1>
+<p>Overmodulation is a method of increasing the output voltage capability of a
+motor drive using three-phase modulation. This is achieved by
+allowing distortion in the output voltages for modulation indices
+above 1.0. Benefits include a slight increase in potential speed range,
+as well as slightly faster current control capability because of the
+increased output voltage range.</p>
+<p><a class="reference internal" href="#fig-overmodulation1"><span class="std std-numref">Figure 5.8</span></a> shows three-phase modulation
+waveforms for five increasing values of modulation index.</p>
+<div class="figure align-center" id="id1">
+<span id="fig-overmodulation1"></span><img alt="../../_images/overmodulation_alphabeta.png" src="../../_images/overmodulation_alphabeta.png" />
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.8 </span><span class="caption-text"><strong>Overmodulation example</strong> — the upper row of subplots illustrates
+voltage trajectories in the stationary (<span class="math">\(\alpha\beta\)</span>) reference frame,
+while the lower row illustrates voltage trajectories plotted vs. time.
+The dashed circle in the stationary frame represents a modulation index of 1.0
+(maximum output voltage capability without distortion); the dashed hexagon in the
+stationary frame and dashed lines in the timeseries plots represent
+maximum voltage capability including distortion. Five different values of
+modulation index <em>m</em> are shown, one in each column.
+Line-to-neutral timeseries waveforms are shown in faint colors.</span></p>
+</div></div>
+<div class="section" id="modulation-index">
+<h2>5.1.2.1. Modulation index<a class="headerlink" href="#modulation-index" title="Permalink to this headline">¶</a></h2>
+<p>The modulation index represents output amplitudes normalized
+to the <em>full voltage span</em>. This is the DC link voltage, multiplied
+by the difference between the maximum
+and minimum allowable duty cycles applied to each half bridge; for example, in the
+following situation the full voltage span is 23 V = 25 V × (95% - 3%):</p>
+<ul class="simple">
+<li>DC link voltage of 25 V</li>
+<li>Dead time of 1% (for example 500 ns with a period of 50 μs)</li>
+<li>Minimum half-bridge duty cycle of 3% (upper transistors at 2%, lower transistors at 96%)</li>
+<li>Maximum half-bridge duty cycle of 95% (upper transistors at 94%, lower transistors at 4%)</li>
+</ul>
+<p>This definition may be different in this context than in other situations.
+In this analysis of three-phase modulation, the modulation index represents voltages
+relative to the full voltage capability <em>subject to duty cycle limitations</em>.</p>
+<p>A modulation index of 1.0 represents the maximum possible voltage amplitude
+for which a set of three-phase line-to-line sine waves can be achieved
+without distortion, and is shown in <a class="reference internal" href="#fig-overmodulation1"><span class="std std-numref">Figure 5.8</span></a> as the dotted circle.
+Output timeseries waveforms using <a class="reference external" href="http://microchipdeveloper.com/mct5001:start">zero-sequence modulation</a>
+(aka space-vector modulation)
+below this point have a characteristic “double-humped” shape when shown as line-to-negative-link,
+but the line-to-line voltages are sinusoidal.</p>
+</div>
+<div class="section" id="overmodulation-behavior-in-the-stationary-frame">
+<span id="overmodulation-behavior-alphabeta"></span><h2>5.1.2.2. Overmodulation behavior in the stationary frame<a class="headerlink" href="#overmodulation-behavior-in-the-stationary-frame" title="Permalink to this headline">¶</a></h2>
+<p>Above a modulation index of 1.0, we must do something to limit the output waveforms
+on each phase within the range of allowable duty cycles. There are several methods of
+doing this:</p>
+<ul>
+<li><p class="first">The simplest is just to operate on each phase’s duty cycle individually,
+constraining within limits. This produces a realizable point
+in the <span class="math">\(\alpha\beta\)</span> reference frame that is the closest distance
+to the ideal unconstrained value.</p>
+<p>This clipping approaches a trapezoidal waveform when plotted as a timeseries;
+in the <span class="math">\(\alpha\beta\)</span> reference frame,
+the voltage trajectory becomes “squished” against the hexagonal limit.</p>
+</li>
+<li><p class="first">Another approach is to scale the three-phase set of duty cycles by some identical
+scaling factor <span class="math">\(K = \frac{1}{\max(1,D_{span})}\)</span>, where <span class="math">\(D_{span}\)</span>
+is the difference between the highest and lowest duty cycle in the 3-phase set;
+<span class="math">\(K\)</span> is 1.0 below overmodulation, and less than 1.0 when operating in overmodulation.
+In this case, the realizable and ideal points in the  <span class="math">\(\alpha\beta\)</span> reference frame
+maintain identical commutation angle. Drawbacks are that the computation is slightly
+more expensive (involving a divide), and less distortion is possible.</p>
+</li>
+<li><p class="first">There is also an algorithmic approach described in
+<a class="reference external" href="http://ieeexplore.ieee.org/document/526915/">an article by Peng et al</a> called
+the method of <em>realizable references</em>. This has been applied to three-phase modulation
+in <a class="reference external" href="https://www.researchgate.net/publication/3171086_Current_and_flux_regulation_in_field-weakening_operation">an article by Briz et al</a>.
+It involves close coordination between the current controller and the saturation logic that restricts the output duty cycle.</p>
+</li>
+</ul>
+<p>The method of realizable references appears promising, but its complexity
+in both analysis and implementation precluded using it within the MCAF.
+The implementation used in the MCAF and shown in  <a class="reference internal" href="#fig-overmodulation1"><span class="std std-numref">Figure 5.8</span></a>
+utilizes the simple per-phase clipping.</p>
+</div>
+<div class="section" id="overmodulation-behavior-in-the-synchronous-frame">
+<span id="overmodulation-behavior-dq"></span><h2>5.1.2.3. Overmodulation behavior in the synchronous frame<a class="headerlink" href="#overmodulation-behavior-in-the-synchronous-frame" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#fig-overmodulation2"><span class="std std-numref">Figure 5.9</span></a> shows these voltage trajectories transformed into
+the synchronous (dq) reference frame. Below overmodulation, each is a single point:
+if we wanted some constant modulation index <em>m</em>, we can get exactly that.
+Upon entering overmodulation, the voltage trajectories no longer have constant values
+in the dq-frame. This represents voltage harmonics that appear as d- and q-axis distortion.
+These harmonics are at multiples of 6 times the electrical frequency;
+for example, if we are producing a 100Hz carrier frequency, then overmodulation
+harmonics appear at 600Hz, 1200Hz, 1800Hz, and so on. Because overmodulation
+is used primarily to run at higher speeds, where back-emf requirements are greater,
+these harmonics are usually above the current controller bandwidth, where the controller
+is not able to attenuate them, so they do appear in the current waveforms as well as voltage waveforms, although motor
+inductance usually keeps them at a fairly low level.</p>
+<div class="figure align-center" id="id2">
+<span id="fig-overmodulation2"></span><a class="reference internal image-reference" href="../../_images/overmodulation_dq.png"><img alt="../../_images/overmodulation_dq.png" src="../../_images/overmodulation_dq.png" style="width: 800px;" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.9 </span><span class="caption-text"><strong>Synchronous frame behavior of overmodulation</strong> — trajectories plotted
+for increments of 0.1 in modulation index, and each is labeled with the
+corresponding modulation index. The d- and q-axes have been normalized so that
+1.0 represents a modulation index of 1.0. Colors have no inherent significance
+other than to distinguish each of the trajectories.</span></p>
+</div></div>
+<p>We can also gain some insight by graphing average behavior over a full commutation cycle
+as a function of modulation index, shown in <a class="reference internal" href="#fig-overmodulation3"><span class="std std-numref">Figure 5.10</span></a>:</p>
+<div class="figure align-center" id="id3">
+<span id="fig-overmodulation3"></span><a class="reference internal image-reference" href="../../_images/overmodulation_distortion.png"><img alt="../../_images/overmodulation_distortion.png" src="../../_images/overmodulation_distortion.png" style="width: 800px;" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.10 </span><span class="caption-text"><strong>Metrics of overmodulation in the synchronous frame, as a function of modulation index</strong> —
+here we show the mean value of the resulting trajectory in the dq reference frame, as well
+as its incremental gain (<span class="math">\(\frac{\partial}{\partial m}\)</span>), along with
+the root-mean-square (RMS) value of d- and q-axis
+voltage over the commutation cycle. This shows the magnitude of distortion along each axis,
+as a function of modulation index.</span></p>
+</div></div>
+<p>A few things to note here, as modulation index increases past 1.0:</p>
+<ul>
+<li><p class="first">The mean value of <span class="math">\(V_q\)</span> is a nonlinear function of modulation index;
+it does increase beyond 1.0 (that’s the whole point of overmodulation)
+but it asymptotically approaches a maximum value of
+<span class="math">\(\frac{2}{\sqrt{3}}\cdot\frac{3}{\pi} = 2\sqrt{3}/\pi \approx 1.1027\)</span></p>
+<p>(the factor of <span class="math">\(2/\sqrt{3}\)</span> is the distance between the origin and each point of the hexagon,
+and the <span class="math">\(3/\pi\)</span> factor represents the mean value of <span class="math">\(\cos\theta\)</span> within the
+range <span class="math">\(\theta \in [-\frac{\pi}{6}, \frac{\pi}{6}]\)</span>)</p>
+</li>
+<li><p class="first">The incremental gain quickly drops, from 1 at m = 1.0,
+down to below 0.1 at m = 1.15.</p>
+</li>
+<li><p class="first">The d-axis distortion and q-axis distortion both asymptotically approach values that reflect the extreme
+case of six-step operation (with active switching on all three half-bridges; this is different
+than most implementations of six-step control that only operate two half-bridges at a time)
+where the trajectory forms a 60° arc in the d-q plane:</p>
+<div class="math" id="equation-algorithms-foc-overmodulation-0">
+<span class="eqno">(5.19)</span>\[\begin{aligned}
+V_{q,rms} &amp;= \mathrm{RMS}\left(\tfrac{2}{\sqrt{3}}\cos \theta, -\tfrac{\pi}{6}, \tfrac{\pi}{6}\right) = \sqrt{\tfrac{2}{3} + \tfrac{\sqrt{3}}{\pi} - \tfrac{12}{\pi^2}} \approx 0.04627 \cr
+V_{d,rms} &amp;= \mathrm{RMS}\left(\tfrac{2}{\sqrt{3}}\sin \theta, -\tfrac{\pi}{6}, \tfrac{\pi}{6}\right) = \sqrt{\tfrac{2}{3} - \tfrac{\sqrt{3}}{\pi}} \approx 0.33961
+\end{aligned}\]</div>
+</li>
+<li><p class="first">The RMS q-axis distortion rises quickly, reaching approximately 0.0467 by <span class="math">\(m=1.15\)</span>, hitting a maximum of approximately 0.0588 near <span class="math">\(m=\sqrt{3} \approx 1.732\)</span>,
+and then decreasing asymptotically towards 0.04627 at very large modulation indices.</p>
+</li>
+<li><p class="first">The RMS d-axis distortion rises slowly, reaching only approximately 0.0208 by <span class="math">\(m=1.15\)</span>.</p>
+</li>
+</ul>
+<p>All of these factors make overmodulation attractive at moderate modulation indices,
+but unattractive at extreme modulation indices. We can get that theoretical maximum voltage increase of 10.27%,
+but to do this requires extreme modulation indices, so in practical terms we are limited to somewhere around 3-7%
+“extra” voltage capability, by limiting the maximum modulation index to somewhere in the 1.05 - 1.25 range.</p>
+</div>
+<div class="section" id="coordinating-overmodulation-and-controller-limits">
+<h2>5.1.2.4. Coordinating overmodulation and controller limits<a class="headerlink" href="#coordinating-overmodulation-and-controller-limits" title="Permalink to this headline">¶</a></h2>
+<p>The nonlinear dependency of mean <span class="math">\(V_q\)</span> on modulation index makes applying overmodulation
+to a vector current controller somewhat interesting. <a class="reference internal" href="#fig-overmodulation4"><span class="std std-numref">Figure 5.11</span></a> shows the limits
+in the dq frame attainable by overmodulation (essentially a hexagon rotating along with the
+commutation angle) and the limits applied by the MCAF current controller, namely a rectangular
+region with independent limits for each axis.</p>
+<div class="figure align-center" id="id4">
+<span id="fig-overmodulation4"></span><a class="reference internal image-reference" href="../../_images/overmodulation_voltagelimit.png"><img alt="../../_images/overmodulation_voltagelimit.png" src="../../_images/overmodulation_voltagelimit.png" style="width: 600px;" /></a>
+<div class="caption_wrapper"><p class="caption"><span class="caption-number">Figure 5.11 </span><span class="caption-text"><strong>Interacting limits in overmodulation</strong> — the rectangle R1 in the dq frame represents the
+output voltage limits of the current controller. The hexagon rotates with commutation angle
+<span class="math">\(\theta_e\)</span> and indicate physical limits attainable through three-phase modulation.
+Circle C1 represents a modulation index of 1, and circle C2 represents a modulation index
+of <span class="math">\(2/\sqrt{3}\)</span> showing the outer locus of the hexagonal limit.</span></p>
+</div></div>
+<p>The selection of d- and q-axis controller limits is important; see the implementation notes below
+for particular recommendations. The “corner” operation (high values in both axes)
+is important; both axes are competing for voltage and the effective modulation index adds
+in quadrature.
+Operation in this corner is rare and usually confined to transients in the current controller.
+The reason for requiring more voltage along the q-axis is to accommodate the
+back-emf at high speeds; static values of d-axis voltage are required only by the inductive
+voltage drop <span class="math">\(\omega_eL_qI_q\)</span>
+and a resistive voltage drop <span class="math">\(I_dR\)</span> present only with non-zero d-axis current
+(used in flux weakening operation, or in maximum-torque-per-ampere control
+with salient-pole rotors — neither of which the MCAF supports at this time).</p>
+</div>
+<div class="section" id="implementation-notes">
+<h2>5.1.2.5. Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permalink to this headline">¶</a></h2>
+<p>The MCAF implementation of the forward path (in <a class="reference internal" href="../../components/foc.html#fig-foc-blkdiag"><span class="std std-numref">Figure 4.3</span></a>, the top row of blocks,
+including current controller, inverse Park and Clarke transforms, DC link voltage compensation,
+and zero-sequence modulation) relies only on the current controller and ZSM blocks to
+provide limiting and guard against overflow. As long as the current controller limits its outputs
+below a vector magnitude of <span class="math">\(V_{dc}\)</span>, subsequent blocks will not overflow.
+The output limits for each axis are a fixed constant for each axis (<span class="math">\(K_d\)</span> and <span class="math">\(K_q\)</span>)
+multiplied by the DC link voltage, so this means that <span class="math">\(K_d{}^2 + K_q{}^2 &lt; 1\)</span>.</p>
+<p>In the MCAF software, current controller voltages are expressed in terms of line-to-neutral
+voltages, so a modulation index of 1.0 corresponds to a line-to-neutral voltage of
+<span class="math">\(V_{dc}/\sqrt{3}\)</span>. If the d-axis and q-axis limits are expressed as modulation index limits
+<span class="math">\(M_d\)</span> and <span class="math">\(M_q\)</span>, then <span class="math">\(M_d = K_d \sqrt{3}\)</span> and <span class="math">\(M_q = K_q \sqrt{3}\)</span>
+and the requirement is that <span class="math">\(M_d{}^2 + M_q{}^2 &lt; 3\)</span>. The default values of these limits
+in the MCAF is <span class="math">\(M_d = 1.0, M_q = 1.15\)</span>. (Software values are <span class="math">\(K_d = 0.57735, K_q = 0.66395\)</span>
+and appear as <code class="docutils literal notranslate"><span class="pre">MCAF_CURRENT_CTRL_D_OUT_LIMIT</span></code> and <code class="docutils literal notranslate"><span class="pre">MCAF_CURRENT_CTRL_D_OUT_LIMIT</span></code> in parameters/foc_params.h.)
+We recommend a d-axis modulation index limit of 1.0, and a q-axis modulation index limit kept in the 1.05 - 1.25 range.
+This leaves some design margin (<span class="math">\(1^2 + (1.25)^2 = 2.5625 &lt; 3\)</span>) and still provides significant
+voltage capability through overmodulation.</p>
+<div class="section" id="feature-support">
+<h3>5.1.2.5.1. Feature support<a class="headerlink" href="#feature-support" title="Permalink to this headline">¶</a></h3>
+<p>Overmodulation was not present in MCAF R1 but has been added in MCAF R2.</p>
+</div>
+</div>
+<div class="section" id="references">
+<h2>5.1.2.6. References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Youbin Peng, D. Vrancic and R. Hanus,
+<a class="reference external" href="http://ieeexplore.ieee.org/document/526915/">“Anti-windup, bumpless, and conditioned transfer techniques for PID controllers”</a>,
+<em>IEEE Control Systems</em>, vol. 16, no. 4, pp. 48-57, Aug 1996.</li>
+<li>F. Briz, A. Diez, M. W. Degner and R. D. Lorenz,
+<a class="reference external" href="http://ieeexplore.ieee.org/document/903125/">“Current and flux regulation in field-weakening operation”</a>,
+<em>IEEE Transactions on Industry Applications</em>, vol. 37, no. 1, pp. 42-50, Jan/Feb 2001.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5.1.2. Overmodulation</a><ul>
+<li><a class="reference internal" href="#modulation-index">5.1.2.1. Modulation index</a></li>
+<li><a class="reference internal" href="#overmodulation-behavior-in-the-stationary-frame">5.1.2.2. Overmodulation behavior in the stationary frame</a></li>
+<li><a class="reference internal" href="#overmodulation-behavior-in-the-synchronous-frame">5.1.2.3. Overmodulation behavior in the synchronous frame</a></li>
+<li><a class="reference internal" href="#coordinating-overmodulation-and-controller-limits">5.1.2.4. Coordinating overmodulation and controller limits</a></li>
+<li><a class="reference internal" href="#implementation-notes">5.1.2.5. Implementation Notes</a><ul>
+<li><a class="reference internal" href="#feature-support">5.1.2.5.1. Feature support</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#references">5.1.2.6. References</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="previous chapter">5.1.1. Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="dclink-comp.html"
+                        title="next chapter">5.1.3. DC link compensation</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="dclink-comp.html" title="5.1.3. DC link compensation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="5.1.1. Introduction"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" >5. Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >5.1. Field-oriented Current Control</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

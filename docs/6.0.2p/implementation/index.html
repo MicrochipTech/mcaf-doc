@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>6. General Implementation Issues &#8212; MCAF R6 RC8 documentation (docver 6.0.2)</title>
+    <link rel="stylesheet" href="../_static/microchip.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/svgcrop.js"></script>
+    <script type="text/javascript" src="../_static/mcaf-styling.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js"></script>
+    <script type="text/javascript" src="../_static/rendermath.js"></script>
+    
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="6.1. Source Tree Structure" href="source-tree-structure.html" />
+    <link rel="prev" title="5.5. Dead-time Compensation" href="../algorithms/dead-time-comp.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="source-tree-structure.html" title="6.1. Source Tree Structure"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../algorithms/dead-time-comp.html" title="5.5. Dead-time Compensation"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+     
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="general-implementation-issues">
+<span id="implementation-issues"></span><h1>6. General Implementation Issues<a class="headerlink" href="#general-implementation-issues" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="source-tree-structure.html">6.1. Source Tree Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="codegen.html">6.2. Code Generation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="codegen.html#relationship-with-mb-and-mcc">6.2.1. Relationship with motorBench<sup>®</sup> Development Suite and MCC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="codegen.html#configurable-parameters">6.2.2. Configurable parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="codegen.html#source-file-organization">6.2.3. Source file organization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="codegen.html#auxiliary-reports">6.2.4. Auxiliary reports</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ui-customization.html">6.3. Parameter customization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ui-customization.html#summary">6.3.1. Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui-customization.html#detailed-information">6.3.2. Detailed information</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sampling-rate.html">6.4. Sampling Rate and PWM Frequency Implications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sampling-rate.html#effects-of-changing-sampling-rate-and-pwm-frequency">6.4.1. Effects of changing sampling rate and PWM frequency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sampling-rate.html#restrictions">6.4.2. Restrictions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sampling-rate.html#testing">6.4.3. Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="integration.html">6.5. Integration with Custom Code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="integration.html#overview">6.5.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="integration.html#modifying-the-main-application">6.5.2. Modifying the Main Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="integration.html#modifying-the-foc-module">6.5.3. Modifying the FOC module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="integration.html#using-custom-boards">6.5.4. Using Custom Boards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="integration.html#modifying-the-state-machine">6.5.5. Modifying the State Machine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="integration.html#modifying-the-supervisory-algorithms">6.5.6. Modifying the Supervisory Algorithms</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="resource-usage.html">6.6. Resource Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="resource-usage.html#test-case">6.6.1. Test case</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resource-usage.html#usage-statistics-for-mcaf-r3">6.6.2. Usage statistics for MCAF R3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resource-usage.html#usage-statistics-for-mcaf-r4">6.6.3. Usage statistics for MCAF R4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resource-usage.html#usage-statistics-for-mcaf-r5">6.6.4. Usage statistics for MCAF R5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resource-usage.html#usage-statistics-for-mcaf-r6">6.6.5. Usage statistics for MCAF R6</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resource-usage.html#changes-between-mcaf-revisions">6.6.6. Changes between MCAF revisions</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../algorithms/dead-time-comp.html"
+                        title="previous chapter">5.5. Dead-time Compensation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="source-tree-structure.html"
+                        title="next chapter">6.1. Source Tree Structure</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="source-tree-structure.html" title="6.1. Source Tree Structure"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../algorithms/dead-time-comp.html" title="5.5. Dead-time Compensation"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R6 RC8 (docver 6.0.2)</a> &#187;
+     
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2020, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>
