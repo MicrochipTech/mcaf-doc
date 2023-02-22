@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>4.6. Supervisory Algorithms &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.7. External Interface" href="ext-interface.html" />
+    <link rel="prev" title="4.5. Test Harness" href="testharness.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="ext-interface.html" title="4.7. External Interface"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="testharness.html" title="4.5. Test Harness"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">4. </span>Components</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">4.6. </span>Supervisory Algorithms</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="supervisory-algorithms">
+<span id="supervisory"></span><h1><span class="section-number">4.6. </span>Supervisory Algorithms<a class="headerlink" href="#supervisory-algorithms" title="Permalink to this heading">¶</a></h1>
+<p>Supervisory algorithms include</p>
+<ul class="simple">
+<li><p>Monitoring (including fault detection)</p>
+<ul>
+<li><p>Overvoltage/undervoltage detection</p></li>
+<li><p>Overcurrent detection</p></li>
+<li><p>Overtemperature detection</p></li>
+<li><p>Watchdog timer management</p></li>
+<li><p>Stall detection and recovery</p></li>
+</ul>
+</li>
+<li><p>Other supervisory algorithms</p>
+<ul>
+<li><p>Thermal management</p></li>
+<li><p>Saturation and antiwindup management (if not already present in the velocity and current controllers)</p></li>
+<li><p>Adaptive estimators (e.g. online resistance estimation)</p></li>
+<li><p>Field weakening</p></li>
+<li><p>Maximum torque per ampere (MTPA) controllers</p></li>
+</ul>
+</li>
+</ul>
+<section id="implementation-notes">
+<h2><span class="section-number">4.6.1. </span>Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permalink to this heading">¶</a></h2>
+<section id="stall-detection">
+<span id="supervisory-stall-detect"></span><h3><span class="section-number">4.6.1.1. </span>Stall Detection<a class="headerlink" href="#stall-detection" title="Permalink to this heading">¶</a></h3>
+<p>Stall detection consists of five methods intended to detect an overloaded or stalled motor:</p>
+<ul class="simple">
+<li><p><strong>Underspeed</strong> — If the motor velocity estimator remains accurate, a stalled motor can
+be detected if the magnitude of velocity estimate drops below a threshold.</p></li>
+<li><p><strong>Variance</strong> — In the event that a sensorless angle estimator loses synchronism with
+motor back-emf, the motor will tend to stall but the sensorless estimator may continue to estimate
+a nonzero electrical frequency. Under these conditions, voltages and currents exhibit oscillations at the
+estimated electrical frequency. Variance detection attempts to identify voltage and current oscillations.</p></li>
+<li><p><strong>Negative Ed</strong> — Spikes in negative d-axis estimated back-emf (<span class="math notranslate nohighlight">\(E_d\)</span>) can occur when a motor
+stalls and a sensorless angle estimator loses synchronism. This can be used as a detection method.</p></li>
+<li><p><strong>Torque angle</strong> — The angle between estimated back-emf and motor terminal voltage increases as the motor becomes
+more heavily loaded or stalls. This is equivalent mathematically to a ratio of back-emf magnitude to terminal
+voltage dropping below a speed-dependent threshold.</p></li>
+<li><p><strong>Software overcurrent</strong> — Heavily loaded motors may exceed acceptable levels of stator current.</p></li>
+</ul>
+<p>Different motors present different symptoms of a stalled motor, which are detected by different algorithms
+of the ones listed above. All of the algorithms have some kind of filter or delay to avoid premature or false detection.
+(see <a class="reference internal" href="#supervisory-errata"><span class="std std-ref">errata</span></a>)</p>
+<p>More specific information is available on
+<a class="reference internal" href="../appendix/otherdocs.html#otherdocs-monitoring"><span class="std std-ref">monitoring</span></a> (including stall detection),
+and <a class="reference internal" href="../appendix/otherdocs.html#otherdocs-recovery"><span class="std std-ref">recovery</span></a> in the corresponding documents.</p>
+</section>
+<section id="overtemperature-detection">
+<span id="supervisory-overtemperature"></span><h3><span class="section-number">4.6.1.2. </span>Overtemperature Detection<a class="headerlink" href="#overtemperature-detection" title="Permalink to this heading">¶</a></h3>
+<p>MCAF provides an overtemperature detection fault
+for <a class="reference internal" href="../algorithms/temperature-measure.html#algorithm-temperature-board-support"><span class="std std-ref">boards which provide bridge temperature measurement</span></a>, added in MCAF R7.</p>
+<p>A fault is triggered if the <a class="reference internal" href="../algorithms/temperature-measure.html#algorithm-temperature-filtering"><span class="std std-ref">filtered bridge temperature</span></a>
+exceeds a specified threshold.
+This provides some noise immunity from spikes in the raw temperature signal.</p>
+</section>
+<section id="other-algorithms">
+<h3><span class="section-number">4.6.1.3. </span>Other Algorithms<a class="headerlink" href="#other-algorithms" title="Permalink to this heading">¶</a></h3>
+<p>MCAF R1 – R5 do not include any of these algorithms:</p>
+<ul class="simple">
+<li><p>Field weakening</p></li>
+<li><p>Thermal management</p></li>
+<li><p>Adaptive estimators</p></li>
+<li><p>MTPA</p></li>
+</ul>
+</section>
+<section id="watchdog-timer-management">
+<span id="watchdog"></span><h3><span class="section-number">4.6.1.4. </span>Watchdog Timer Management<a class="headerlink" href="#watchdog-timer-management" title="Permalink to this heading">¶</a></h3>
+<p id="index-0">The <code class="docutils literal notranslate"><span class="pre">watchdog</span></code> module leverages the watchdog timer found in PIC<sup>®</sup> microcontroller and
+dsPIC<sup>®</sup> DSC devices. The hardware watchdog timeout is relatively simple, just
+a counter that automatically increments and causes a watchdog reset if
+it overflows; firmware prevents this by clearing the watchdog timer as
+a signal that it is operating normally, so that in the event that a
+blocking operation unexpectedly stops the firmware from being responsive,
+a reset will occur.</p>
+<p>The MCAF uses the hardware watchdog timer to catch unresponsive code in
+<em>both</em> the main loop and the control <a class="reference internal" href="../appendix/glossary.html#term-ISR"><span class="xref std std-term">ISR</span></a>. It does this by requiring two simple
+tasks to run, one in the main loop and the other in the control <a class="reference internal" href="../appendix/glossary.html#term-ISR"><span class="xref std std-term">ISR</span></a>, in order
+for the watchdog timer to be reset. The function <code class="docutils literal notranslate"><span class="pre">MCAF_WatchdogManageIsr()</span></code>
+is the task that actually clears the watchdog timer from within the control <a class="reference internal" href="../appendix/glossary.html#term-ISR"><span class="xref std std-term">ISR</span></a>,
+but it also maintains a “software watchdog” counter <code class="docutils literal notranslate"><span class="pre">isrCount</span></code> which increments on each control
+loop update. It is the responsibility of the main loop task to call <code class="docutils literal notranslate"><span class="pre">MCAF_WatchdogManageMainLoop()</span></code>,
+which clears the software counter, often enough so that the software watchdog does not reach a timeout.</p>
+<ul class="simple">
+<li><p>If the <a class="reference internal" href="../appendix/glossary.html#term-ISR"><span class="xref std std-term">ISR</span></a> becomes unresponsive, it will not clear the hardware watchdog timer, and
+upon the next watchdog timeout, a watchdog reset will occur.</p></li>
+<li><p>If the main loop becomes unresponsive, it will not clear the software watchdog timer,
+and when that timer reaches a timeout threshold, the <a class="reference internal" href="../appendix/glossary.html#term-ISR"><span class="xref std std-term">ISR</span></a> will stop clearing the
+hardware watchdog timer. Upon the next watchdog timeout, a watchdog reset will occur.
+The main loop software watchdog timeout is essentially much longer than the hardware
+watchdog timeout, but it is also a much less critical task thread.</p></li>
+</ul>
+<p>Cause of a watchdog reset can be determined by examining the value of the software
+watchdog counter; if it is above the timeout threshold then the main loop was unresponsive,
+whereas if the software counter is below the timeout threshold then the control ISR was unresponsive.</p>
+<section id="errata">
+<span id="supervisory-errata"></span><h4><span class="section-number">4.6.1.4.1. </span>Errata<a class="headerlink" href="#errata" title="Permalink to this heading">¶</a></h4>
+<ul>
+<li><p>The torque angle detection method of stall detection is difficult to tune automatically. It works well for some motors,
+but can cause false detection faults in others. We have disabled this detection method by default since MCAF R3.
+It can be re-enabled by changing <code class="docutils literal notranslate"><span class="pre">MCAF_StallDetectInit()</span></code>
+to initialize the stall detection flag mask as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pstallDetect</span><span class="o">-&gt;</span><span class="n">stallDetectFlagMask</span> <span class="o">=</span> <span class="n">MCAF_ALL_STALL_DETECT_METHODS_ENABLED</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+</section>
+<section id="modules">
+<h3><span class="section-number">4.6.1.5. </span>Modules<a class="headerlink" href="#modules" title="Permalink to this heading">¶</a></h3>
+<span id="index-1"></span><table class="components-table docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Module</p></th>
+<th class="head"><p>Files</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">fault_detect</span></code></td>
+<td class="longcolumn-3"><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fault_detect.c</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fault_detect.h</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fault_detect_types.h</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">parameters/fault_detect_params.h</span></code></div>
+</div>
+</td>
+<td><p>Fault detection</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td class="longcolumn-1"><code class="docutils literal notranslate"><span class="pre">mcaf_watchdog</span></code></td>
+<td class="longcolumn-1"><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mcaf_watchdog.h</span></code></div>
+</div>
+</td>
+<td><p>Watchdog timer management</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">monitor</span></code></td>
+<td class="longcolumn-1"><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">monitor.c</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">monitor.h</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">monitor_types.h</span></code></div>
+</div>
+</td>
+<td><p>Fault-handling</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">recover</span></code></td>
+<td><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">recover.c</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">recover.h</span></code></div>
+</div>
+</td>
+<td><p>Recovery from stall detection</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">stall_detect</span></code></td>
+<td class="longcolumn-2"><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">stall_detect.c</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">stall_detect.h</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">stall_detect_types.h</span></code></div>
+</div>
+</td>
+<td><p>Stall detection</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">4.6. Supervisory Algorithms</a><ul>
+<li><a class="reference internal" href="#implementation-notes">4.6.1. Implementation Notes</a><ul>
+<li><a class="reference internal" href="#stall-detection">4.6.1.1. Stall Detection</a></li>
+<li><a class="reference internal" href="#overtemperature-detection">4.6.1.2. Overtemperature Detection</a></li>
+<li><a class="reference internal" href="#other-algorithms">4.6.1.3. Other Algorithms</a></li>
+<li><a class="reference internal" href="#watchdog-timer-management">4.6.1.4. Watchdog Timer Management</a><ul>
+<li><a class="reference internal" href="#errata">4.6.1.4.1. Errata</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#modules">4.6.1.5. Modules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="testharness.html"
+                          title="previous chapter"><span class="section-number">4.5. </span>Test Harness</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="ext-interface.html"
+                          title="next chapter"><span class="section-number">4.7. </span>External Interface</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="ext-interface.html" title="4.7. External Interface"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="testharness.html" title="4.5. Test Harness"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">4. </span>Components</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">4.6. </span>Supervisory Algorithms</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

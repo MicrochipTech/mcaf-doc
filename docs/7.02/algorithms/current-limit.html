@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.6. Current limit &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.6.5.1. Simple dynamic current limit" href="dynlimit-simple.html" />
+    <link rel="prev" title="5.5.3. D-axis current reference generation" href="flux_control/flux_weakening_mtpa_integration.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="dynlimit-simple.html" title="5.6.5.1. Simple dynamic current limit"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="flux_control/flux_weakening_mtpa_integration.html" title="5.5.3. D-axis current reference generation"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.6. </span>Current limit</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="current-limit">
+<span id="algorithm-ilimit"></span><span id="index-0"></span><h1><span class="section-number">5.6. </span>Current limit<a class="headerlink" href="#current-limit" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">5.6.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>The outer loop controller (<a class="reference internal" href="../components/foc.html#velocity-control"><span class="std std-ref">velocity control</span></a>, for example)
+commands q-axis current which saturates at well-defined limits.
+These limits are configurable, and may have a fixed or dynamic behavior.
+Dynamic current limits are appropriate when short peak transient currents are desired.</p>
+</section>
+<section id="implications-of-operating-at-the-current-limit">
+<h2><span class="section-number">5.6.2. </span>Implications of operating at the current limit<a class="headerlink" href="#implications-of-operating-at-the-current-limit" title="Permalink to this heading">¶</a></h2>
+<p>When the outer loop controller saturates at the current limit,
+it can no longer achieve its control goal, and will instead come as close to that
+goal as it can without exceeding the current limit.</p>
+<p>The MCAF velocity controller, for example, will no longer regulate velocity
+if the current limit is reached, and will instead command the current limit
+while in control saturation. If the velocity command is 3000 RPM, but
+at a 10 A current limit the motor can only reach 2400 RPM instead, then
+the velocity controller will maintain 10 A at 2400 RPM.</p>
+<p>In field-oriented control, constant q-axis current results in nearly
+constant torque over a wide range — so, in practice, the motor speed will be
+determined by the balance between motor torque and load torque. Speed can change
+fairly quickly if load torque changes and exceeds the current limit.</p>
+<ul class="simple">
+<li><p>In motoring operation, speed will reach stable equilibrium
+when motor and load torque balance. Increases in load torque will slow the motor down,
+and decreases load torque allow the motor to speed up
+until the outer loop comes out of saturation.</p></li>
+<li><p>In regenerating operation, the equilibrium is unstable:
+if the current limit is reached, and there is still an external mechanical torque
+driving the motor shaft, then the motor will speed up until the external mechanical
+torque decreases. For near-constant-torque loads (for example, a load of ore attached
+to a conveyor belt or winch that is being lowered in a controlled fashion), reaching
+the torque limit can cause a runaway condition where the speed increases rapidly
+until something breaks.</p></li>
+</ul>
+<p>For this reason, it is important to consider the entire system and understand
+the desired behavior of motor and load, in order to select a current limit.</p>
+</section>
+<section id="dynamic-current-limit">
+<span id="algorithm-ilimit-dynamic"></span><h2><span class="section-number">5.6.3. </span>Dynamic current limit<a class="headerlink" href="#dynamic-current-limit" title="Permalink to this heading">¶</a></h2>
+<p>Continuous current limits in both the motor and power electronics are
+determined by thermal constraints: specifically,
+the rated temperatures of the motor windings
+and transistor junctions.
+At the continuous current limit, motor and transistors
+can operate indefinitely. But the thermal time constants of motors and transistors
+are usually longer than transient torque requirements:
+this means that both motor and transistors have the capability of carrying
+currents above the continuous limit for a short time.</p>
+<p>A useful dynamic current limit algorithm meets several requirements:</p>
+<ul class="simple">
+<li><p>At any given time, the current limit <span class="math notranslate nohighlight">\(I_{\lim}\)</span> varies
+between continuous and peak limits: <br />
+<span class="math notranslate nohighlight">\(I_{\mathrm{cont}} \le I_{\lim} \le I_{\mathrm{peak}}\)</span></p></li>
+<li><p>The magnitude of the commanded motor current vector <span class="math notranslate nohighlight">\(I_{dq,\mathrm{cmd}}\)</span> should
+always be kept below the current limit; in other words,
+<span class="math notranslate nohighlight">\(I_{d,\mathrm{cmd}}{}^2 + I_{q,\mathrm{cmd}}{}^2 \le I_{\lim}{}^2\)</span></p></li>
+<li><p>The dynamics of the current limit should be controlled so that motor and transistors
+are kept within their safe operating temperature.</p></li>
+</ul>
+<p>MCAF R7 provides such a current limit algorithm.</p>
+</section>
+<section id="thermal-modeling-background">
+<h2><span class="section-number">5.6.4. </span>Thermal modeling background<a class="headerlink" href="#thermal-modeling-background" title="Permalink to this heading">¶</a></h2>
+<p>A detailed description of thermal modeling and the selection of current limit parameters
+is beyond the scope of this documentation at present, but there are a few key principles to note.</p>
+<p>For stator windings, the thermal time constant is often tens of seconds or even minutes,
+and transient currents of 3-5× larger than the continuous limit are common
+in some applications.</p>
+<p>In transistors, there are three relevant materials: the transistor junction, the transistor case, and the heat sink.</p>
+<ul class="simple">
+<li><p>The junction is small and thin, and heats up quickly (typically on the order
+of milliseconds or tens of milliseconds),
+but the thermal resistance between junction and case is typically small;
+in many cases, the junction may be only a few degrees hotter than the case.</p></li>
+<li><p>The transistor case, especially in larger packages such as TO-252 (DPAK),
+TO-263 (D²PAK), TO-220, and TO-247, contains a metal tab with enough
+thermal capacity to act as a short temporary heat sink.</p></li>
+<li><p>External heat sink — if present, this provides additional thermal capacity
+and a path for heat to flow to ambient. (Note: on a printed circuit board,
+copper pours with thermal vias are an effective method of providing
+at least some additional thermal capacity and conductivity
+from the PCB itself.
+See <a class="reference external" href="https://www.microchip.com/en-us/application-notes/an8826">AN8826 PCB Mounting Guidelines for Surface Mount Packages</a>
+for more information.)</p></li>
+</ul>
+<p><a class="reference internal" href="#fig-dyn-ilimit-sim1"><span class="std std-numref">Figure 5.89</span></a> shows a thermal simulation of a MOSFET dissipating
+constant power loss after time <span class="math notranslate nohighlight">\(t=0\)</span>. The junction-to-case temperature
+rises to its final value very quickly. Transistor case and heatsink heat up more slowly.
+The thermal capacity of transistor case and heatsink allow peak transient currents
+above the continuous current capacity.</p>
+<figure class="align-center" id="id1">
+<span id="fig-dyn-ilimit-sim1"></span><img alt="../_images/4236-thermal-sim1.png" src="../_images/4236-thermal-sim1.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.89 </span><span class="caption-text">Thermal simulation of a MOSFET dissipating 10W, R<sub>θJC</sub> = 0.4 K/W.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="available-current-limit-algorithms-in-mcaf">
+<h2><span class="section-number">5.6.5. </span>Available current limit algorithms in MCAF<a class="headerlink" href="#available-current-limit-algorithms-in-mcaf" title="Permalink to this heading">¶</a></h2>
+<p>The following are available current limit algorithms in MCAF:</p>
+<ul class="simple">
+<li><p><strong>Static current limit</strong> (No dynamic current limit) —
+maintains a constant continuous current limit,
+taking the lower value of the board continuous current limit
+and the motor continuous current limit</p></li>
+<li><p><strong><a class="reference internal" href="dynlimit-simple.html#algorithm-dynlim-simple"><span class="std std-ref">Simple current limit</span></a></strong> (“dyn1”) —
+uses a first-order model dependent on motor current.</p></li>
+</ul>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+<section id="peak-and-continuous-limits">
+<span id="algorithm-dynlimit-limits"></span><h2><span class="section-number">5.6.6. </span>Peak and continuous limits<a class="headerlink" href="#peak-and-continuous-limits" title="Permalink to this heading">¶</a></h2>
+<p>Continuous and peak current limits are independent of the algorithm used.</p>
+<p>The continuous current should be chosen based on a system-level requirement,
+for example, continuous operation for 15 minutes with motor and drive
+in free air of up to 50°C ambient.
+(In some cases, “continuous” really is an indefinitely long period of time,
+and in others the time is limited.)</p>
+<p>Peak current should be chosen as the minimum of all short-time constraints,
+typically including the following:</p>
+<ul class="simple">
+<li><p>motor: demagnetization current — above some point,
+stator magnetic field can cause irreversible demagnetization of rotor magnets.</p></li>
+<li><p>motor: iron saturation — above some point, torque degrades and inductance decreases,
+causing an increase in ripple current. Iron saturation usually occurs
+at a lower current than the demagnetization current.</p></li>
+<li><p>drive: ADC input current saturation — can’t control what you aren’t able to measure</p></li>
+<li><p>drive: hardware current limit — this should be reserved for detecting
+catastrophic failures, for example a short-circuit within one of the transistors,
+or an external short-circuit of one of the motor phases
+to either the positive or negative DC link</p></li>
+<li><p>drive: gate drive — above a certain current, the gate drive may not work reliably.
+Put another way: the gate drive should be designed and tested to handle some
+peak current that should never be exceeded.</p></li>
+</ul>
+</section>
+<section id="implementation-notes">
+<h2><span class="section-number">5.6.7. </span>Implementation notes<a class="headerlink" href="#implementation-notes" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>So far, all versions of MCAF (R1 – R7) support only symmetric current limits:
+the same current level is applied to both positive and negative currents,
+whether the motor is rotating forward or backward, and whether
+the motor is in motoring or regenerative operation.</p></li>
+<li><p>The <a class="reference internal" href="dynlimit-simple.html#algorithm-dynlim-simple"><span class="std std-ref">simple dynamic current limit</span></a> has been added in MCAF R7.</p></li>
+</ul>
+<p>For other implementation notes, see the detailed information in each current limit option.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.6. Current limit</a><ul>
+<li><a class="reference internal" href="#overview">5.6.1. Overview</a></li>
+<li><a class="reference internal" href="#implications-of-operating-at-the-current-limit">5.6.2. Implications of operating at the current limit</a></li>
+<li><a class="reference internal" href="#dynamic-current-limit">5.6.3. Dynamic current limit</a></li>
+<li><a class="reference internal" href="#thermal-modeling-background">5.6.4. Thermal modeling background</a></li>
+<li><a class="reference internal" href="#available-current-limit-algorithms-in-mcaf">5.6.5. Available current limit algorithms in MCAF</a></li>
+<li><a class="reference internal" href="#peak-and-continuous-limits">5.6.6. Peak and continuous limits</a></li>
+<li><a class="reference internal" href="#implementation-notes">5.6.7. Implementation notes</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="flux_control/flux_weakening_mtpa_integration.html"
+                          title="previous chapter"><span class="section-number">5.5.3. </span>D-axis current reference generation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="dynlimit-simple.html"
+                          title="next chapter"><span class="section-number">5.6.5.1. </span>Simple dynamic current limit</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="dynlimit-simple.html" title="5.6.5.1. Simple dynamic current limit"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="flux_control/flux_weakening_mtpa_integration.html" title="5.5.3. D-axis current reference generation"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.6. </span>Current limit</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

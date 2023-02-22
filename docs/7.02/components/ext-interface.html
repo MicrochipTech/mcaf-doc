@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>4.7. External Interface &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.8. Diagnostic Kernel" href="diagnostics.html" />
+    <link rel="prev" title="4.6. Supervisory Algorithms" href="supervisory.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="diagnostics.html" title="4.8. Diagnostic Kernel"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="supervisory.html" title="4.6. Supervisory Algorithms"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">4. </span>Components</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">4.7. </span>External Interface</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="external-interface">
+<span id="ext-interface"></span><h1><span class="section-number">4.7. </span>External Interface<a class="headerlink" href="#external-interface" title="Permalink to this heading">¶</a></h1>
+<p>This section describes the external interfaces to the motor control application
+framework, including potentiometer, pushbuttons, and LEDs.</p>
+<p>In MCAF R6 – R7, the <a class="reference internal" href="hal.html#board-service-module"><span class="std std-ref">board service module</span></a>
+implements the potentiometer and pushbutton handlers, while the
+<a class="reference internal" href="main.html#sample-application"><span class="std std-ref">Sample Application</span></a> defines the behavior on a button press.</p>
+<section id="general-ui-guidelines">
+<h2><span class="section-number">4.7.1. </span>General UI guidelines<a class="headerlink" href="#general-ui-guidelines" title="Permalink to this heading">¶</a></h2>
+<p>The <a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/dm330021-2">dsPICDEM<sup>®</sup> MCLV‑2 Development Board</a>
+and the <a class="reference external" href="http://www.microchip.com/Developmenttools/ProductDetails.aspx?PartNO=DV330100">Low Voltage Bundle</a>
+have (per motor) two LEDs, two pushbuttons, and one
+potentiometer.
+The <a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/dm330023-2">dsPICDEM<sup>®</sup> MCHV‑2 Development Board</a> and <a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/dm330023-3">dsPICDEM<sup>®</sup> MCHV‑3 Development Board</a> have two LEDs, one pushbutton, and one potentiometer for its
+single motor. The LEDs in MCLV-2 and the Low Voltage Bundle are located next to each other; the
+LEDs in MCHV-2 and MCHV-3 are located several inches apart on opposite sides of the <a class="reference internal" href="../appendix/glossary.html#term-PIM"><span class="xref std std-term">PIM</span></a>. In
+order to support all these systems, the following guidelines are suggested.</p>
+<ul class="simple">
+<li><p>Pushbuttons</p>
+<ul>
+<li><p>The primary pushbutton should provide required functionality.</p></li>
+<li><p>The secondary pushbutton should provide optional functionality.</p></li>
+<li><p>Each pushbutton can provide different types of inputs depending on the duration of press and release:</p>
+<ul>
+<li><p>debounce: release → press and press → release transitions occur in less than some time T1 (e.g. 20msec). This is ignored.</p></li>
+<li><p>single press: release → press and press → release transitions occur in some time T where T1 ≤ T ≤ T2</p></li>
+<li><p>sustained press: release → press transition occurs, and press is held
+for more than some time T2 (e.g. 2 seconds). This is available for
+providing seldom-used input. Once a time T2 has elapsed, if a sustained
+press is allowed, an LED will provide some type of visual feedback that a
+sustained press has occurred.</p></li>
+<li><p>double press: two single press events occur within some interval T3 (e.g. 0.5 seconds). This is available for providing seldom-used input.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul class="simple" id="ext-interface-leds">
+<li><p>LEDs</p>
+<ul>
+<li><p>Each LED can provide different types of indication depending on how it is energized over time:</p>
+<ul>
+<li><p>Fully off</p></li>
+<li><p>Fully on</p></li>
+<li><p>Modulated at high frequency (&gt;100 Hz) in order to operate at ½
+perceived brightness. (NOTE: because of the quirks of the human brain, this may not be at 50% duty cycle.)</p></li>
+<li><p>Perceptible blink rates and duty cycles (e.g. 5%/50%/95% duty at 0.5 / 1 / 2Hz blink rates)</p></li>
+<li><p>Blink rates between 2Hz and 55Hz should be avoided: although LEDs are fairly
+small in visual extent, these frequencies can be a trigger to people who have photosensitive epilepsy.</p></li>
+<li><p>Error codes — sequences of on/off patterns that are repeated and easily
+perceptible, e.g. 250msec on-time separated by different-length delimiting
+spaces of off-time (250msec, 750msec, 2250msec); see section on <a class="reference internal" href="#ui-error-codes"><span class="std std-ref">error codes</span></a> for more
+information</p></li>
+</ul>
+</li>
+<li><p>Some coordination between the two LEDs should be maintained to provide
+simple visual information (it is difficult to interpret two LEDs blinking at
+different rates next to each other)</p></li>
+<li><p>For indicating “liveness”, dynamic patterns should be preferred over static patterns, to indicate that the controller is alive and not stuck in a particular state.</p></li>
+</ul>
+</li>
+<li><p>Potentiometer</p>
+<ul>
+<li><p>The potentiometer should only represent a continuous range input.</p></li>
+</ul>
+</li>
+</ul>
+<p>Aside from these general guidelines, the choice of UI behavior is somewhat arbitrary.</p>
+</section>
+<section id="required-features">
+<h2><span class="section-number">4.7.2. </span>Required Features<a class="headerlink" href="#required-features" title="Permalink to this heading">¶</a></h2>
+<p>The following are required features:</p>
+<ul class="simple">
+<li><p>[LED] Continuous indication of system state (e.g. disabled/startup/running/shutdown/fault)</p></li>
+<li><p>[LED] Error code indicator in fault state</p></li>
+<li><p>[button] Start/stop control</p></li>
+<li><p>[button] Manual restart from fault</p></li>
+<li><p>[potentiometer] Velocity control in a given direction, from low to high magnitude (speed)</p></li>
+</ul>
+<p>The following are desired features:</p>
+<ul class="simple">
+<li><p>[button] Control direction of velocity command (forward / reverse)</p></li>
+</ul>
+</section>
+<section id="implemented-behavior">
+<h2><span class="section-number">4.7.3. </span>Implemented Behavior<a class="headerlink" href="#implemented-behavior" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Start/stop:</p>
+<ul>
+<li><p>Single press events on primary button provide a “start” and “stop” input.
+(request to start motor if it is stopped; request to stop motor if it is not stopped)
+This was done to be consistent with the behavior of existing application notes AN1078 and AN1292.</p></li>
+</ul>
+</li>
+<li><p>Reverse direction:</p>
+<ul>
+<li><p>Direction flag is maintained</p></li>
+<li><p>Reverse direction request:</p>
+<ul>
+<li><p>If 2nd button is present: single press event of 2nd button</p></li>
+<li><dl class="simple">
+<dt>If 2nd button is not present: sustained press of first button, first supported in MCAF R2.</dt><dd><p>The time needed for this is nominally 3 seconds, set by <code class="docutils literal notranslate"><span class="pre">MCAF_BOARDSERVICE_ISR_PRESCALER</span></code> in <code class="docutils literal notranslate"><span class="pre">board_service_types.h</span></code>
+and <code class="docutils literal notranslate"><span class="pre">BSP_EMULATED_BUTTON_DELAY_COUNT</span></code> in <code class="docutils literal notranslate"><span class="pre">hardware_access_functions_params.h</span></code>, along with the motor control loop frequency.
+(see <a class="reference internal" href="#ext-interface-errata"><span class="std std-ref">errata</span></a>)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</li>
+<li><p>If reverse direction request occurs when motor is stopped, direction flag is reversed but no other action is taken.</p></li>
+<li><p>If reverse direction request occurs when motor is running, then the following sequence occurs:</p>
+<ul>
+<li><p>Request to stop motor</p></li>
+<li><p>Motor reaches a stopped state</p></li>
+<li><p>Direction flag reversed</p></li>
+<li><p>Request to start motor</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Manual restart from a recoverable fault (see <a class="reference internal" href="#table-ui-error-recoverability"><span class="std std-numref">Table 4.7</span></a>):</p>
+<ul>
+<li><p>Single press event, if in fault state, clears fault latch and restarts normal operation.</p></li>
+</ul>
+</li>
+<li><p>Velocity control:</p>
+<ul>
+<li><p>Potentiometer adjusts magnitude of velocity (speed) from minimum to maximum. Same as behavior of existing appnotes.</p></li>
+</ul>
+</li>
+<li><p>State indication: see table below</p></li>
+</ul>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>direction</p></th>
+<th class="head"><p>state</p></th>
+<th class="head"><p>LED1</p></th>
+<th class="head"><p>LED2</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>both</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">RESTART</span></code></p></td>
+<td><p>off</p></td>
+<td><p>off</p></td>
+</tr>
+<tr class="row-odd"><td><p>forward</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">STOPPED</span></code></p></td>
+<td><p>off</p></td>
+<td><p>1/16 s on &#64; 1Hz</p></td>
+</tr>
+<tr class="row-even"><td><p>forward</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">STARTING</span></code></p></td>
+<td><p>on</p></td>
+<td><p>1/16 s on &#64; 1Hz</p></td>
+</tr>
+<tr class="row-odd"><td><p>forward</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">RUNNING</span></code></p></td>
+<td><p>on</p></td>
+<td><p>15/16 s on &#64; 1Hz</p></td>
+</tr>
+<tr class="row-even"><td><p>forward</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">STOPPING</span></code></p></td>
+<td><p>off</p></td>
+<td><p>15/16 s on &#64; 1Hz</p></td>
+</tr>
+<tr class="row-odd"><td><p>reverse</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">STOPPED</span></code></p></td>
+<td><p>1/16 s on &#64; 1Hz</p></td>
+<td><p>off</p></td>
+</tr>
+<tr class="row-even"><td><p>reverse</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">STARTING</span></code></p></td>
+<td><p>1/16 s on &#64; 1Hz</p></td>
+<td><p>on</p></td>
+</tr>
+<tr class="row-odd"><td><p>reverse</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">RUNNING</span></code></p></td>
+<td><p>15/16 s on &#64; 1Hz</p></td>
+<td><p>on</p></td>
+</tr>
+<tr class="row-even"><td><p>reverse</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">STOPPING</span></code></p></td>
+<td><p>15/16 s on &#64; 1Hz</p></td>
+<td><p>off</p></td>
+</tr>
+<tr class="row-odd"><td><p>both</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">TEST_DISABLED</span></code></p></td>
+<td><p>1/16 s on &#64; 1Hz</p></td>
+<td><p>1/16 s on &#64; 1Hz</p></td>
+</tr>
+<tr class="row-even"><td><p>both</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">TEST_ENABLED</span></code></p></td>
+<td><p>15/16 s on &#64; 1Hz</p></td>
+<td><p>15/16 s on &#64; 1Hz</p></td>
+</tr>
+<tr class="row-odd"><td><p>both</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">FAULT</span></code></p></td>
+<td><p>error code blink</p></td>
+<td><p>error code blink</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="error-codes">
+<span id="ui-error-codes"></span><h2><span class="section-number">4.7.4. </span>Error Codes<a class="headerlink" href="#error-codes" title="Permalink to this heading">¶</a></h2>
+<p>The MCAF has fault detection logic to cover a number of different conditions
+and summarize as a unique fault code. The MCAF displays this fault code as
+a blinking LED pattern based on groups of 1 – 4 blinks. The rationale for this
+approach is that blink counts greater than 4 are difficult to count.</p>
+<section id="error-code-led-behavior">
+<h3><span class="section-number">4.7.4.1. </span>Error Code LED Behavior<a class="headerlink" href="#error-code-led-behavior" title="Permalink to this heading">¶</a></h3>
+<section id="converting-error-code-to-led-blink-pattern">
+<h4><span class="section-number">4.7.4.1.1. </span>Converting Error Code to LED Blink Pattern<a class="headerlink" href="#converting-error-code-to-led-blink-pattern" title="Permalink to this heading">¶</a></h4>
+<p>Given a positive (nonzero) integer X which represents an error code, and an LED that can be turned on:</p>
+<ol class="arabic simple">
+<li><p>Convert X to a sequence of base 4 digits, least significant digit first, ending in the last nonzero digit.</p></li>
+<li><p>Add 1 to each value in the sequence.</p></li>
+<li><p>For each value <em>k</em> in the sequence:</p>
+<ol class="loweralpha simple">
+<li><p>Repeat <em>k</em> times:</p>
+<ol class="lowerroman simple">
+<li><p>Turn LED on for 250msec</p></li>
+<li><p>Turn LED off for 250msec</p></li>
+</ol>
+</li>
+<li><p>Wait 500 msec</p></li>
+</ol>
+</li>
+<li><p>Wait 1500 msec, then goto step 3</p></li>
+</ol>
+<p>This always produces a sequence containing at least one double/triple/quadruple blink.</p>
+</section>
+<section id="converting-led-blink-pattern-to-error-code">
+<h4><span class="section-number">4.7.4.1.2. </span>Converting LED Blink Pattern to Error Code<a class="headerlink" href="#converting-led-blink-pattern-to-error-code" title="Permalink to this heading">¶</a></h4>
+<p>This is not usually necessary (error code tables include a column indicating
+the number of blinks directly), but to convert back to a numeric error code:</p>
+<ol class="arabic simple">
+<li><p>Count the number of blinks as a sequence of numbers from 1 – 4</p></li>
+<li><p>Subtract 1 from each value in the sequence</p></li>
+<li><p>Interpret the sequence as a base 4 number, least significant digit first</p></li>
+</ol>
+</section>
+<section id="examples">
+<h4><span class="section-number">4.7.4.1.3. </span>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h4>
+<p>The examples below include a visual representation of a blink pattern. Each of the <code class="docutils literal notranslate"><span class="pre">+</span></code> symbols represents
+the LED turning on, and the pattern is drawn to scale in time (each character represents 250msec).</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Error code</p></th>
+<th class="head"><p>Sequence of base 4 digits</p></th>
+<th class="head"><p><em>k</em> sequence</p></th>
+<th class="head"><p>two repetitions of blink pattern</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>[1]</p></td>
+<td><p>[2]</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">+</span> <span class="pre">+</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">+</span> <span class="pre">+</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; </code></p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>[2]</p></td>
+<td><p>[3]</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; </code></p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>[3]</p></td>
+<td><p>[4]</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; </code></p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>[0, 1]</p></td>
+<td><p>[1, 2]</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">+</span>&#160;&#160; <span class="pre">+</span> <span class="pre">+</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">+</span>&#160;&#160; <span class="pre">+</span> <span class="pre">+</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; </code></p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>[3, 1]</p></td>
+<td><p>[4, 2]</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span>&#160;&#160; <span class="pre">+</span> <span class="pre">+</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span>&#160;&#160; <span class="pre">+</span> <span class="pre">+</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; </code></p></td>
+</tr>
+<tr class="row-odd"><td><p>13</p></td>
+<td><p>[1, 3]</p></td>
+<td><p>[2, 4]</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">+</span> <span class="pre">+</span>&#160;&#160; <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">+</span> <span class="pre">+</span>&#160;&#160; <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; </code></p></td>
+</tr>
+<tr class="row-even"><td><p>35</p></td>
+<td><p>[3, 0, 2]</p></td>
+<td><p>[4, 1, 3]</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span>&#160;&#160; <span class="pre">+</span>&#160;&#160; <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span>&#160;&#160; <span class="pre">+</span>&#160;&#160; <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span>&#160;&#160;&#160; </code></p></td>
+</tr>
+<tr class="row-odd"><td><p>100</p></td>
+<td><p>[0, 1, 2, 1]</p></td>
+<td><p>[1, 2, 3, 2]</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">+</span>&#160;&#160; <span class="pre">+</span> <span class="pre">+</span>&#160;&#160; <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span>&#160;&#160; <span class="pre">+</span> <span class="pre">+</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">+</span>&#160;&#160; <span class="pre">+</span> <span class="pre">+</span>&#160;&#160; <span class="pre">+</span> <span class="pre">+</span> <span class="pre">+</span>&#160;&#160; <span class="pre">+</span> <span class="pre">+</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+<section id="timing-and-fault-clearing-issues-in-ui-indicators">
+<span id="ui-timing-faultclear"></span><h2><span class="section-number">4.7.5. </span>Timing and Fault-Clearing Issues in UI Indicators<a class="headerlink" href="#timing-and-fault-clearing-issues-in-ui-indicators" title="Permalink to this heading">¶</a></h2>
+<p>There are two associated issues that are indirectly related to error-code reporting:</p>
+<ul class="simple">
+<li><p>timing of UI indicators (how delays are implemented)</p></li>
+<li><p>fault-clearing issues (what has to happen in order for the system to return to normal operation)</p></li>
+</ul>
+<p>The MCAF uses chosen the following strategy, based on recoverability:</p>
+<span id="table-ui-error-recoverability"></span><table class="docutils align-default" id="id2">
+<caption><span class="caption-number">Table 4.7 </span><span class="caption-text">Error recoverability</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>recoverability</p></th>
+<th class="head"><p>timing</p></th>
+<th class="head"><p>fault-clearing</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Recoverable</strong>: faults expected to be
+caused by a momentary condition:
+overcurrent, overspeed, overvoltage,
+etc.</p></td>
+<td><p>We rely on the system state machine
+running at a periodic rate as a
+timebase for UI delays.</p></td>
+<td><p>User intervention required:
+press the start/stop input button.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Nonrecoverable</strong>: something really
+bad has happened, such as an
+oscillator failure, stack overflow,
+or watchdog timeout.</p></td>
+<td><p>We cannot necessarily rely on the
+system state machine operating
+properly, and instead go into a
+“paranoid” mode (see below); busy-waiting
+for a fixed number of CPU cycles is used for
+timing.</p></td>
+<td><p>User intervention via a manual reset
+is required.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Upon nonrecoverable faults (“paranoid mode”), the following actions occur:</p>
+<ul class="simple">
+<li><p>Disable all interrupts</p></li>
+<li><p>Put <a class="reference internal" href="../appendix/glossary.html#term-PWM"><span class="xref std std-term">PWM</span></a> outputs at a safe state</p></li>
+<li><p>Report error code via LEDs, relying on busy-waiting to create time delays for UI</p></li>
+</ul>
+</section>
+<section id="implementation">
+<h2><span class="section-number">4.7.6. </span>Implementation<a class="headerlink" href="#implementation" title="Permalink to this heading">¶</a></h2>
+<section id="external-interface-errata">
+<span id="ext-interface-errata"></span><h3><span class="section-number">4.7.6.1. </span>External interface errata<a class="headerlink" href="#external-interface-errata" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>LED patterns are not displayed when in the <code class="docutils literal notranslate"><span class="pre">TEST_DISABLE</span></code> or <code class="docutils literal notranslate"><span class="pre">TEST_ENABLE</span></code> states. (DB_MC-1922;
+Applicability: MCAF R1 – R7.)</p></li>
+<li><p>Timing of emulated button press for MCHV-2 and MCHV-3 are not guaranteed; if there are long-running tasks within the main loop,
+this can delay the time needed to detect an extended button press. (DB_MC-1920; Applicability: MCAF R2 – R5; fixed in MCAF R6.)</p></li>
+</ul>
+</section>
+<section id="modules">
+<h3><span class="section-number">4.7.6.2. </span>Modules<a class="headerlink" href="#modules" title="Permalink to this heading">¶</a></h3>
+<span id="index-0"></span><table class="components-table docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Module</p></th>
+<th class="head"><p>Files</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">error_codes</span></code></td>
+<td class="longcolumn-1"><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">error_codes.h</span></code></div>
+</div>
+</td>
+<td><p>List of all error codes</p></td>
+<td><p>The Appendix contains <a class="reference internal" href="../appendix/error_codes.html#appendix-error-codes"><span class="std std-ref">an annotated list of error codes</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">ui</span></code></td>
+<td><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">ui.c</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">ui.h</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">ui_types.h</span></code></div>
+</div>
+</td>
+<td><p>User interface</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">4.7. External Interface</a><ul>
+<li><a class="reference internal" href="#general-ui-guidelines">4.7.1. General UI guidelines</a></li>
+<li><a class="reference internal" href="#required-features">4.7.2. Required Features</a></li>
+<li><a class="reference internal" href="#implemented-behavior">4.7.3. Implemented Behavior</a></li>
+<li><a class="reference internal" href="#error-codes">4.7.4. Error Codes</a><ul>
+<li><a class="reference internal" href="#error-code-led-behavior">4.7.4.1. Error Code LED Behavior</a><ul>
+<li><a class="reference internal" href="#converting-error-code-to-led-blink-pattern">4.7.4.1.1. Converting Error Code to LED Blink Pattern</a></li>
+<li><a class="reference internal" href="#converting-led-blink-pattern-to-error-code">4.7.4.1.2. Converting LED Blink Pattern to Error Code</a></li>
+<li><a class="reference internal" href="#examples">4.7.4.1.3. Examples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#timing-and-fault-clearing-issues-in-ui-indicators">4.7.5. Timing and Fault-Clearing Issues in UI Indicators</a></li>
+<li><a class="reference internal" href="#implementation">4.7.6. Implementation</a><ul>
+<li><a class="reference internal" href="#external-interface-errata">4.7.6.1. External interface errata</a></li>
+<li><a class="reference internal" href="#modules">4.7.6.2. Modules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="supervisory.html"
+                          title="previous chapter"><span class="section-number">4.6. </span>Supervisory Algorithms</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="diagnostics.html"
+                          title="next chapter"><span class="section-number">4.8. </span>Diagnostic Kernel</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="diagnostics.html" title="4.8. Diagnostic Kernel"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="supervisory.html" title="4.6. Supervisory Algorithms"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">4. </span>Components</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">4.7. </span>External Interface</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

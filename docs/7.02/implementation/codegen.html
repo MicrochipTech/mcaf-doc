@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>6.2. Code Generation &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="6.3. Parameter customization" href="ui-customization.html" />
+    <link rel="prev" title="6.1. Source Tree Structure" href="source-tree-structure.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="ui-customization.html" title="6.3. Parameter customization"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="source-tree-structure.html" title="6.1. Source Tree Structure"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.2. </span>Code Generation</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="code-generation">
+<span id="impl-codegen"></span><h1><span class="section-number">6.2. </span>Code Generation<a class="headerlink" href="#code-generation" title="Permalink to this heading">¶</a></h1>
+<section id="relationship-with-mb-and-mcc">
+<h2><span class="section-number">6.2.1. </span>Relationship with motorBench<sup>®</sup> Development Suite and MCC<a class="headerlink" href="#relationship-with-mb-and-mcc" title="Permalink to this heading">¶</a></h2>
+<p>MPLAB<sup>®</sup> Code Configurator (MCC) can be used with motorBench<sup>®</sup> Development Suite as a plugin library for MCC. Each version of motorBench<sup>®</sup> Development Suite contains a firmware package which
+allows generation of a particular version of MCAF.</p>
+<p>Since <a class="reference internal" href="../appendix/rev_history.html#revhistory-r4-mcc"><span class="std std-ref">MCAF R4</span></a>, all peripheral and system initialization code is produced by MCC not MCAF. The only exception to this is the <a class="reference internal" href="../appendix/glossary.html#term-QEI"><span class="xref std std-term">QEI</span></a> peripheral as this is not supported by MCC yet. This requires setting certain peripheral, oscillator, and configuration settings in MCC. See the motorBench<sup>®</sup> Development Suite help documentation and release notes for more information.</p>
+<p>When MCC supports the <a class="reference internal" href="../appendix/glossary.html#term-QEI"><span class="xref std std-term">QEI</span></a> peripheral MCAF will no longer be responsible for the generation of any peripheral and/or system initialization code. This way MCAF can leverage MCC to broaden its support for devices and hardware.</p>
+</section>
+<section id="configurable-parameters">
+<span id="impl-config-params"></span><h2><span class="section-number">6.2.2. </span>Configurable parameters<a class="headerlink" href="#configurable-parameters" title="Permalink to this heading">¶</a></h2>
+<p>Generated files in the <code class="docutils literal notranslate"><span class="pre">parameters</span></code> directory contain configurable parameters
+that are computed from information entered or derived in motorBench<sup>®</sup> Development Suite and MPLAB<sup>®</sup> Code Configurator.</p>
+<p>Microchip is investigating methods of making these parameter calculations
+more transparent and more easily manipulated if necessary.</p>
+<p>A full table of configurable parameters is given in the file <code class="docutils literal notranslate"><span class="pre">aux-files/parameters.html</span></code>
+which looks somewhat like the following excerpt:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Symbol</p></th>
+<th class="head"><p>Intended Value</p></th>
+<th class="head"><p>Units</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td colspan="4"><p><strong>foc (10 items)</strong></p></td>
+<td><p><strong>Field-oriented control (FOC) parameters</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">foc.kii</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(K_{ii}\)</span></p></td>
+<td><p>6.371e+02</p></td>
+<td><p>V/A/s</p></td>
+<td><p>Current loop integral gain</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">foc.kip</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(K_{ip}\)</span></p></td>
+<td><p>0.4160799</p></td>
+<td><p>V/A</p></td>
+<td><p>Current loop proportional gain</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">foc.kwi</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(K_{\omega i}\)</span></p></td>
+<td><p>0.5869318</p></td>
+<td><p>A/rad</p></td>
+<td><p>Velocity loop integral gain</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">foc.kwp</span></code></p></td>
+<td><p><span class="math notranslate nohighlight">\(K_{\omega p}\)</span></p></td>
+<td><p>0.0355454</p></td>
+<td><p>A/(rad/s)</p></td>
+<td><p>Velocity loop proportional gain</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">foc.mcafCurrentCtrlDOutLimit</span></code></p></td>
+<td></td>
+<td><p>1.0000000</p></td>
+<td><p>line-to-line</p></td>
+<td><p>Limit for output line-to-line voltage of
+d-axis current controller, expressed as a
+fraction of DC link voltage</p></td>
+</tr>
+</tbody>
+</table>
+<p>This shows the real-world engineering values for each configuration parameter.
+The corresponding parameters file looks like this, containing fixed-point integer values
+along with a C comment detailing the conversion to fixed-point:</p>
+<div class="literal-block-wrapper docutils container" id="code-codegen-1">
+<div class="code-block-caption"><span class="caption-number">Listing 6.1 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">parameters/foc_params.h</span></code></span><a class="headerlink" href="#code-codegen-1" title="Permalink to this code">¶</a></div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="c1">//************** PI Coefficients **************</span>
+<span class="c1">//// Current loop</span>
+<span class="c1">// phase margin = 80 deg</span>
+<span class="c1">// PI phase at crossover = 45.000 deg</span>
+<span class="c1">// crossover frequency = 1.531 k rad/s (243.680 Hz)</span>
+<span class="cm">/* Current loop proportional gain */</span>
+<span class="cp">#define KIP                                  2272      </span><span class="c1">// Q15(  0.06934) = +416.01562 mV/A        = +416.07990 mV/A        - 0.0154%</span>
+<span class="cp">#define KIP_Q                                  15</span>
+<span class="cm">/* Current loop integral gain */</span>
+<span class="cp">#define KII                                   174      </span><span class="c1">// Q15(  0.00531) = +637.20703 V/A/s       = +637.05425 V/A/s       + 0.0240%</span>
+<span class="cp">#define KII_Q                                  15</span>
+<span class="c1">//// Velocity loop</span>
+<span class="c1">// phase margin = 65 deg</span>
+<span class="c1">// PI phase at crossover = 10.000 deg</span>
+<span class="c1">// crossover frequency = 93.645 rad/s (14.904 Hz)</span>
+<span class="cm">/* Velocity loop proportional gain */</span>
+<span class="cp">#define KWP                                 12422      </span><span class="c1">// Q13(  1.51636) =  +35.54401 mA/(rad/s)  =  +35.54544 mA/(rad/s)  - 0.0040%</span>
+<span class="cp">#define KWP_Q                                  13</span>
+<span class="cm">/* Velocity loop integral gain */</span>
+<span class="cp">#define KWI                                   820      </span><span class="c1">// Q15(  0.02502) = +586.58211 mA/rad      = +586.93179 mA/rad      - 0.0596%</span>
+<span class="cp">#define KWI_Q                                  15</span>
+
+   <span class="p">...</span>
+
+<span class="cm">/* Limit for output line-to-line voltage of d-axis current controller, expressed as a fraction of DC link voltage */</span>
+<span class="cp">#define MCAF_CURRENT_CTRL_D_OUT_LIMIT       18919      </span><span class="c1">// Q15(  0.57736) =   +1.00002 line-to-line =   +1.00000 line-to-line + 0.0020%</span>
+</pre></div>
+</div>
+</div>
+<p>Parameter names are given in “camelCase” except in the C header file where they are converted to
+all-capitals with underscores separating words, for example <code class="docutils literal notranslate"><span class="pre">foc.mcafCurrentCtrlDOutLimit</span></code>
+is converted to <code class="docutils literal notranslate"><span class="pre">MCAF_CURRENT_CTRL_D_OUT_LIMIT</span></code> in the <code class="docutils literal notranslate"><span class="pre">foc_params.h</span></code> file.</p>
+<section id="out-of-range-errors">
+<h3><span class="section-number">6.2.2.1. </span>Out-of-range errors<a class="headerlink" href="#out-of-range-errors" title="Permalink to this heading">¶</a></h3>
+<p>In rare circumstances the configuration parameters may produce errors during code generation.
+This can result from motor parameters that may be extremely small or large values compared to
+typical motors. In this case, code generation will fail and an error message will be shown in
+MPLAB<sup>®</sup> Code Configurator. (Please read the release notes of motorBench<sup>®</sup> Development Suite for more information on how these messages are
+displayed.)</p>
+<p>A typical out-of-range error message looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">ValueError</span><span class="p">:</span> <span class="n">Value</span> <span class="s1">&#39;kip&#39;</span> <span class="n">out</span> <span class="n">of</span> <span class="nb">range</span><span class="p">:</span> <span class="mf">345.055</span> <span class="n">Q8</span><span class="o">.</span><span class="mi">8</span> <span class="o">=</span> <span class="mf">4140.66</span> <span class="n">V</span><span class="o">/</span><span class="n">A</span>
+</pre></div>
+</div>
+<p>In this instance, the code generation engine attempted to convert a real-world value of 4140.66 V/A into a Q8 representation of 345.055, which
+is too large; Q8 supports only ± 128.</p>
+<p>Microchip is investigating methods of providing guidelines for troubleshooting and correcting out-of-range errors;
+in the interim, if you encounter an out-of-range error, please <a class="reference internal" href="../faq.html#faq-support"><span class="std std-ref">contact Microchip</span></a> for assistance.</p>
+</section>
+</section>
+<section id="source-file-organization">
+<h2><span class="section-number">6.2.3. </span>Source file organization<a class="headerlink" href="#source-file-organization" title="Permalink to this heading">¶</a></h2>
+<p>Each source file begins with a header that looks like this:</p>
+<div class="literal-block-wrapper docutils container" id="code-codegen-2">
+<div class="code-block-caption"><span class="caption-number">Listing 6.2 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">foc.c</span></code></span><a class="headerlink" href="#code-codegen-2" title="Permalink to this code">¶</a></div>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="cm">/**</span>
+<span class="cm"> * foc.c</span>
+<span class="cm"> *</span>
+<span class="cm"> * main field-oriented-control code</span>
+<span class="cm"> *</span>
+<span class="cm"> * Component: FOC</span>
+<span class="cm"> */</span>
+
+<span class="cm">/* *********************************************************************</span>
+<span class="cm"> *</span>
+<span class="cm"> * Motor Control Application Framework</span>
+<span class="cm"> * R3/RC14 (commit 90529, build on 2018 Oct 04)</span>
+<span class="cm"> *</span>
+<span class="cm"> * (c) 2018 Microchip Technology Inc. and its subsidiaries. You may use</span>
+<span class="cm"> * this software and any derivatives exclusively with Microchip products.</span>
+<span class="cm"> *</span>
+<span class="cm"> ...</span>
+</pre></div>
+</div>
+</div>
+<p>These are two comment blocks.</p>
+<p>The first one is used for some computer-assisted
+documentation, and contains the filename, a brief description,
+and the <a class="reference internal" href="../components/index.html#components"><span class="std std-ref">component</span></a> name.</p>
+<p>The second comment block contains the MCAF version (for example,
+R3 = release 3, RC14 = release candidate 14), commit ID, and build date,
+along with the copyright notice.</p>
+<p>In general, code for each <a class="reference internal" href="../architecture/overview.html#architecture-modules"><span class="std std-ref">module</span></a> is divided
+into two or three files, for example the <code class="docutils literal notranslate"><span class="pre">foc</span></code> module:</p>
+<ul class="simple">
+<li><p>compilation unit (<code class="docutils literal notranslate"><span class="pre">foc.c</span></code>) — contains C-callable function definitions</p></li>
+<li><p>header files:</p>
+<ul>
+<li><p>main header file (<code class="docutils literal notranslate"><span class="pre">foc.h</span></code>) — contains function declarations
+and inline function implementations</p></li>
+<li><p>types header file (<code class="docutils literal notranslate"><span class="pre">foc_types.h</span></code>) — contains type definitions
+separate from function declarations</p></li>
+</ul>
+</li>
+</ul>
+<p>With the exception of the types header file, this is a typical organization
+in C code. Types header files were separated to help remove unnecessary
+dependencies between modules, so that state variables could be allocated
+without pulling in additional modules as dependencies.</p>
+</section>
+<section id="auxiliary-reports">
+<h2><span class="section-number">6.2.4. </span>Auxiliary reports<a class="headerlink" href="#auxiliary-reports" title="Permalink to this heading">¶</a></h2>
+<p>MCAF includes a few additional files generated in the <code class="docutils literal notranslate"><span class="pre">aux-files</span></code> directory:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">parameters.html</span></code> — a table of <a class="reference internal" href="#impl-config-params"><span class="std std-ref">configurable parameters</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">report.html</span></code> — a table of motor parameters and metrics. In the event you need assistance in troubleshooting
+behavior of a particular motor, please provide this file to Microchip staff so they can better understand
+the motor’s characteristics. Derived parameters or metrics like <span class="math notranslate nohighlight">\(\tau_e = L_s/R_s\)</span> and <span class="math notranslate nohighlight">\(\tau_{m1} = JR_s/\frac{3}{2}{K_e}^2\)</span>
+and <span class="math notranslate nohighlight">\(\alpha_J = \tau_{m1}/\tau_e\)</span> can help explain some observations or guide experienced motor control engineers
+to point out certain challenges of working with that particular motor. Time constants like the electrical time constant <span class="math notranslate nohighlight">\(\tau_e\)</span> and
+the mechanical time constant <span class="math notranslate nohighlight">\(\tau_{m1}\)</span> can help illustrate the time scale of electrical and mechanical dynamics. The normalized inertia
+<span class="math notranslate nohighlight">\(\alpha_J\)</span> is the ratio of these two time constants and can highlight whether a system has a small inertia (<span class="math notranslate nohighlight">\(\alpha_J &lt; 2\)</span>) in which case
+electrical and mechanical dynamics are not well-separated and can lead to control stability challenges, or a large inertia (<span class="math notranslate nohighlight">\(\alpha_J \gg 1\)</span>)
+in which case slow velocity control loops are to be expected.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">report.json</span></code> — machine-readable motor parameter values, in <a class="reference external" href="https://www.json.org/">JSON</a>  format.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">report.xml.txt</span></code> — machine-readable motor parameter values, in <a class="reference external" href="https://en.wikipedia.org/wiki/XML">XML</a>  format.</p></li>
+</ul>
+<p>These files are experimental. Any comments or suggestions on improving the content of these files are welcome; please <a class="reference internal" href="../faq.html#faq-support"><span class="std std-ref">contact Microchip</span></a>.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">6.2. Code Generation</a><ul>
+<li><a class="reference internal" href="#relationship-with-mb-and-mcc">6.2.1. Relationship with motorBench<sup>®</sup> Development Suite and MCC</a></li>
+<li><a class="reference internal" href="#configurable-parameters">6.2.2. Configurable parameters</a><ul>
+<li><a class="reference internal" href="#out-of-range-errors">6.2.2.1. Out-of-range errors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#source-file-organization">6.2.3. Source file organization</a></li>
+<li><a class="reference internal" href="#auxiliary-reports">6.2.4. Auxiliary reports</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="source-tree-structure.html"
+                          title="previous chapter"><span class="section-number">6.1. </span>Source Tree Structure</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="ui-customization.html"
+                          title="next chapter"><span class="section-number">6.3. </span>Parameter customization</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="ui-customization.html" title="6.3. Parameter customization"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="source-tree-structure.html" title="6.1. Source Tree Structure"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.2. </span>Code Generation</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.6.5.1. Simple dynamic current limit &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.7. Dead-time Compensation" href="dead-time-comp.html" />
+    <link rel="prev" title="5.6. Current limit" href="current-limit.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="dead-time-comp.html" title="5.7. Dead-time Compensation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="current-limit.html" title="5.6. Current limit"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="current-limit.html" accesskey="U"><span class="section-number">5.6. </span>Current limit</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.6.5.1. </span>Simple dynamic current limit</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="simple-dynamic-current-limit">
+<span id="algorithm-dynlim-simple"></span><span id="index-0"></span><h1><span class="section-number">5.6.5.1. </span>Simple dynamic current limit<a class="headerlink" href="#simple-dynamic-current-limit" title="Permalink to this heading">¶</a></h1>
+<p>This algorithm approximates a differential equation for a current <span class="math notranslate nohighlight">\(I_x\)</span>,
+and determines the current limit <span class="math notranslate nohighlight">\(I_{\lim}\)</span> as the minimum of <span class="math notranslate nohighlight">\(I_x\)</span> and a
+predetermined fixed peak current <span class="math notranslate nohighlight">\(I_{\rm peak}\)</span>. This equation is given below:</p>
+<div class="math notranslate nohighlight" id="equation-algorithms-dynlimit-simple-0">
+<span class="eqno">(5.55)<a class="headerlink" href="#equation-algorithms-dynlimit-simple-0" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{aligned}
+\frac{dI_x}{dt} &amp;= \frac{1}{\tau}\left(I_{\rm horz}-I_x-K_{21}(I_d{}^2+I_q{}^2)\right) \\
+I_{\lim} &amp;= \min(I_x, I_{\rm peak}) \\
+K_{21} &amp;= \frac{I_{\rm horz} - I_{\rm cont}}{I_{\rm cont}{}^2}
+\end{aligned}\end{split}\]</div>
+<p>The current relaxes asymptotically to a “horizon” current <span class="math notranslate nohighlight">\(I_{\rm horz}\)</span>.
+An illustrated example is shown in <a class="reference internal" href="#fig-dynlim1-sim"><span class="std std-numref">Figure 5.90</span></a>,
+with <span class="math notranslate nohighlight">\(I_{\rm horz} =\)</span> 60 A, <span class="math notranslate nohighlight">\(I_{\rm peak} =\)</span> 30 A,
+<span class="math notranslate nohighlight">\(I_{\rm cont} =\)</span> 10 A, <span class="math notranslate nohighlight">\(\tau =\)</span> 6 seconds.</p>
+<p>The horizon current also determines the slew rate of current as it rises
+from the continuous current level;
+specifically, if current command changes in a step from <span class="math notranslate nohighlight">\(I_{\rm cont}\)</span> to zero,
+the slew rate of the current limit is <span class="math notranslate nohighlight">\((I_{\rm horz}-I_{\rm cont})/\tau\)</span>.
+In <a class="reference internal" href="#fig-dynlim1-sim"><span class="std std-numref">Figure 5.90</span></a>, this occurs at <span class="math notranslate nohighlight">\(t=\)</span> 3 seconds.</p>
+<figure class="align-center" id="id1">
+<span id="fig-dynlim1-sim"></span><img alt="../_images/3551-current-limit-simulation.png" src="../_images/3551-current-limit-simulation.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.90 </span><span class="caption-text">Simulation of simple dynamic current limit. Only q-axis current <span class="math notranslate nohighlight">\(I_q\)</span> is shown;
+the d-axis current <span class="math notranslate nohighlight">\(I_d\)</span> is assumed to be regulated to zero or very near zero.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>In this case, if the motor current has been low enough for a long enough time
+that the current <span class="math notranslate nohighlight">\(I_x\)</span> relaxes back nearly to the horizon current,
+the drive can provide 20 A current for about 1.3 seconds,
+decreasing to the continuous limit of 10 A after about 3 seconds.
+Operation at the full peak current of 30 A will use up the transient capacity
+more quickly, lasting for about 0.4 seconds, decreasing to the continuous limit of 10A
+after about 2 seconds.</p>
+<p>The motor torque can be fairly substantial and still allow the current limit
+to return to near-maximum values, because the thermally-limited components
+heat up proportionally to the square of the current.
+Even 50% of the continuous current limit causes only
+25% of the temperature rise of the continuous current, which allows
+the motor and transistors to cool down.
+This is shown in <a class="reference internal" href="#fig-dynlim1-sim"><span class="std std-numref">Figure 5.90</span></a> after <span class="math notranslate nohighlight">\(t=\)</span> 8 seconds.
+(Conversely, twice the continuous current limit
+produces four times the power dissipation.)</p>
+<p>Note that since <span class="math notranslate nohighlight">\(I_d{}^2 + I_q{}^2\)</span> accumulates to reduce the current limit,
+neither the direction of current nor the direction of rotation matter;
+positive and negative values of <span class="math notranslate nohighlight">\(I_q\)</span> affect the current limit equally.</p>
+<section id="choice-of-parameters">
+<h2><span class="section-number">5.6.5.1.1. </span>Choice of parameters<a class="headerlink" href="#choice-of-parameters" title="Permalink to this heading">¶</a></h2>
+<p>The choice of parameters here will be different for each board
+and should be validated to ensure motor and transistor
+are kept in their safe operating region.</p>
+<p>Aside from peak and continuous limits, which are covered in the <a class="reference internal" href="current-limit.html#algorithm-dynlimit-limits"><span class="std std-ref">main section on dynamic current algorithms</span></a>, the other
+two parameters should be selected empirically:</p>
+<ul class="simple">
+<li><p>time constant <span class="math notranslate nohighlight">\(\tau\)</span> should have some similarity to the thermal dynamics of the
+real system. Choosing too small of a value will lower the current limit prematurely,
+so if the motor and transistor have not heated up very much, then a larger time constant
+should be used. Similarly, if the motor or transistor have heated up to an unsafe level
+before the current limit decreases, then the time constant is probably too large.</p></li>
+<li><p>horizon current <span class="math notranslate nohighlight">\(I_{\rm horz}\)</span> impacts how much thermal headroom is present:
+larger values will allow the current limit to stay higher for a longer period of time,
+and will allow the current limit to increase more quickly once the motor current drops back
+to a small value.</p></li>
+</ul>
+</section>
+<section id="implementation-notes">
+<h2><span class="section-number">5.6.5.1.2. </span>Implementation notes<a class="headerlink" href="#implementation-notes" title="Permalink to this heading">¶</a></h2>
+<p>Since the thermal dynamics are fairly slow (tenths of seconds to tens of seconds),
+this algorithm is partitioned, with most of this algorithm executes at a decimated rate,
+compared to the current control sample rate.</p>
+<ul class="simple">
+<li><p>At the full sample rate (sample time <span class="math notranslate nohighlight">\(T_s\)</span>),
+the squared amplitude of current <span class="math notranslate nohighlight">\(I_d{}^2 + I_q{}^2\)</span> is accumulated.</p></li>
+<li><p>The rest of the dynamic current limit algorithm runs at a decimated rate
+(period = <span class="math notranslate nohighlight">\(nT_s\)</span> with <span class="math notranslate nohighlight">\(n=128\)</span> by default)
+that updates the current <span class="math notranslate nohighlight">\(I_x\)</span> based on the accumulated squared current.</p></li>
+</ul>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.6.5.1. Simple dynamic current limit</a><ul>
+<li><a class="reference internal" href="#choice-of-parameters">5.6.5.1.1. Choice of parameters</a></li>
+<li><a class="reference internal" href="#implementation-notes">5.6.5.1.2. Implementation notes</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="current-limit.html"
+                          title="previous chapter"><span class="section-number">5.6. </span>Current limit</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="dead-time-comp.html"
+                          title="next chapter"><span class="section-number">5.7. </span>Dead-time Compensation</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="dead-time-comp.html" title="5.7. Dead-time Compensation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="current-limit.html" title="5.6. Current limit"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="current-limit.html" ><span class="section-number">5.6. </span>Current limit</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.6.5.1. </span>Simple dynamic current limit</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.7. Dead-time Compensation &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.8. Voltage Control" href="voltage-control.html" />
+    <link rel="prev" title="5.6.5.1. Simple dynamic current limit" href="dynlimit-simple.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="voltage-control.html" title="5.8. Voltage Control"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="dynlimit-simple.html" title="5.6.5.1. Simple dynamic current limit"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.7. </span>Dead-time Compensation</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="dead-time-compensation">
+<span id="algorithm-deadtimecompensation"></span><span id="index-0"></span><h1><span class="section-number">5.7. </span>Dead-time Compensation<a class="headerlink" href="#dead-time-compensation" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">5.7.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>Dead time is the delay during a <a class="reference internal" href="../appendix/glossary.html#term-PWM"><span class="xref std std-term">PWM</span></a> cycle in which gate drive signals
+for both high-side and low-side transistors are inactive.
+This presents itself as a voltage distortion of roughly fixed amplitude
+and depends on the direction of phase current.
+In field-oriented control, this voltage distortion repeats six times
+per electrical cycle, with short transients near each zero-crossing of phase current.</p>
+<p>Dead-time compensation in MCAF can be used to counteract some of the
+dead-time distortion, both in the current control loop itself,
+and in the feedback signals used in <a class="reference internal" href="estimators.html#algorithm-estimators"><span class="std std-ref">position and velocity estimators</span></a>.</p>
+</section>
+<section id="definition-and-origin-of-dead-time">
+<h2><span class="section-number">5.7.2. </span>Definition and origin of dead time<a class="headerlink" href="#definition-and-origin-of-dead-time" title="Permalink to this heading">¶</a></h2>
+<p>Drive electronics for a three-phase <a class="reference internal" href="../appendix/glossary.html#term-PMSM"><span class="xref std std-term">PMSM</span></a> includes a three-phase bridge shown in <a class="reference internal" href="#fig-dtc-bridge"><span class="std std-numref">Figure 5.91</span></a>.</p>
+<figure class="align-center" id="id3">
+<span id="fig-dtc-bridge"></span><a class="reference internal image-reference" href="../_images/bridge3e.svg"><img alt="../_images/bridge3e.svg" src="../_images/bridge3e.svg" width="500px" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.91 </span><span class="caption-text">Three-phase bridge, consisting of three half-bridges driving motor terminals A, B, and C.
+Each half-bridge has a high-side and low-side transistor that can connect
+the corresponding motor terminal to either the positive or negative end of the DC link.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The dead time is shown in <a class="reference internal" href="#fig-dtc-pwmdeadtime"><span class="std std-numref">Figure 5.92</span></a>, expressed as a fraction <span class="math notranslate nohighlight">\(\delta_1\)</span>
+of the total PWM period <span class="math notranslate nohighlight">\(T_\text{PWM}\)</span>.
+It is used to accommodate the time needed for switching transitions,
+and allow one transistor to turn off completely before the other starts turning on.
+This avoids shoot-through, where a temporary short-circuit occurs across the DC link
+and causes high power dissipation in both transistors.</p>
+<figure class="align-center" id="id4">
+<span id="fig-dtc-pwmdeadtime"></span><img alt="../_images/pwm-with-deadtime.svg" src="../_images/pwm-with-deadtime.svg" /><figcaption>
+<p><span class="caption-number">Figure 5.92 </span><span class="caption-text">An example of gate drive signals for one of the motor’s half bridges</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The signals in <a class="reference internal" href="#fig-dtc-pwmdeadtime"><span class="std std-numref">Figure 5.92</span></a> are described below.</p>
+<ul class="simple">
+<li><p>Signal G is a raw generated pulse waveform with duty cycle <span class="math notranslate nohighlight">\(D\)</span>.</p></li>
+<li><p>Signal H is the gate drive signal for the high-side transistor,
+which is active for duty cycle <span class="math notranslate nohighlight">\(D-\delta_1\)</span>.</p></li>
+<li><p>Signal L is the gate drive signal for the high-side transistor,
+which is active for duty cycle <span class="math notranslate nohighlight">\(1-(D+\delta_1) = 1-D-\delta_1\)</span>.</p></li>
+</ul>
+<p>When G turns on, the low-side gate drive L
+turns off instantly, but the high-side gate drive H is turned on
+after a delay of dead time <span class="math notranslate nohighlight">\(\delta_1T_\text{PWM}\)</span>.
+When G turns off, the high-side gate drive H
+turns off instantly, but the low-side gate drive L is turned on
+after a delay of dead time <span class="math notranslate nohighlight">\(\delta_1T_\text{PWM}\)</span>.</p>
+</section>
+<section id="dead-time-distortion">
+<span id="dtc-distortion"></span><span id="index-1"></span><h2><span class="section-number">5.7.3. </span>Dead-time distortion<a class="headerlink" href="#dead-time-distortion" title="Permalink to this heading">¶</a></h2>
+<section id="output-voltage-during-dead-time">
+<span id="dtc-outputvoltage"></span><h3><span class="section-number">5.7.3.1. </span>Output voltage during dead time<a class="headerlink" href="#output-voltage-during-dead-time" title="Permalink to this heading">¶</a></h3>
+<p>Field-oriented control in MCAF uses average-value modeling.
+The control variables can be represented by the mean value
+over the sampling time, and the sampling time consists of
+a discrete number of half-periods.
+MCAF R1 – R7 all use a sampling time of 1 full PWM period.
+The mean output voltage of the half bridge during a PWM cycle
+is <span class="math notranslate nohighlight">\(D'V_{dc} = (D+\delta)V_{dc}\)</span>
+where <span class="math notranslate nohighlight">\(D'\)</span> is the effective duty cycle,
+<span class="math notranslate nohighlight">\(D\)</span> is the desired duty cycle,
+and <span class="math notranslate nohighlight">\(\delta\)</span> is the effective duty cycle error.
+This error is caused by the dead time,
+and it is known as dead-time distortion.</p>
+<p>During dead time, each half-bridge output is effectively
+in a high-impedance state, with voltage clamps
+at the DC link voltage rails from the freewheeling diodes
+of the power stage.
+(MOSFETs have intrinsic body diodes; IGBTs do not,
+and require anti-parallel diodes)</p>
+<p>This causes the output voltage during dead time to vary,
+depending on the output current. In a motor drive,
+the half-bridge load is inductive, so the output voltage
+is one of the following, as shown in
+<a class="reference internal" href="#fig-dtc-deadtime-distortion1"><span class="std std-numref">Figure 5.93</span></a>:</p>
+<figure class="align-center" id="id5">
+<span id="fig-dtc-deadtime-distortion1"></span><a class="reference internal image-reference" href="../_images/pwm-deadtime-distortion.svg"><img alt="../_images/pwm-deadtime-distortion.svg" src="../_images/pwm-deadtime-distortion.svg" width="70%" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.93 </span><span class="caption-text">Output voltage of a half-bridge with inductive load during dead time. Delay times
+<span class="math notranslate nohighlight">\(t_\textrm{off}\)</span> and <span class="math notranslate nohighlight">\(t_\textrm{on}\)</span> represent the propagation delay
+between the edge of the gate drive signal, and the moment the transistor
+voltage starts to change.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<ul class="simple">
+<li><p>If the output current is strictly positive (flowing out of the half bridge) during dead time,
+then the low-side free-wheeling diode turns on, and the output voltage is <span class="math notranslate nohighlight">\(-V_d\)</span>,
+namely a diode drop below the negative terminal of the DC link,
+as shown by the green curve in <a class="reference internal" href="#fig-dtc-deadtime-distortion1"><span class="std std-numref">Figure 5.93</span></a>.</p></li>
+<li><p>If the output current is strictly negative (flowing into of the half bridge) during dead time,
+then the high-side free-wheeling diode turns on, and the output voltage is <span class="math notranslate nohighlight">\(V_{DC}+V_d\)</span>,
+namely a diode drop above the positive terminal of the DC link,
+as shown by the black curve in <a class="reference internal" href="#fig-dtc-deadtime-distortion1"><span class="std std-numref">Figure 5.93</span></a>.</p></li>
+<li><p>If the output current reaches zero during the dead time, then the half-bridge undergoes
+discontinuous conduction, and the voltage is determined by interaction of the inductive load
+with the parasitic capacitance <span class="math notranslate nohighlight">\(C_p\)</span> and leakage resistance <span class="math notranslate nohighlight">\(R_l\)</span> of the half-bridge.
+This can lead to voltage oscillations at frequency <span class="math notranslate nohighlight">\(f \approx 1/(2\pi\sqrt{L_sC_p})\)</span>,
+as shown by the red and orange curves in <a class="reference internal" href="#fig-dtc-deadtime-distortion1"><span class="std std-numref">Figure 5.93</span></a>.
+The exact waveform is hard to predict, and very sensitive to slight changes in output current.</p></li>
+</ul>
+<p><a class="reference internal" href="#fig-dtc-deadtime-oscope10"><span class="std std-numref">Figure 5.94</span></a>, <a class="reference internal" href="#fig-dtc-deadtime-oscope13"><span class="std std-numref">Figure 5.95</span></a>,
+and <a class="reference internal" href="#fig-dtc-deadtime-oscope19"><span class="std std-numref">Figure 5.96</span></a> show oscilloscope traces captured to
+illustrate the effect of dead time on the dsPICDEM<sup>®</sup> MCLV‑2 Development Board running at 24Vdc,
+at 1 μs/division timebase
+and 10 V/division on the phase voltage measurement.</p>
+<figure class="align-center" id="id6">
+<span id="fig-dtc-deadtime-oscope10"></span><img alt="../_images/2999-deadtime-10.png" src="../_images/2999-deadtime-10.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.94 </span><span class="caption-text">Output voltage behavior during dead time, falling transition on phase voltage output.
+Faint purple indicates persistence over many captured traces.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id7">
+<span id="fig-dtc-deadtime-oscope13"></span><img alt="../_images/2999-deadtime-13.png" src="../_images/2999-deadtime-13.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.95 </span><span class="caption-text">Output voltage behavior during dead time, rising transition on phase voltage output.
+Faint purple indicates persistence over many captured traces.</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id8">
+<span id="fig-dtc-deadtime-oscope19"></span><img alt="../_images/2999-deadtime-19.png" src="../_images/2999-deadtime-19.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.96 </span><span class="caption-text">Output voltage behavior during dead time, falling transition on phase voltage output
+for current near zero.</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="analysis-of-error-bounds">
+<span id="dtc-error-bounds"></span><h3><span class="section-number">5.7.3.2. </span>Analysis of error bounds<a class="headerlink" href="#analysis-of-error-bounds" title="Permalink to this heading">¶</a></h3>
+<p>The mean voltage over the sampling time can be bounded
+by looking at the upper and lower bounds
+caused by high positive and high negative currents during dead time.
+These are the green and black curves in <a class="reference internal" href="#fig-dtc-deadtime-distortion1"><span class="std std-numref">Figure 5.93</span></a>;
+similar curves are shown in <a class="reference internal" href="#fig-dtc-deadtime-distortion2"><span class="std std-numref">Figure 5.97</span></a> labeled
+with effective duty cycles <span class="math notranslate nohighlight">\(D' = D + \delta\)</span>.</p>
+<figure class="align-center" id="id9">
+<span id="fig-dtc-deadtime-distortion2"></span><img alt="../_images/pwm-deadtime-distortion2.svg" src="../_images/pwm-deadtime-distortion2.svg" /><figcaption>
+<p><span class="caption-number">Figure 5.97 </span><span class="caption-text">Effective duty cycle over an entire PWM period</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The major term in effective duty cycle error
+is just <span class="math notranslate nohighlight">\(\delta = \plusmn\delta_1\)</span> caused directly by dead time
+at currents which are not near zero. There are a few secondary effects:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#dtc-outputvoltage"><span class="std std-ref">Diode drop voltage</span></a> <span class="math notranslate nohighlight">\(V_d\)</span>
+during dead time —
+the resulting error tends to be very small:
+for example, a 1-volt drop on a 24-volt system
+during a total dead time of 4% of the entire PWM cycle
+represents an effective duty cycle
+error of 4% / 24 = 0.17%.
+It affects very low voltage systems most severely,
+but these are also cases where dead time can usually be reduced.
+Furthermore, since its effect is proportional to dead time,
+it can be lumped into an effective dead time
+<span class="math notranslate nohighlight">\(\delta_1' \approx \delta_1 (1+V_d/V_{dc})\)</span></p></li>
+<li><p>Asymmetry in turn-on and turn-off times — this is shown in
+<a class="reference internal" href="#fig-dtc-deadtime-distortion2"><span class="std std-numref">Figure 5.97</span></a>. It effectively lengthens the
+dead time by the difference between turn-on and turn-off times,
+since turn-off in a well-designed motor drive
+is usually faster than turn-on — although it could
+also reduce the effective dead-time if turn-off is slower than turn-on.
+This appears to be the case in the oscilloscope traces captured
+in <a class="reference internal" href="#fig-dtc-deadtime-oscope10"><span class="std std-numref">Figure 5.94</span></a> and <a class="reference internal" href="#fig-dtc-deadtime-oscope13"><span class="std std-numref">Figure 5.95</span></a>:
+the time span of output voltage transitions is smaller than the dead time.
+This effect can also be lumped into an effective dead time
+<span class="math notranslate nohighlight">\(\delta_1' \approx \delta_1 + (t_\textrm{on} - t_\textrm{off})/T_\textrm{PWM}\)</span>.</p></li>
+<li><p>Discontinuous conduction — this is discussed in the next section.</p></li>
+</ul>
+</section>
+<section id="behavior-during-discontinuous-conduction">
+<span id="dtc-discontinuous-conduction"></span><h3><span class="section-number">5.7.3.3. </span>Behavior during discontinuous conduction<a class="headerlink" href="#behavior-during-discontinuous-conduction" title="Permalink to this heading">¶</a></h3>
+<p>When currents are near zero and the half-bridge
+enters discontinuous conduction,
+the effective duty cycle error <span class="math notranslate nohighlight">\(\delta\)</span> is between the upper and
+lower bounds <span class="math notranslate nohighlight">\(\delta=\plusmn\delta_1\)</span>, and is a function
+of current that is difficult to model.</p>
+<div class="math notranslate nohighlight" id="equation-dtcomp-errorfunc">
+<span class="eqno">(5.56)<a class="headerlink" href="#equation-dtcomp-errorfunc" title="Permalink to this equation">¶</a></span>\[\begin{split}    \delta(I) = \begin{cases}
+   -\delta_1          &amp; I \ge I_\delta \\
+   -\delta_1f_{nl}(I/I_\delta) &amp; |I| &lt; I_\delta \\
+   \delta_1         &amp; I \le -I_\delta \\
+\end{cases}\end{split}\]</div>
+<p>Equation <a class="reference internal" href="#equation-dtcomp-errorfunc">5.56</a> isolates the interesting behavior for currents
+<span class="math notranslate nohighlight">\(|I| &lt; I_\delta\)</span> near zero, in a nonlinear function
+<span class="math notranslate nohighlight">\(f_{nl}(u)\)</span>, which is some difficult-to-model
+empirical nonlinear function that maps the input range [-1,1]
+into the output range [-1,1].
+In most cases, there is no need to know what it really is;
+some examples of nonlinear functions <span class="math notranslate nohighlight">\(f_{nl}(u)\)</span>
+are shown in <a class="reference internal" href="#fig-dtc-nonlinearity-functions"><span class="std std-numref">Figure 5.98</span></a>.
+The dead-time compensation in MCAF just assumes a linear function <span class="math notranslate nohighlight">\(f_{nl1}(u) = u\)</span>.</p>
+<figure class="align-center" id="id10">
+<span id="fig-dtc-nonlinearity-functions"></span><a class="reference internal image-reference" href="../_images/deadtime-nonlinearity-functions.svg"><img alt="../_images/deadtime-nonlinearity-functions.svg" src="../_images/deadtime-nonlinearity-functions.svg" width="70%" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.98 </span><span class="caption-text">Examples of nonlinear functions <span class="math notranslate nohighlight">\(f_{nl}(u)\)</span> varying in their behavior
+within the range <span class="math notranslate nohighlight">\(|u| &lt; 1\)</span>, including
+the sign function, the identity,
+a <a class="reference external" href="https://en.wikipedia.org/wiki/Sigmoid_function">sigmoid function</a>,
+and a constant.</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The magnitude of current <span class="math notranslate nohighlight">\(I_\delta\)</span> under which discontinuous conduction
+is possible is approximately equal to the current ripple. Its behavior is
+within the discontinuous conduction zone is dependent on the relative magnitudes
+of <span class="math notranslate nohighlight">\(I_\delta\)</span> and characteristic current
+<span class="math notranslate nohighlight">\(I_C = C_pV_{dc}/\delta_1T_\textrm{PWM}\)</span> required to charge
+the parasitic capacitance <span class="math notranslate nohighlight">\(C_p\)</span>. Reference
+<a class="footnote-reference brackets" href="#fn-dtcomp-mannen2015" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a> discusses both effects in detail.</p>
+</section>
+<section id="dead-time-distortion-voltage-in-field-oriented-current-control">
+<h3><span class="section-number">5.7.3.4. </span>Dead-time distortion voltage in field-oriented current control<a class="headerlink" href="#dead-time-distortion-voltage-in-field-oriented-current-control" title="Permalink to this heading">¶</a></h3>
+<p>The preceding sections have applied to a single half-bridge with inductive load.
+In field-oriented current control of a three-phase motor, the
+transformation of the dead-time voltage distortion into the synchronous (dq) frame
+is of interest, since this is the disturbance “seen” by the motor.</p>
+<p><a class="reference internal" href="#fig-dtc-deadtime-distortion3a"><span class="std std-numref">Figure 5.99</span></a> shows the unit voltage disturbance <span class="math notranslate nohighlight">\(s\)</span>
+in various
+reference frames, assuming sinusoidal currents and smooth angular rotation,
+and neglecting the discontinuous conduction zone.</p>
+<p>From top to bottom:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(I\)</span> — phase currents with some amplitude <span class="math notranslate nohighlight">\(I_0\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(s_A, s_B, s_C\)</span> — sign of the corresponding current, with amplitude <span class="math notranslate nohighlight">\(\plusmn 1\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(s_{\alpha\beta}\)</span> — sign vector in stationary (αβ) frame;
+<span class="math notranslate nohighlight">\(s_\alpha = \frac{1}{3}(2s_A - s_B - s_C),\;s_\beta = \frac{1}{\sqrt{3}}(s_B - s_C)\)</span>. This represents a constant amplitude of <span class="math notranslate nohighlight">\(\frac{4}{3}\)</span> and an
+angle that jumps by 60° at each zero-crossing of current.</p></li>
+<li><p><span class="math notranslate nohighlight">\(s_{dq}\)</span> — sign vector in synchronous (dq) frame;
+<span class="math notranslate nohighlight">\(s_d = s_\alpha \sin \theta_e - s_\beta \cos \theta_e,\;s_q = s_\alpha \cos \theta_e + s_\beta \sin \theta_e\)</span></p></li>
+</ul>
+<figure class="align-center" id="id11">
+<span id="fig-dtc-deadtime-distortion3a"></span><img alt="../_images/pwm-deadtime-distortion3a.svg" src="../_images/pwm-deadtime-distortion3a.svg" /><figcaption>
+<p><span class="caption-number">Figure 5.99 </span><span class="caption-text">Unit voltage disturbances from dead-time distortion.
+Per-phase components <span class="math notranslate nohighlight">\(s_A, s_B, s_C\)</span> are shown,
+along with unit voltage disturbances <span class="math notranslate nohighlight">\(s_{\alpha\beta}\)</span>
+in the stationary reference frame,
+and <span class="math notranslate nohighlight">\(s_{dq}\)</span> in the synchronous reference frame.</span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Both d- and q-axis disturbances follow sinusoidal waveforms every 60°
+electrical angle. If the current vector is along the q-axis,
+then the unit d-axis disturbance <span class="math notranslate nohighlight">\(s_d\)</span> is centered around
+an angular disturbance of zero, with no DC offset.
+The unit q-axis disturbance <span class="math notranslate nohighlight">\(s_q\)</span>
+is centered around 90°, with smaller variation
+and a nonzero offset. For a unit dead-time distortion amplitude on each half-bridge,
+relevant characteristics of these waveforms are listed in <a class="reference internal" href="#table-dtc-vdq"><span class="std std-numref">Table 5.6</span></a>.</p>
+<table class="docutils align-center" id="table-dtc-vdq">
+<caption><span class="caption-number">Table 5.6 </span><span class="caption-text">Characteristics of the unit dead-time distortion voltage <span class="math notranslate nohighlight">\(s_{dq}\)</span> <br /> in the synchronous frame</span><a class="headerlink" href="#table-dtc-vdq" title="Permalink to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Characteristic</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>D-axis peak disturbance</p></td>
+<td><p><span class="math notranslate nohighlight">\(2/3\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>D-axis RMS disturbance</p></td>
+<td><p><span class="math notranslate nohighlight">\(\sqrt{\frac{8}{9} +
+\frac{4\sqrt{3}}{3\pi} -
+\frac{16}{\pi^2}}\approx\)</span> 0.05343</p></td>
+</tr>
+<tr class="row-even"><td><p>Q-axis peak disturbance</p></td>
+<td><p><span class="math notranslate nohighlight">\(4/3\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Q-axis mean disturbance</p></td>
+<td><p><span class="math notranslate nohighlight">\(4/\pi\approx\)</span>
+1.27324</p></td>
+</tr>
+<tr class="row-even"><td><p>Q-axis RMS disturbance</p></td>
+<td><p><span class="math notranslate nohighlight">\(\sqrt{\frac{8}{9} -
+\frac{4\sqrt{3}}{3\pi}}
+\approx\)</span> 0.39215</p></td>
+</tr>
+</tbody>
+</table>
+<p>If the current vector contains a d-axis component, as in the
+<a class="reference internal" href="flux_control/index.html#algorithm-flux-control"><span class="std std-ref">flux control algorithms</span></a>, then
+the dead-time disturbance will be centered around
+the direction of the current vector,
+instead of around the q-axis.</p>
+<p>These are the effects of unit voltage disturbances.
+In a real system, the voltage disturbance
+when the current magnitude is large (avoiding discontinuous conduction) are
+<span class="math notranslate nohighlight">\(-\delta_1 V_{dc} s\)</span> in each reference frame. In other words:</p>
+<ul class="simple">
+<li><p>In the stationary frame, the dead-time voltage disturbance is
+<span class="math notranslate nohighlight">\(-\delta_1 V_{dc} s_{\alpha\beta}\)</span> with amplitude <span class="math notranslate nohighlight">\(\frac{4}{3}\delta_1 V_{dc}\)</span></p></li>
+<li><p>In the synchronous frame, the dead-time voltage disturbance
+is <span class="math notranslate nohighlight">\(-\delta_1 V_{dc} s_{dq}\)</span>,
+also with amplitude <span class="math notranslate nohighlight">\(\frac{4}{3}\delta_1 V_{dc}\)</span>,
+but sweeping across an arc within ±30° of the current vector.
+Peak, mean, and RMS disturbances
+in the dq reference frame can also be computed
+proportionally, so that a 4% dead time (2 μs for each transition
+in a 50 μs PWM period) with a 24V DC link and a current vector
+along the q-axis
+should experience a mean q-axis disturbance of approximately
+0.04 × 24 × 1.27324 = 1.22231V.</p></li>
+</ul>
+<p>The voltage disturbances from dead-time distortion may also be visualized
+as an x-y plot (α-β or d-q). <a class="reference internal" href="#fig-dtc-deadtime-distortion3b"><span class="std std-numref">Figure 5.100</span></a> shows
+such plots in the case of a PMSM in the motoring quadrant.
+In the stationary frame, dead-time distortion maps a circular voltage trajectory
+into 6 disconnected arcs that look something like a sawblade. In the synchronous frame,
+dead-time distortion maps a single point, representing constant dq voltage,
+to a small arc with a mean DC offset along the q-axis that subtracts from the
+desired voltage.</p>
+<p>In the generating quadrant, the direction of voltage disturbance would be reversed
+and would cause a mean DC offset along the q-axis that adds to the desired voltage.</p>
+<figure class="align-center" id="id12">
+<span id="fig-dtc-deadtime-distortion3b"></span><img alt="../_images/pwm-deadtime-distortion3b.svg" src="../_images/pwm-deadtime-distortion3b.svg" /><figcaption>
+<p><span class="caption-number">Figure 5.100 </span><span class="caption-text">Voltage disturbances from dead-time distortion in stationary (αβ) frame (left)
+and synchronous (dq) frame (right). This case represents large phase currents
+(so that discontinuous conduction can be neglected) with a desired voltage of some
+amplitude <span class="math notranslate nohighlight">\(V_1\)</span> that leads the current by 30° electrical,
+and a product <span class="math notranslate nohighlight">\(\delta_1 V_{dc}\)</span>
+(product of dead time fraction and DC link voltage)
+that is <span class="math notranslate nohighlight">\(0.15V_1\)</span>. In this case, the disturbance in the
+αβ and dq frames has amplitude <span class="math notranslate nohighlight">\(\frac{4}{3}\delta_1 V_{dc} = \frac{4}{3}\times 0.15V_1 = 0.2V_1\)</span>.</span><a class="headerlink" href="#id12" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="practical-effects-of-dead-time-distortion">
+<h2><span class="section-number">5.7.4. </span>Practical effects of dead-time distortion<a class="headerlink" href="#practical-effects-of-dead-time-distortion" title="Permalink to this heading">¶</a></h2>
+<p>There are two main areas in which dead-time distortion
+is detrimental to motor control:</p>
+<ul class="simple">
+<li><p>effect on current control</p></li>
+<li><p>effect on position and velocity estimators</p></li>
+</ul>
+<section id="dead-time-distortion-and-field-oriented-current-control">
+<h3><span class="section-number">5.7.4.1. </span>Dead-time distortion and field-oriented current control<a class="headerlink" href="#dead-time-distortion-and-field-oriented-current-control" title="Permalink to this heading">¶</a></h3>
+<p>In FOC, the current controllers operate in the synchronous (dq) reference
+frame. Dead-time distortion causes a voltage disturbance to the current
+controllers at <span class="math notranslate nohighlight">\(6f_e\)</span> (six times the electrical frequency)
+that occurs around each zero-crossing of phase current.</p>
+<p>At low velocity, the current controllers will eventually regain zero steady-state
+error after each transient. The disturbance shown on the right of
+<a class="reference internal" href="#fig-dtc-deadtime-distortion3b"><span class="std std-numref">Figure 5.100</span></a> must be counteracted by an increase
+in voltage of opposite sign:</p>
+<ul class="simple">
+<li><p>The average reduction in q-axis voltage at the motor
+must be canceled by the q-axis current controller increasing its voltage
+by the same amount</p></li>
+<li><p>The d-axis disturbance, roughly a linear ramp, must be canceled by
+the d-axis current controller with a change in controller output in the opposite
+direction.</p></li>
+</ul>
+<p>At high velocity, the changes in output voltage
+required to counteract the dead-time voltage distortion
+occur fast enough and often enough that the current controllers
+are unable to cancel the distortion completely.</p>
+<p><a class="reference internal" href="#fig-dtc-deadtime-distortion4a"><span class="std std-numref">Figure 5.101</span></a> shows measured and predicted voltage
+requirements for the Nidec Hurst DMA0204024B101 at low velocity (about 240RPM) and various dead times,
+driven with the dsPICDEM<sup>®</sup> MCLV‑2 Development Board, and
+running with a smooth, light load that requires <span class="math notranslate nohighlight">\(I_q \approx\)</span> 0.5 A.
+The left-hand graph shows the stationary-frame output voltage <span class="math notranslate nohighlight">\(V_{\alpha\beta}\)</span>.
+The red circle is the back-emf magnitude. The blue, orange, and green scatter plots
+show measured samples of αβ-frame voltage at 1, 2, and 3 microsecond dead-times.
+Black dots mark the predicted output voltage based on a pure signum
+function <span class="math notranslate nohighlight">\(f_{nl0}(u)\)</span> (see <a class="reference internal" href="#fig-dtc-nonlinearity-functions"><span class="std std-numref">Figure 5.98</span></a>)
+and essentially show the six 60° sectors of the back-emf circle “exploding”
+outwards due to the extra voltage required to counteract dead-time distortion.
+These match the measured data fairly well, at least when not in discontinuous conduction.
+The gain of the dead-time distortion in the measured data is slightly greater than
+predicted (note that the blue, orange, and green hexagonal scatter plots
+lie slightly outside the black arcs)
+and may be due to the diode voltage drops mentioned in
+<a class="reference internal" href="#dtc-error-bounds"><span class="std std-numref">Section 5.7.3.2</span></a>.</p>
+<figure class="align-center" id="id13">
+<span id="fig-dtc-deadtime-distortion4a"></span><img alt="../_images/deadtime-4512-240-voltage0.png" src="../_images/deadtime-4512-240-voltage0.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.101 </span><span class="caption-text">Voltage plots in stationary and synchronous frames
+for various dead times.</span><a class="headerlink" href="#id13" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The right-hand graph of <a class="reference internal" href="#fig-dtc-deadtime-distortion4a"><span class="std std-numref">Figure 5.101</span></a>
+shows the same information in the synchronous (dq) frame, where
+the back-emf is a tight cluster, varying very slightly along the q-axis
+due to small velocity fluctuations. The measured and predicted data for <span class="math notranslate nohighlight">\(V_{dq}\)</span>
+approximately follow arcs showing the increase in q-axis voltage and the
+sweep in d-axis voltage.</p>
+<p><a class="reference internal" href="#fig-dtc-deadtime-distortion4b"><span class="std std-numref">Figure 5.102</span></a> shows the same measured voltages,
+but with a change in the predicted voltage that takes discontinuous conduction
+into account, by using a linear model <span class="math notranslate nohighlight">\(f_{nl1}(u) = u\)</span> for <span class="math notranslate nohighlight">\(u = I/I_\delta\)</span>
+within the range <span class="math notranslate nohighlight">\(|I| &lt; I_\delta\)</span> to handle behavior near the zero crossings
+(see <a class="reference internal" href="#fig-dtc-nonlinearity-functions"><span class="std std-numref">Figure 5.98</span></a>). The zero-crossing range used
+in this graph is <span class="math notranslate nohighlight">\(I_\delta\)</span> = 0.12A.</p>
+<p>Note the improved match in both stationary and synchronous frames,
+compared with <a class="reference internal" href="#fig-dtc-deadtime-distortion4a"><span class="std std-numref">Figure 5.101</span></a>.</p>
+<figure class="align-center" id="id14">
+<span id="fig-dtc-deadtime-distortion4b"></span><img alt="../_images/deadtime-4512-240-voltage1.png" src="../_images/deadtime-4512-240-voltage1.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.102 </span><span class="caption-text">Voltage plots in stationary and synchronous frames
+for various dead times.</span><a class="headerlink" href="#id14" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The current itself is shown in <a class="reference internal" href="#fig-dtc-deadtime-distortion4c"><span class="std std-numref">Figure 5.103</span></a>.
+Measured current tracks the intended circular trajectory in the stationary frame
+(constant current <span class="math notranslate nohighlight">\(I_q\)</span> in the synchronous frame) fairly well, degrading
+slightly as the dead time is increased.</p>
+<figure class="align-center" id="id15">
+<span id="fig-dtc-deadtime-distortion4c"></span><img alt="../_images/deadtime-4512-240-current.png" src="../_images/deadtime-4512-240-current.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.103 </span><span class="caption-text">Current plots in the stationary (αβ) and synchronous (dq) frames
+for various dead times. The black circle (in the αβ frame)
+and dot (in the dq frame) represent average q-axis reference current; these are
+shown directly on top of the
+gray circle (αβ frame) and bar (dq) that represent
+the measured q-axis reference current, which fluctuates slightly with
+velocity and load changes.
+<br /> <br />
+The faint concentric gray ellipses in the dq frame
+are error ellipses,
+based on the covariance of the measured currents,
+at 1, 2, 3, and 4 standard deviations from the mean.
+(For purely random noise from a normal distribution,
+the expected fraction of data enclosed by error ellipses
+follows the cumulative distribution function (CDF) of a
+<a class="reference external" href="https://en.wikipedia.org/wiki/Chi-square_distribution">chi-squared distribution</a>
+with two degrees of freedom, <span class="math notranslate nohighlight">\(\chi^2(2)\)</span>.
+Approximately 39.35% of samples are expected to lie within 1 standard deviation;
+86.47% within 2 standard deviations, 98.89% within 3 standard deviations,
+and 99.96% within 4 standard deviations.)</span><a class="headerlink" href="#id15" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The effects of dead-time distortion change as velocity increases.
+<a class="reference internal" href="#fig-dtc-deadtime-distortion5a"><span class="std std-numref">Figure 5.104</span></a>,
+<a class="reference internal" href="#fig-dtc-deadtime-distortion5b"><span class="std std-numref">Figure 5.105</span></a>,
+<a class="reference internal" href="#fig-dtc-deadtime-distortion6a"><span class="std std-numref">Figure 5.106</span></a>, and
+<a class="reference internal" href="#fig-dtc-deadtime-distortion6b"><span class="std std-numref">Figure 5.107</span></a> show the same
+10-pole motor and current control tuning at 1200 RPM and 1800 RPM.</p>
+<p>At these velocities, the sixth-harmonic frequency is 600 Hz and 900 Hz,
+respectively. Both are below the current control bandwidth (2031 Hz in this case),
+but not by much, and the result is an increase in current distortion.</p>
+<figure class="align-center" id="id16">
+<span id="fig-dtc-deadtime-distortion5a"></span><img alt="../_images/deadtime-4512-1200-voltage1.png" src="../_images/deadtime-4512-1200-voltage1.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.104 </span><span class="caption-text">Voltage plots in stationary and synchronous frames
+for various dead times.</span><a class="headerlink" href="#id16" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id17">
+<span id="fig-dtc-deadtime-distortion5b"></span><img alt="../_images/deadtime-4512-1200-current.png" src="../_images/deadtime-4512-1200-current.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.105 </span><span class="caption-text">Current plots in the stationary and synchronous frames
+for various dead times. (See <a class="reference internal" href="#fig-dtc-deadtime-distortion4c"><span class="std std-numref">Figure 5.103</span></a>
+for more information about this type of graph.)</span><a class="headerlink" href="#id17" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id18">
+<span id="fig-dtc-deadtime-distortion6a"></span><img alt="../_images/deadtime-4512-1800-voltage1.png" src="../_images/deadtime-4512-1800-voltage1.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.106 </span><span class="caption-text">Voltage plots in stationary and synchronous frames
+for various dead times.</span><a class="headerlink" href="#id18" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id19">
+<span id="fig-dtc-deadtime-distortion6b"></span><img alt="../_images/deadtime-4512-1800-current.png" src="../_images/deadtime-4512-1800-current.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.107 </span><span class="caption-text">Current plots in the stationary and synchronous frames
+for various dead times. (See <a class="reference internal" href="#fig-dtc-deadtime-distortion4c"><span class="std std-numref">Figure 5.103</span></a>
+for more information about this type of graph.)</span><a class="headerlink" href="#id19" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The DC voltage offset in <span class="math notranslate nohighlight">\(V_{dq}\)</span> visible in <a class="reference internal" href="#fig-dtc-deadtime-distortion5a"><span class="std std-numref">Figure 5.104</span></a>
+and <a class="reference internal" href="#fig-dtc-deadtime-distortion6a"><span class="std std-numref">Figure 5.106</span></a>
+(the shift between predicted and measured voltage)
+is probably due to these three effects:</p>
+<ul class="simple">
+<li><p>resistive voltage drop — <span class="math notranslate nohighlight">\(IR \approx\)</span> 0.19V along the q axis</p></li>
+<li><p>inductive voltage drop — <span class="math notranslate nohighlight">\(I\omega_e L \approx\)</span> 0.11V at 1200 RPM,
+0.17V at 1800 RPM, along the d axis</p></li>
+<li><p>sample input-to-output delay — <span class="math notranslate nohighlight">\(\omega_e T_d\)</span> for <span class="math notranslate nohighlight">\(T_d = 1.5T_s =\)</span>
+75 μs is about 2.7° at 1200 RPM and 4.1° at 1800 RPM.
+At 1200 RPM, with a 2.7° rotation of a 6 V signal along the q axis
+we can expect a d-axis shift of ≈ 0.28 V.
+At 1800 RPM, with a 4.1° rotation of an 8.2 V signal along the q axis,
+we can expect a d-axis shift of ≈ 0.58V</p></li>
+</ul>
+<p>The total resulting voltage shifts are consistent with the figures.</p>
+<section id="dead-time-distortion-with-low-bandwidth-current-controllers">
+<span id="dtc-distortion-ictrl-low-bandwidth"></span><h4><span class="section-number">5.7.4.1.1. </span>Dead-time distortion with low-bandwidth current controllers<a class="headerlink" href="#dead-time-distortion-with-low-bandwidth-current-controllers" title="Permalink to this heading">¶</a></h4>
+<p>We can take similar measurements for a low-bandwidth current controller.
+<a class="reference internal" href="#fig-dtc-deadtime-distortion7a"><span class="std std-numref">Figure 5.108</span></a> and <a class="reference internal" href="#fig-dtc-deadtime-distortion7b"><span class="std std-numref">Figure 5.109</span></a>
+are with the same motor (Nidec Hurst DMA0204024B101) using the default current loop tuning in motorBench<sup>®</sup> Development Suite.
+With this tuning, the current loop bandwidth is around 235 Hz.
+These tests show operation at 240 RPM with a smooth light load of ≈ 0.5 A.</p>
+<figure class="align-center" id="id20">
+<span id="fig-dtc-deadtime-distortion7a"></span><img alt="../_images/deadtime-8045-240-voltage1.png" src="../_images/deadtime-8045-240-voltage1.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.108 </span><span class="caption-text">Voltage plots in stationary and synchronous frames
+for various dead times.</span><a class="headerlink" href="#id20" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id21">
+<span id="fig-dtc-deadtime-distortion7b"></span><img alt="../_images/deadtime-8045-240-current.png" src="../_images/deadtime-8045-240-current.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.109 </span><span class="caption-text">Current plots in the stationary and synchronous frames
+for various dead times. (See <a class="reference internal" href="#fig-dtc-deadtime-distortion4c"><span class="std std-numref">Figure 5.103</span></a>
+for more information about this type of graph.)</span><a class="headerlink" href="#id21" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The result is a much higher current distortion even at the low electrical
+frequency of 20 Hz; The dead-time distortion frequency <span class="math notranslate nohighlight">\(6f_e =\)</span> 120Hz
+is about half the current loop bandwidth.</p>
+<p><a class="reference internal" href="#fig-dtc-deadtime-distortion8a"><span class="std std-numref">Figure 5.110</span></a> and <a class="reference internal" href="#fig-dtc-deadtime-distortion8b"><span class="std std-numref">Figure 5.111</span></a>
+show operation at 600 RPM (50 Hz electrical frequency, <span class="math notranslate nohighlight">\(6f_e =\)</span> 300 Hz)
+with a smooth light load of ≈ 0.5 A. In this case, the disturbance frequency
+is above the current loop bandwidth, and the current loop can barely react
+to the dead-time distortion — note that the voltage outputs in the synchronous frame
+are fairly tightly-clustered spots in the graphs, and in the stationary frame are
+almost circular.</p>
+<figure class="align-center" id="id22">
+<span id="fig-dtc-deadtime-distortion8a"></span><img alt="../_images/deadtime-8045-600-voltage1.png" src="../_images/deadtime-8045-600-voltage1.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.110 </span><span class="caption-text">Voltage plots in stationary and synchronous frames
+for various dead times.</span><a class="headerlink" href="#id22" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id23">
+<span id="fig-dtc-deadtime-distortion8b"></span><img alt="../_images/deadtime-8045-600-current.png" src="../_images/deadtime-8045-600-current.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.111 </span><span class="caption-text">Current plots in the stationary and synchronous frames
+for various dead times. (See <a class="reference internal" href="#fig-dtc-deadtime-distortion4c"><span class="std std-numref">Figure 5.103</span></a>
+for more information about this type of graph.)</span><a class="headerlink" href="#id23" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p><a class="reference internal" href="#fig-dtc-deadtime-distortion9a"><span class="std std-numref">Figure 5.112</span></a> and <a class="reference internal" href="#fig-dtc-deadtime-distortion9b"><span class="std std-numref">Figure 5.113</span></a>
+show operation at 1200 RPM (100 Hz electrical frequency, <span class="math notranslate nohighlight">\(6f_e =\)</span> 600 Hz)
+with a smooth light load of ≈ 0.5 A. In this case, the disturbance frequency
+is even further above the current loop bandwidth. Again, the current loop can
+barely react to the dead-time distortion — note that the voltage outputs
+in the stationary frame are almost circular, and in the synchronous frame
+are fairly tightly-clustered, although with some fluctuations mostly along the d-axis,
+which is indicative of angle jitter, perhaps due to the torque ripple causing
+velocity fluctuations.</p>
+<figure class="align-center" id="id24">
+<span id="fig-dtc-deadtime-distortion9a"></span><img alt="../_images/deadtime-8045-1200-voltage1.png" src="../_images/deadtime-8045-1200-voltage1.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.112 </span><span class="caption-text">Voltage plots in stationary and synchronous frames
+for various dead times.</span><a class="headerlink" href="#id24" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id25">
+<span id="fig-dtc-deadtime-distortion9b"></span><img alt="../_images/deadtime-8045-1200-current.png" src="../_images/deadtime-8045-1200-current.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.113 </span><span class="caption-text">Current plots in the stationary and synchronous frames
+for various dead times. (See <a class="reference internal" href="#fig-dtc-deadtime-distortion4c"><span class="std std-numref">Figure 5.103</span></a>
+for more information about this type of graph.)</span><a class="headerlink" href="#id25" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>There are a number of reasons for <a class="reference internal" href="foc/tuning.html#algorithm-foc-tuning"><span class="std std-ref">tuning a current loop with
+a more aggressive bandwidth</span></a>,
+and improving otherwise poor performance in the presence
+of dead-time distortion is one of them.</p>
+</section>
+</section>
+<section id="dead-time-distortion-and-sensorless-estimation">
+<h3><span class="section-number">5.7.4.2. </span>Dead-time distortion and sensorless estimation<a class="headerlink" href="#dead-time-distortion-and-sensorless-estimation" title="Permalink to this heading">¶</a></h3>
+<p><a class="reference internal" href="estimators.html#algorithm-estimators"><span class="std std-ref">Position and velocity estimators</span></a>
+based solely on voltage and current measurements
+are sensitive to errors in the voltage and currents.
+These typically try to estimate a back-emf voltage vector
+and track its angle.
+Since dead-time distortion causes voltage errors
+between the current controller outputs and the actual voltage
+present on the motor terminals, these estimators
+tend to produce significant errors when the back-emf voltage
+is below the dead-time distortion voltage amplitude
+<span class="math notranslate nohighlight">\(\frac{4}{3}\delta_1 V_{dc}\)</span>.</p>
+<p>Most sensorless estimators are less
+sensitive to q-axis voltage errors, which affect only the
+amplitude of the estimated back-emf vector
+once the estimator has locked onto it),
+and more sensitive to d-axis voltage errors, which perturb
+the angle of the estimated back-emf vector.</p>
+<p>The <a class="reference internal" href="pll.html#algorithm-pll"><span class="std std-ref">AN1292 PLL</span></a> also relies on the amplitude
+of the estimated back-emf, so it is likely more sensitive
+to dead-time distortion than other estimators.</p>
+<p>Dead-time compensation can improve the performance of sensorless
+estimators at low velocities, by correcting the estimated back-emf
+for the effects of dead-time distortion.</p>
+</section>
+</section>
+<section id="id2">
+<h2><span class="section-number">5.7.5. </span>Dead-time compensation<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
+<p>There are three main methods for mitigating dead-time distortion, roughly
+in order of priority:</p>
+<ul class="simple">
+<li><p><strong>Reduce the dead time.</strong> This may be possible with careful gate drive design
+and testing. <strong>Note:</strong> do not assume that dead time is adequate based only
+on testing one sample of a motor drive board at room temperature!
+Attempts to minimize the dead time, while still protecting against shoot-through,
+require a detailed understanding
+of the switching transient’s sensitivity to temperature, duty cycle,
+current, and part-to-part variation of the transistors and the gate drive circuitry.</p></li>
+<li><p><strong>Increase the current loop bandwidth.</strong> This inherently compensates
+for dead-time distortion, at least at electrical frequencies below
+the current loop bandwidth. As discussed above,
+<a class="reference internal" href="#dtc-distortion-ictrl-low-bandwidth"><span class="std std-ref">low-bandwidth current control loops are unable to counteract
+the effects of dead-time distortion.</span></a></p></li>
+<li><p><strong>Add voltage compensation.</strong> Although this is the least desirable
+of the three methods, it can potentially reduce the effects of dead-time distortion.</p></li>
+</ul>
+<section id="mcaf-per-phase-dead-time-compensation-algorithm">
+<span id="algorithm-dtc-perphase"></span><h3><span class="section-number">5.7.5.1. </span>MCAF per-phase dead-time compensation algorithm<a class="headerlink" href="#mcaf-per-phase-dead-time-compensation-algorithm" title="Permalink to this heading">¶</a></h3>
+<p>The voltage compensation method available in MCAF is based on
+per-phase estimates of the dead-time distortion
+voltage, added to the <a class="reference internal" href="../appendix/glossary.html#term-forward-path"><span class="xref std std-term">forward path</span></a> of the current control loop,
+and the feedback path of the position and velocity estimator.
+This is known as the “per-phase” method and can be selected in the Customize
+page of motorBench<sup>®</sup> Development Suite.</p>
+<p>A block diagram of the dead-time compensation module <code class="docutils literal notranslate"><span class="pre">dtcomp</span></code> is shown in
+<a class="reference internal" href="#fig-dtc-blockdiag"><span class="std std-numref">Figure 5.115</span></a>, and in context in <a class="reference internal" href="#fig-dtc-blockdiag-context"><span class="std std-numref">Figure 5.114</span></a>.
+The inputs to this block are phase currents <span class="math notranslate nohighlight">\(I_{abc}\)</span>
+and duty cycles <span class="math notranslate nohighlight">\(D_{abc2}\)</span> that are outputs of the ZSM block.</p>
+<figure class="svg-crop svg-crop-1050-90-600-480 align-center" id="id26">
+<span id="fig-dtc-blockdiag-context"></span><a class="reference external image-reference" href="../dataflow-diagram/dataflow-diagrams.html"><img alt="../_images/accret-bdiag.svg" src="../_images/accret-bdiag.svg" width="70%" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.114 </span><span class="caption-text">Dead-time compensation in MCAF, in context of the main FOC block diagram.</span><a class="headerlink" href="#id26" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id27">
+<span id="fig-dtc-blockdiag"></span><a class="reference internal image-reference" href="../_images/dtcomp2.svg"><img alt="../_images/dtcomp2.svg" src="../_images/dtcomp2.svg" width="75%" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.115 </span><span class="caption-text">Per-phase dead-time compensation in MCAF.</span><a class="headerlink" href="#id27" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The upper half of the dead-time compensation block, above the dashed
+line shown in <a class="reference internal" href="#fig-dtc-blockdiag"><span class="std std-numref">Figure 5.115</span></a>, handles the feedback voltage
+for use by position and velocity estimators.
+The duty cycles are converted to the stationary (αβ) frame
+using a Clarke transform,
+and then delayed by two cycles to match the current sampling delay (TBD add link here).
+Dead-time compensation vector <span class="math notranslate nohighlight">\(\Delta D_{\alpha\beta f}\)</span>, which is
+a duty cycle vector in the stationary frame, is added to the delay-matched duty cycle
+and then multiplied by DC link voltage <span class="math notranslate nohighlight">\(V_{dc}\)</span> to compute
+the estimator feedback voltage <span class="math notranslate nohighlight">\(V_{\alpha\beta f}\)</span>.</p>
+<p>The lower half of the dead-time compensation block shows the
+core of the dead-time compensation algorithm, which has three portions:</p>
+<ul class="simple">
+<li><p>Computation of estimated unit disturbance signals <span class="math notranslate nohighlight">\(\hat{s}_{abc}\)</span></p></li>
+<li><p>Computation of feedback-path dead-time compensation vector
+<span class="math notranslate nohighlight">\(\Delta D_{\alpha\beta f} = D_{\mathrm{fb}}\hat{s}_{\alpha\beta}\)</span>
+from estimated unit disturbance signals <span class="math notranslate nohighlight">\(\hat{s}_{\alpha\beta}\)</span>
+in the stationary frame</p></li>
+<li><p>Computation of forward-path dead-time compensation vector
+<span class="math notranslate nohighlight">\(\Delta D_{abc} = D_{\mathrm{fwd}}\hat{s}_{abc}\)</span>
+as a per-phase set.</p></li>
+</ul>
+<p>The per-phase unit disturbance signals are
+calculated as shown in <a class="reference internal" href="#fig-dtc-blockdiag"><span class="std std-numref">Figure 5.115</span></a>
+using a saturation block with linear gain <span class="math notranslate nohighlight">\(K = K_0/I_\delta\)</span>
+for a chosen current amplitude <span class="math notranslate nohighlight">\(I_\delta\)</span> and fixed scaling factor <span class="math notranslate nohighlight">\(K_0\)</span>,
+and limits <span class="math notranslate nohighlight">\(\plusmn A = \plusmn 1\)</span>.</p>
+<p>This effectively computes the nonlinear function <span class="math notranslate nohighlight">\(f_{nl}(I/I_\delta)\)</span>,
+shown in Equation <a class="reference internal" href="#equation-dtcomp-mcaf-nlfunc">5.57</a>
+and applied as Equation <a class="reference internal" href="#equation-dtcomp-mcaf-sabc">5.58</a>.</p>
+<div class="math notranslate nohighlight" id="equation-dtcomp-mcaf-nlfunc">
+<span class="eqno">(5.57)<a class="headerlink" href="#equation-dtcomp-mcaf-nlfunc" title="Permalink to this equation">¶</a></span>\[\begin{split}f_{nl1}(u) = \begin{cases}
+   -1          &amp; u \le -1 \\
+   u &amp; |u| &lt; 1 \\
+   1         &amp; u \ge 1 \\
+\end{cases}\end{split}\]</div>
+<div class="math notranslate nohighlight" id="equation-dtcomp-mcaf-sabc">
+<span class="eqno">(5.58)<a class="headerlink" href="#equation-dtcomp-mcaf-sabc" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{aligned}
+\hat{s}_a &amp;= f_{nl1}(I_a / I_\delta) \\
+\hat{s}_b &amp;= f_{nl1}(I_b / I_\delta) \\
+\hat{s}_c &amp;= f_{nl1}(I_c / I_\delta)
+\end{aligned}\end{split}\]</div>
+</section>
+<section id="behavior-when-disabled">
+<h3><span class="section-number">5.7.5.2. </span>Behavior when disabled<a class="headerlink" href="#behavior-when-disabled" title="Permalink to this heading">¶</a></h3>
+<p>If the “None” variant of dead-time compensation is chosen
+in the Customize page of motorBench<sup>®</sup> Development Suite, then the upper part of <a class="reference internal" href="#fig-dtc-blockdiag"><span class="std std-numref">Figure 5.115</span></a>
+calculating estimator feedback voltages <span class="math notranslate nohighlight">\(V_{\alpha\beta f}\)</span>
+still executes, but compensation values <span class="math notranslate nohighlight">\(\Delta D_{\alpha\beta f}\)</span>
+and <span class="math notranslate nohighlight">\(\Delta D_{abc}\)</span> are set to zero.</p>
+</section>
+<section id="choice-of-parameters">
+<h3><span class="section-number">5.7.5.3. </span>Choice of parameters<a class="headerlink" href="#choice-of-parameters" title="Permalink to this heading">¶</a></h3>
+<p>Each of the three parameters may be adjusted:</p>
+<ul class="simple">
+<li><p>Current linearity range <span class="math notranslate nohighlight">\(I_\delta\)</span> as a fraction of fullscale current</p></li>
+<li><p>Forward-path gain <span class="math notranslate nohighlight">\(\alpha_{\mathrm{fwd}} = D_{\mathrm{fwd}}/\delta_1\)</span></p></li>
+<li><p>Feedback-path gain <span class="math notranslate nohighlight">\(\alpha_{\mathrm{fb}} = D_{\mathrm{fb}}/\delta_1\)</span></p></li>
+</ul>
+<p>The forward and feedback gains are selected as a proportion of the expected dead time.</p>
+<p><strong>Note:</strong> The guidance in this section is preliminary and is based
+on available testing so far. Future work may help improve this guidance.</p>
+<section id="current-linearity-range">
+<span id="algorithm-dtc-current-linearity"></span><h4><span class="section-number">5.7.5.3.1. </span>Current linearity range<a class="headerlink" href="#current-linearity-range" title="Permalink to this heading">¶</a></h4>
+<p>Empirical work with the Nidec Hurst DMA0204024B101 motor and dsPICDEM<sup>®</sup> MCLV‑2 Development Board showed improved
+stability in the range of <span class="math notranslate nohighlight">\(K \approx\)</span> 133 – 200, corresponding to
+<span class="math notranslate nohighlight">\(I_\delta = 0.01I_{fs}\)</span> = 0.044 A to <span class="math notranslate nohighlight">\(0.015I_{fs}\)</span> = 0.066 A.</p>
+</section>
+<section id="forward-path-gain">
+<span id="algorithm-dtc-gain-fwd"></span><h4><span class="section-number">5.7.5.3.2. </span>Forward-path gain<a class="headerlink" href="#forward-path-gain" title="Permalink to this heading">¶</a></h4>
+<p>Forward-path dead-time compensation was not particularly successful.
+Use of nonzero forward-path gain is not recommended without performing
+detailed testing on the intended motor and load,
+to determine a desirable value.</p>
+<p>An unloaded motor, which experiences very low q-axis currents,
+is a difficult subject to reduce the effects of dead-time distortion.</p>
+<p>With the Nidec Hurst DMA0204024B101 motor, a forward-path gain of only
+<span class="math notranslate nohighlight">\(\alpha_{\mathrm{fwd}} = 0.25\)</span> produced the least distortion;
+increasing gain much beyond that point caused the distortion to increase again.</p>
+<p>For the motor loaded with about 0.5 A q-axis current,
+the dead-time compensation was more effective, with
+<span class="math notranslate nohighlight">\(\alpha_{\mathrm{fwd}} = 0.625\)</span> producing the least distortion.</p>
+</section>
+<section id="feedback-path-gain">
+<span id="algorithm-dtc-gain-fb"></span><h4><span class="section-number">5.7.5.3.3. </span>Feedback-path gain<a class="headerlink" href="#feedback-path-gain" title="Permalink to this heading">¶</a></h4>
+<p>Nonzero feedback-path gain was successful at improving estimator performance
+of the <a class="reference internal" href="pll.html#algorithm-pll"><span class="std std-ref">AN1292 PLL</span></a> at very low velocities.
+Values of <span class="math notranslate nohighlight">\(\alpha_{\mathrm{fb}} = 0.5\)</span> were generally successful
+on several motors tested, and lowered the minimum operating speed
+by a factor of anywhere from 2 to 4.</p>
+<p>If <span class="math notranslate nohighlight">\(\alpha_{\mathrm{fb}}\)</span> is too high, the motor controller tended
+to “clench” and apply full current. (This effect seems to be reduced
+if the motor resistance is underestimated intentionally by a few percent.)</p>
+<p>Use of nonzero feedback-path gain with the AN1292 PLL is recommended,
+starting with a gain of 0.4 – 0.5. The gain may be increased,
+with careful experimentation to avoid the “clenching” behavior,
+to improve torque performance at low speed.</p>
+</section>
+</section>
+<section id="experimental-results">
+<h3><span class="section-number">5.7.5.4. </span>Experimental results<a class="headerlink" href="#experimental-results" title="Permalink to this heading">¶</a></h3>
+<p>Some experimental data showing the improvement
+from feedback-path dead-time compensation is shown below in
+<a class="reference internal" href="#fig-dtc-fbpath-data"><span class="std std-numref">Figure 5.116</span></a>.</p>
+<figure class="align-center" id="id28">
+<span id="fig-dtc-fbpath-data"></span><img alt="../_images/deadtime-fbpath-data.png" src="../_images/deadtime-fbpath-data.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.116 </span><span class="caption-text">Per-phase dead-time compensation in MCAF.</span><a class="headerlink" href="#id28" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>In this case, the Nidec Hurst DMA0204024B101 and dsPICDEM<sup>®</sup> MCLV‑2 Development Board were used to show an increase in
+tolerable load current at lower speeds.
+The current loop was tuned to a high bandwidth (≈ 2 kHz)
+and the velocity loop was tuned to a low bandwidth (≈ 1.8Hz)
+to allow slowly-changing current. The <a class="reference internal" href="pll.html#algorithm-pll"><span class="std std-ref">AN1292 PLL</span></a>
+estimator was used for commutation with quadrature encoder as an angle reference.</p>
+<p>This was run at a variety of motor velocities for three different values of
+<span class="math notranslate nohighlight">\(\alpha_{\mathrm{fb}}\)</span>, and a manually-applied load torque
+gradually increased until the
+encoder and estimators diverged by more than 60° electrical.
+As the commutation error approaches 90° electrical, torque production
+drops off rapidly and the motor undergoes cycle slip behavior.</p>
+<p><a class="reference internal" href="#fig-dtc-fbpath-data"><span class="std std-numref">Figure 5.116</span></a> shows an increase in motor current as
+<span class="math notranslate nohighlight">\(\alpha_{\textrm{fb}}\)</span> is increased, for a given velocity,
+before approaching a cycle slip. This increased motor current means the
+motor controller can apply a larger current with less commutation angle error,
+providing an improved torque response at low speeds.</p>
+</section>
+<section id="implementation-notes">
+<h3><span class="section-number">5.7.5.5. </span>Implementation notes<a class="headerlink" href="#implementation-notes" title="Permalink to this heading">¶</a></h3>
+<p>Added in R6.</p>
+<p>Fixed gain scaling factor <span class="math notranslate nohighlight">\(K_0 = KI_\delta = 2\)</span>
+since in MCAF, currents are represented with numerical full-scale
+of twice the ADC full-scale values to leave design margin for avoiding overflow.
+For example, on dsPICDEM<sup>®</sup> MCLV‑2 Development Board the full-scale ADC current is 4.4 A but the numerical
+full-scale range of currents is 8.8 A.</p>
+</section>
+</section>
+<section id="references">
+<h2><span class="section-number">5.7.6. </span>References<a class="headerlink" href="#references" title="Permalink to this heading">¶</a></h2>
+<aside class="footnote brackets" id="fn-dtcomp-sepe94" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>R. B. Sepe and J. H. Lang,
+<a class="reference external" href="https://ieeexplore.ieee.org/document/273622">“Inverter nonlinearities and discrete-time vector current control”</a>,
+<em>IEEE Transactions on Industry Applications</em>,
+vol. 30, no. 1, pp. 62-70, Jan/Feb 1994.</p>
+</aside>
+<aside class="footnote brackets" id="fn-dtcomp-pellegrino2010" role="note">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<p>G. Pellegrino, P. Guglielmi,
+E. Armando and R. I. Bojoi,
+<a class="reference external" href="https://ieeexplore.ieee.org/document/1413531">“Self-Commissioning Algorithm for Inverter Nonlinearity Compensation
+in Sensorless Induction Motor Drives”</a>,
+IEEE Transactions on Industry Applications,
+vol. 46, no. 4, pp. 1416-1424, Jul/Aug 2010.</p>
+</aside>
+<aside class="footnote brackets" id="fn-dtcomp-mannen2015" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">3</a><span class="fn-bracket">]</span></span>
+<p>T. Mannen and H. Fujita,
+<a class="reference external" href="https://ieeexplore.ieee.org/document/6891395">“Dead-Time Compensation Method Based on Current
+Ripple Estimation”</a>,
+IEEE Transactions on Power Electronics,
+vol. 30, no. 7, pp. 4016-4024, Jul 2015.</p>
+</aside>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.7. Dead-time Compensation</a><ul>
+<li><a class="reference internal" href="#overview">5.7.1. Overview</a></li>
+<li><a class="reference internal" href="#definition-and-origin-of-dead-time">5.7.2. Definition and origin of dead time</a></li>
+<li><a class="reference internal" href="#dead-time-distortion">5.7.3. Dead-time distortion</a><ul>
+<li><a class="reference internal" href="#output-voltage-during-dead-time">5.7.3.1. Output voltage during dead time</a></li>
+<li><a class="reference internal" href="#analysis-of-error-bounds">5.7.3.2. Analysis of error bounds</a></li>
+<li><a class="reference internal" href="#behavior-during-discontinuous-conduction">5.7.3.3. Behavior during discontinuous conduction</a></li>
+<li><a class="reference internal" href="#dead-time-distortion-voltage-in-field-oriented-current-control">5.7.3.4. Dead-time distortion voltage in field-oriented current control</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#practical-effects-of-dead-time-distortion">5.7.4. Practical effects of dead-time distortion</a><ul>
+<li><a class="reference internal" href="#dead-time-distortion-and-field-oriented-current-control">5.7.4.1. Dead-time distortion and field-oriented current control</a><ul>
+<li><a class="reference internal" href="#dead-time-distortion-with-low-bandwidth-current-controllers">5.7.4.1.1. Dead-time distortion with low-bandwidth current controllers</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dead-time-distortion-and-sensorless-estimation">5.7.4.2. Dead-time distortion and sensorless estimation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id2">5.7.5. Dead-time compensation</a><ul>
+<li><a class="reference internal" href="#mcaf-per-phase-dead-time-compensation-algorithm">5.7.5.1. MCAF per-phase dead-time compensation algorithm</a></li>
+<li><a class="reference internal" href="#behavior-when-disabled">5.7.5.2. Behavior when disabled</a></li>
+<li><a class="reference internal" href="#choice-of-parameters">5.7.5.3. Choice of parameters</a><ul>
+<li><a class="reference internal" href="#current-linearity-range">5.7.5.3.1. Current linearity range</a></li>
+<li><a class="reference internal" href="#forward-path-gain">5.7.5.3.2. Forward-path gain</a></li>
+<li><a class="reference internal" href="#feedback-path-gain">5.7.5.3.3. Feedback-path gain</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#experimental-results">5.7.5.4. Experimental results</a></li>
+<li><a class="reference internal" href="#implementation-notes">5.7.5.5. Implementation notes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#references">5.7.6. References</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="dynlimit-simple.html"
+                          title="previous chapter"><span class="section-number">5.6.5.1. </span>Simple dynamic current limit</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="voltage-control.html"
+                          title="next chapter"><span class="section-number">5.8. </span>Voltage Control</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="voltage-control.html" title="5.8. Voltage Control"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="dynlimit-simple.html" title="5.6.5.1. Simple dynamic current limit"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.7. </span>Dead-time Compensation</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

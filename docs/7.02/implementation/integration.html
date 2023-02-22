@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>6.5. Integration with Custom Code &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="6.6. Resource Usage" href="resource-usage.html" />
+    <link rel="prev" title="6.4. Sampling Rate and PWM Frequency Implications" href="sampling-rate.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="resource-usage.html" title="6.6. Resource Usage"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sampling-rate.html" title="6.4. Sampling Rate and PWM Frequency Implications"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.5. </span>Integration with Custom Code</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="integration-with-custom-code">
+<span id="integration"></span><h1><span class="section-number">6.5. </span>Integration with Custom Code<a class="headerlink" href="#integration-with-custom-code" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">6.5.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>The Motor Control Application Framework and the accompanying <a class="reference internal" href="../components/main.html#sample-application"><span class="std std-ref">Sample Application</span></a>
+are designed so that the code generated from motorBench<sup>®</sup> Development Suite may be used with no changes as a demonstration
+project with the following development boards:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/dm330021-2">dsPICDEM<sup>®</sup> MCLV‑2 Development Board</a></p></li>
+<li><p><a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/dm330023-2">dsPICDEM<sup>®</sup> MCHV‑2 Development Board</a></p></li>
+<li><p><a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/dm330023-3">dsPICDEM<sup>®</sup> MCHV‑3 Development Board</a></p></li>
+<li><p><a class="reference external" href="https://www.microchip.com/en-us/development-tool/DM330031">dsPIC33CK Low Voltage Motor Control (LVMC) Development Board</a></p></li>
+<li><p><a class="reference external" href="https://www.microchip.com/en-us/development-tool/EV18H47A">MCS MCLV‑48V‑300W Development Board</a></p></li>
+</ul>
+</div></blockquote>
+<p>Use of MCAF in other projects usually requires a manual effort to replace the sample application with
+a custom application.
+While <a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a> will allow the custom application to control and obtain feedback from the motor without needing
+to know the different components and modules of MCAF, this effort still requires the application developer to
+be aware of the timing and resource requirements of MCAF. See <a class="reference internal" href="../architecture/schedopt.html#scheduling"><span class="std std-ref">Scheduling and Optimization</span></a> and
+<a class="reference internal" href="resource-usage.html#resource-usage"><span class="std std-ref">Resource Usage</span></a> for more information.</p>
+<figure class="align-center" id="id1">
+<span id="fig-mcapi-userapp-block-diagram"></span><img alt="../_images/mcapi-block-diagram.svg" src="../_images/mcapi-block-diagram.svg" /><figcaption>
+<p><span class="caption-number">Figure 6.6 </span><span class="caption-text">Block diagram showing the User Application relative to MCAPI</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Except for existing interfaces in mcapi.h and mcapi_types.h, the functions, modules, and components
+in MCAF are still subject to change, and as of MCAF R7, none of the interfaces within MCAF have been
+frozen. As a result of this, it is not recommended for a custom application to access any of
+MCAF components directly without using the <a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a>.</p>
+</div>
+<p>Finally: if integration with custom code is important to you, we encourage
+your feedback to help guide future development in this area.
+Please <a class="reference internal" href="../faq.html#faq-support"><span class="std std-ref">contact Microchip</span></a> with any
+comments or suggestions.</p>
+</section>
+<section id="modifying-the-main-application">
+<span id="integration-main-application"></span><h2><span class="section-number">6.5.2. </span>Modifying the Main Application<a class="headerlink" href="#modifying-the-main-application" title="Permalink to this heading">¶</a></h2>
+<p>The main application includes a <a class="reference internal" href="../components/main.html#sample-application"><span class="std std-ref">sample application</span></a> in <code class="docutils literal notranslate"><span class="pre">mcaf_sample_application.c</span></code>
+that implements a simple user interface to control the motor using the <a class="reference internal" href="../components/mcapi.html#mcapi"><span class="std std-ref">Motion Control API (MCAPI)</span></a>. All interfaces of the sample
+application have names starting with the <code class="docutils literal notranslate"><span class="pre">APP_</span></code> prefix. This sample application may be modified or
+replaced with custom code.</p>
+<p>The requirements for MCAF to work properly with the modified main application are as follows:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAF_MainInit()</span></code> should be called at system startup after <code class="docutils literal notranslate"><span class="pre">SYSTEM_Initialize()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAF_MainLoop()</span></code> should be called at each iteration of the main loop.
+This does not have to be executed periodically, but the minimum
+repetition rate should be approximately 100Hz to service the various
+features.</p></li>
+<li><p>The board handler function, <code class="docutils literal notranslate"><span class="pre">MCAF_BoardServiceTasks()</span></code>, should be called periodically
+at a rate that is defined by the
+<a class="reference internal" href="ui-customization.html#customize-board-service-uiservicetiming"><span class="std std-ref">UI service period</span></a> in the Customize page of motorBench<sup>®</sup> Development Suite. For
+instance, this function may be called from an application timer <a class="reference internal" href="../appendix/glossary.html#term-ISR"><span class="xref std std-term">ISR</span></a> or a scheduler.</p></li>
+</ul>
+<p>The requirements for a custom application to interface with MCAF are as follows:</p>
+<ul class="simple">
+<li><p>An application initialization function should be set up to initialize pointers to the <code class="docutils literal notranslate"><span class="pre">MCAPI_MOTOR_DATA</span></code>
+and <code class="docutils literal notranslate"><span class="pre">MCAF_BOARD_DATA</span></code> data in MCAF. See <code class="docutils literal notranslate"><span class="pre">APP_ApplicationInitialize()</span></code> in mcaf_sample_application.c
+for an example.</p></li>
+<li><p>The application initialization function should be called from <code class="docutils literal notranslate"><span class="pre">MCAF_MainInit()</span></code> in mcaf_main.c to
+initialize the application-MCAF interface.</p></li>
+<li><p>Application should use <a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a> to interact with MCAF at runtime.</p></li>
+</ul>
+</section>
+<section id="modifying-the-foc-module">
+<span id="integration-foc"></span><h2><span class="section-number">6.5.3. </span>Modifying the FOC module<a class="headerlink" href="#modifying-the-foc-module" title="Permalink to this heading">¶</a></h2>
+<p>Because of tight coupling that remains in MCAF between the state machine,
+<a class="reference internal" href="../appendix/glossary.html#term-FOC"><span class="xref std std-term">FOC</span></a>, and supervisory algorithms, modifications to the <a class="reference internal" href="../appendix/glossary.html#term-FOC"><span class="xref std std-term">FOC</span></a> module
+are not recommended. This includes changes to the sensorless estimators, the PI controllers
+or the <a class="reference internal" href="../algorithms/flux_control/index.html#algorithm-flux-control"><span class="std std-ref">flux control module</span></a>.</p>
+</section>
+<section id="using-custom-boards">
+<span id="integration-custom-hardware"></span><h2><span class="section-number">6.5.4. </span>Using Custom Boards<a class="headerlink" href="#using-custom-boards" title="Permalink to this heading">¶</a></h2>
+<p>Use of custom boards is not recommended with MCAF R7.
+The mechanism for operating motorBench<sup>®</sup> Development Suite with custom boards has not yet been
+completed. Support for custom boards requires updates to the
+Hardware Abstraction Layer, and an adjustment of the scaling factors
+used in motorBench<sup>®</sup> Development Suite and MCAF.</p>
+<p>Manual adjustment of any parameter that is automatically computed by
+motorBench<sup>®</sup> Development Suite is not recommended.</p>
+</section>
+<section id="modifying-the-state-machine">
+<span id="integration-state-machine"></span><h2><span class="section-number">6.5.5. </span>Modifying the State Machine<a class="headerlink" href="#modifying-the-state-machine" title="Permalink to this heading">¶</a></h2>
+<p>Because of tight coupling that remains in MCAF R7 between the state machine,
+<a class="reference internal" href="../appendix/glossary.html#term-FOC"><span class="xref std std-term">FOC</span></a>, and supervisory algorithms, modifications to the state machine
+are not recommended.</p>
+</section>
+<section id="modifying-the-supervisory-algorithms">
+<span id="integration-supervisory"></span><h2><span class="section-number">6.5.6. </span>Modifying the Supervisory Algorithms<a class="headerlink" href="#modifying-the-supervisory-algorithms" title="Permalink to this heading">¶</a></h2>
+<p>Supervisory algorithms, with the exception of watchdog management, are subject to
+change in the upcoming revisions after MCAF R7. Due to this reason, modifications
+to this module are not recommended.</p>
+<p>Watchdog management involves several areas of MCAF; to change
+this behavior, see the section on <a class="reference internal" href="../components/supervisory.html#watchdog"><span class="std std-ref">watchdog management</span></a>
+and/or search the code for <code class="docutils literal notranslate"><span class="pre">watchdog</span></code>; the relevant sections are in the <code class="docutils literal notranslate"><span class="pre">traps</span></code>, <code class="docutils literal notranslate"><span class="pre">ui</span></code>,
+<code class="docutils literal notranslate"><span class="pre">isr</span></code>, and <code class="docutils literal notranslate"><span class="pre">main</span></code> modules.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">6.5. Integration with Custom Code</a><ul>
+<li><a class="reference internal" href="#overview">6.5.1. Overview</a></li>
+<li><a class="reference internal" href="#modifying-the-main-application">6.5.2. Modifying the Main Application</a></li>
+<li><a class="reference internal" href="#modifying-the-foc-module">6.5.3. Modifying the FOC module</a></li>
+<li><a class="reference internal" href="#using-custom-boards">6.5.4. Using Custom Boards</a></li>
+<li><a class="reference internal" href="#modifying-the-state-machine">6.5.5. Modifying the State Machine</a></li>
+<li><a class="reference internal" href="#modifying-the-supervisory-algorithms">6.5.6. Modifying the Supervisory Algorithms</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="sampling-rate.html"
+                          title="previous chapter"><span class="section-number">6.4. </span>Sampling Rate and PWM Frequency Implications</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="resource-usage.html"
+                          title="next chapter"><span class="section-number">6.6. </span>Resource Usage</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="resource-usage.html" title="6.6. Resource Usage"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sampling-rate.html" title="6.4. Sampling Rate and PWM Frequency Implications"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.5. </span>Integration with Custom Code</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.4.3.3.2. Align method &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../../_static/svgcrop.js"></script>
+    <script src="../../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.4.3.3.3. Align-and-sweep method" href="align-sweep.html" />
+    <link rel="prev" title="5.4.3.3.1. Implementation issues common to all methods" href="common.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="align-sweep.html" title="5.4.3.3.3. Align-and-sweep method"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="common.html" title="5.4.3.3.1. Implementation issues common to all methods"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../estimators.html" ><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../qei.html" accesskey="U"><span class="section-number">5.4.3. </span>Quadrature encoder support</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.3.3.2. </span>Align method</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="qei-sync-align"></span><section id="align-method">
+<span id="index-0"></span><h1><span class="section-number">5.4.3.3.2. </span>Align method<a class="headerlink" href="#align-method" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">5.4.3.3.2.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>In the absence of load torques (cogging, friction, disturbance),
+if a fixed αβ-frame stator current vector is applied,
+the motor will align along the d-axis, since this reaches a point
+of equilibrium where the electromagnetic torque is zero.</p>
+<p>The align method of back-EMF synchronization uses this method for a simple
+and generally-reliable method of obtaining a commutation offset that is accurate
+within a few electrical degrees for many motors.</p>
+<p>There are, however, subtleties with this method, especially when
+used with motors that have substantial cogging torque.</p>
+<p>If there are load torques when using the align method,
+the motor will reach a point of equilibrium
+with an electrical-angle offset <span class="math notranslate nohighlight">\(\tilde{\theta}\)</span>
+from the d-axis such that <span class="math notranslate nohighlight">\(T_{\mathrm{load}} + \frac{3}{2}K_eI\sin\tilde{\theta} = 0\)</span>,
+in other words, <span class="math notranslate nohighlight">\(\tilde{\theta} = -\sin^{-1}\dfrac{T_{\mathrm{load}}}{\frac{3}{2}K_eI}\)</span>.
+Cogging/detent torque for low-cost motors may be in the range of 5% – 10% of continuous rated torque
+plus 1% – 3% for friction, so if we use a current I equal to continuous rated current
+we should expect on the order of <span class="math notranslate nohighlight">\(\tilde{\theta} = \sin^{-1} 0.13 \approx 7.5^{\circ}\)</span>
+worst-case error. Oversized motors, where the drive cannot deliver current
+to achieve continuous rated torque, will have larger errors.
+(example: if total load torque is 13% continuous rated torque,
+and the drive can deliver 50% continuous rated torque, then we
+should expect arcsin(13/50) ≈ 15.1° worst-case error.)</p>
+<p>The <a class="reference internal" href="../startup.html#startup-sequence"><span class="std std-ref">startup sequence</span></a>’s “align” state
+(where the current vector magnitude and angle are fixed) is utilized
+to allow a suitable settling time to reach mechanical equilibrium, and
+at the end of this time, the difference between
+the applied commutation angle and the encoder count is computed
+and used to obtain a commutation offset.</p>
+</section>
+<section id="limitations">
+<span id="qei-sync-align-limitations"></span><h2><span class="section-number">5.4.3.3.2.2. </span>Limitations<a class="headerlink" href="#limitations" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Continuous torque disturbances can prevent mechanical equilibrium</p></li>
+<li><p>There is a semistable equilibrium point (locally stable, globally unstable) around
+<span class="math notranslate nohighlight">\(\tilde\theta = 180^\circ\)</span>
+where the cogging torque pulls the rotor towards a particular detent position,
+and the electromagnetic torque is small enough that it cannot pull the rotor
+out of the detent unless a different commutation angle is applied.</p></li>
+</ul>
+</section>
+<section id="practical-implementation-issues">
+<h2><span class="section-number">5.4.3.3.2.3. </span>Practical implementation issues<a class="headerlink" href="#practical-implementation-issues" title="Permalink to this heading">¶</a></h2>
+<ul>
+<li><p>The angles used in the rampup and align states of startup sequence are important,
+particularly the angle shift: a different commutation angle can be applied
+during the rampup and align states, to improve the ability of the align method to overcome torque detents and keep
+from getting stuck at a semistable equilibrium point.</p>
+<p>A more in-depth discussion of angle shift is shown below in the
+<a class="reference internal" href="#qei-sync-align-example-data"><span class="std std-ref">section containing example data</span></a>.</p>
+</li>
+<li><p>MCAF applies current during the align phase along the q-axis, not the d-axis,
+so the estimated commutation offset has a <span class="math notranslate nohighlight">\(\pm 90^\circ\)</span> offset from
+the angle difference between applied
+commutation electrical angle and measured encoder electrical angle at the end
+of the align phase. The sign of this <span class="math notranslate nohighlight">\(\pm 90^\circ\)</span> offset
+depends on the sign of the q-axis current used.
+(Negative q-axis current is applied during startup when the motor is started
+in the reverse direction.) In other words,
+<span class="math notranslate nohighlight">\(\hat\theta_{\mathrm{ofs}} = (\theta_{\mathrm{enc}} - \theta_{e}) + 90^\circ \operatorname{sgn} I_q\)</span> where
+the angle subscripts <em>ofs</em>, <em>enc</em>, and <em>e</em> refer to commutation offset,
+encoder angle (in electrical terms), and forced electrical angle, respectively.</p></li>
+</ul>
+</section>
+<section id="example-data">
+<span id="qei-sync-align-example-data"></span><h2><span class="section-number">5.4.3.3.2.4. </span>Example data<a class="headerlink" href="#example-data" title="Permalink to this heading">¶</a></h2>
+<p><a class="reference internal" href="#fig-qei-align1"><span class="std std-numref">Figure 5.58</span></a> shows the use of the align method with the Anaheim Automation
+BLWS232D-24V-1350-1024SI5, which has a 1024-line encoder and fairly low cogging torque.
+For this motor, the align method works very well, with low error.
+The yellow highlight shows the current rampup state (current not shown),
+at an applied electrical angle <span class="math notranslate nohighlight">\(\theta_0 = 0^\circ\)</span>, and the green highlight shows the align state,
+at an applied electrical angle <span class="math notranslate nohighlight">\(\theta_1 = 30^\circ\)</span>. The motor takes roughly 0.15 seconds to settle to
+equilibrium, so the align time of 0.5s leaves plenty of time to reach an encoder angle of 120°,
+which is 90° ahead of the applied electrical angle.</p>
+<figure class="align-center" id="id1">
+<span id="fig-qei-align1"></span><img alt="../../_images/2118-in-action-blws232d.png" src="../../_images/2118-in-action-blws232d.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.58 </span><span class="caption-text">Align method with BLWS232D-24V-1350-1024SI5, <span class="math notranslate nohighlight">\(\theta_0 = 0^\circ, \theta_1 = 30^\circ\)</span></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The remaining graphs in this section show the use of the align method with the
+Anaheim Automation BLY342D-48V-3200-1024SI5. This motor has substantial cogging torque,
+and because of this, the success of the align method depends on initial conditions
+and the choice of startup angles.
+<a class="reference internal" href="#fig-qei-align2"><span class="std std-numref">Figure 5.59</span></a> shows
+this motor during startup, with applied electrical angles of 0° during both rampup and align
+states: <span class="math notranslate nohighlight">\(\theta_0 = \theta_1 = 0^\circ\)</span>.
+In this case, the initial angle of the motor <span class="math notranslate nohighlight">\(\theta_{\mathrm{init}}\)</span> was around 65° from equilibrium,
+and the transient settles down quickly.</p>
+<figure class="align-center" id="id2">
+<span id="fig-qei-align2"></span><img alt="../../_images/2118-in-action-bly342d-48v-3200-1.png" src="../../_images/2118-in-action-bly342d-48v-3200-1.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.59 </span><span class="caption-text">Align method with BLY342D-48V-3200-1024SI5, <span class="math notranslate nohighlight">\(\theta_0 = \theta_1 = 0^\circ, \theta_{\mathrm{init}}\approx 155^\circ\)</span></span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>When the initial position of the rotor is roughly 180° from equilibrium, the rotor
+can get stuck in a detent at semistable equilibrium. <a class="reference internal" href="#fig-qei-align3"><span class="std std-numref">Figure 5.60</span></a> shows
+such a case, where the rotor
+reaches the correct equilibrium eventually, but its transient is much longer.</p>
+<figure class="align-center" id="id3">
+<span id="fig-qei-align3"></span><img alt="../../_images/2118-in-action-bly342d-48v-3200-3.png" src="../../_images/2118-in-action-bly342d-48v-3200-3.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.60 </span><span class="caption-text">Align method with BLY342D-48V-3200-1024SI5, <span class="math notranslate nohighlight">\(\theta_0 = \theta_1 = 0^\circ, \theta_{\mathrm{init}}\approx 275^\circ\)</span></span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p><a class="reference internal" href="#fig-qei-align4"><span class="std std-numref">Figure 5.61</span></a> shows almost the same starting angle, but this time it
+remains stuck in a semistable equilibrium. Note that during the align phase, highlighted
+green, the rotor angle does not move significantly, and remains approximately 270°
+ahead of the applied electrical angle, whereas in successful uses of the align method,
+it should reach equilibrium at 90° ahead of the applied electrical angle.
+In this case, the calculated commutation offset would be off by 180°,
+leading to backward instead of forward rotation.</p>
+<figure class="align-center" id="id4">
+<span id="fig-qei-align4"></span><img alt="../../_images/2118-in-action-bly342d-48v-3200-2.png" src="../../_images/2118-in-action-bly342d-48v-3200-2.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.61 </span><span class="caption-text">Align method with BLY342D-48V-3200-1024SI5, <span class="math notranslate nohighlight">\(\theta_0 = \theta_1 = 0^\circ, \theta_{\mathrm{init}}\approx 275^\circ\)</span>,
+This shows the case where the rotor is stuck in semistable equilibrium near its initial conditions.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The use of an angle shift can prevent this situation.</p>
+<p><a class="reference internal" href="#fig-qei-align5"><span class="std std-numref">Figure 5.62</span></a> shows similar initial conditions but with the applied angle during
+the align phase shifted by 30°. Here the rampup phase remains stuck in semistable
+equilibrium, but the align phase is able to escape the detent and reach its intended
+position.</p>
+<figure class="align-center" id="id5">
+<span id="fig-qei-align5"></span><img alt="../../_images/2118-in-action-bly342d-48v-3200-4.png" src="../../_images/2118-in-action-bly342d-48v-3200-4.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.62 </span><span class="caption-text">Align method with BLY342D-48V-3200-1024SI5, <span class="math notranslate nohighlight">\(\theta_0 = 0^\circ, \theta_1 = 30^\circ, \theta_{\mathrm{init}}\approx 275^\circ\)</span>.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p><a class="reference internal" href="#fig-qei-align5"><span class="std std-numref">Figure 5.62</span></a> shows similar initial conditions, with the applied angle during
+the align phase at 0° but at 330° during the rampup phase. In this case,
+the rampup phase provides enough torque to give the motor a kick and prevent it from
+getting stuck in equilibrium.</p>
+<figure class="align-center" id="id6">
+<span id="fig-qei-align6"></span><img alt="../../_images/2118-in-action-bly342d-48v-3200-5.png" src="../../_images/2118-in-action-bly342d-48v-3200-5.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.63 </span><span class="caption-text">Align method with BLY342D-48V-3200-1024SI5, <span class="math notranslate nohighlight">\(\theta_0 = 330^\circ, \theta_1 = 0^\circ, \theta_{\mathrm{init}}\approx 275^\circ\)</span>.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>This technique of adding an angle shift is not foolproof, but it does seem to be reasonably
+robust. Tests of several motors with high cogging torque were able to align successfully
+with an angle shift in the 30° – 60° range.</p>
+</section>
+<section id="accuracy-and-repeatability-tests">
+<h2><span class="section-number">5.4.3.3.2.5. </span>Accuracy and repeatability tests<a class="headerlink" href="#accuracy-and-repeatability-tests" title="Permalink to this heading">¶</a></h2>
+<p>The align method was tested with MCAF R4, and the resulting commutation offset from index
+(<code class="docutils literal notranslate"><span class="pre">motor.estimator.qei.position.commutationOffsetFromIndex</span></code>) was compared against a reference
+method using open-circuit voltage measurements of the motor terminals with the motor
+rotated mechanically at constant speed.</p>
+<p><a class="reference internal" href="#table-qei-sync-align-accuracy"><span class="std std-numref">Table 5.2</span></a> describes the results.
+In each case, 64 iterations of the align method were performed,
+with initial conditions at evenly-spaced angles spanning one electrical cycle.
+Except where noted, the settings for the align method are the default values of
+<span class="math notranslate nohighlight">\(\theta_0 = 330^\circ\)</span> during the rampup state and
+<span class="math notranslate nohighlight">\(\theta_1 = 0^\circ\)</span> during the align state (angle shift of 30°).
+Each motor was used with a dsPICDEM<sup>®</sup> MCLV‑2 Development Board, with default current limit of 2.29A, and default
+startup current at 91% of the current limit = 2.08A.</p>
+<table class="docutils align-default" id="table-qei-sync-align-accuracy">
+<caption><span class="caption-number">Table 5.2 </span><span class="caption-text">Accuracy and repeatability metrics for the align method</span><a class="headerlink" href="#table-qei-sync-align-accuracy" title="Permalink to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>mean <span class="math notranslate nohighlight">\(\tilde\theta_{\mathrm{ofs}}\)</span></p></th>
+<th class="head"><p>max <span class="math notranslate nohighlight">\(\tilde\theta_{\mathrm{ofs}}\)</span></p></th>
+<th class="head"><p>stdev <span class="math notranslate nohighlight">\(\hat\theta_{\mathrm{ofs}}\)</span></p></th>
+<th class="head"><p>span <span class="math notranslate nohighlight">\(\hat\theta_{\mathrm{ofs}}\)</span></p></th>
+<th class="head"><p>Test case</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0.39°</p></td>
+<td><p>0.43°</p></td>
+<td><p>0.07°</p></td>
+<td><p>0.18°</p></td>
+<td><p>BLWS232D-24V-1350-1024SI5</p></td>
+</tr>
+<tr class="row-odd"><td><p>1.00°</p></td>
+<td><p>1.50°</p></td>
+<td><p>0.28°</p></td>
+<td><p>0.97°</p></td>
+<td><p>BLY171D-24V-4000 with 4096-line encoder</p></td>
+</tr>
+<tr class="row-even"><td><p>15.44°</p></td>
+<td><p>189.35°</p></td>
+<td><p>54.47°</p></td>
+<td><p>352.62°</p></td>
+<td><p>BLY342D-24V-3000-1024SI5, 30° angle shift</p></td>
+</tr>
+<tr class="row-odd"><td><p>3.68°</p></td>
+<td><p>4.43°</p></td>
+<td><p>0.44°</p></td>
+<td><p>2.46°</p></td>
+<td><p>BLY342D-24V-3000-1024SI5, 60° angle shift</p></td>
+</tr>
+<tr class="row-even"><td><p>3.44°</p></td>
+<td><p>3.91°</p></td>
+<td><p>0.42°</p></td>
+<td><p>1.41°</p></td>
+<td><p>BLY342D-48V-3200-1024SI5</p></td>
+</tr>
+</tbody>
+</table>
+<p>The error metrics are as follows:</p>
+<ul class="simple">
+<li><p>mean <span class="math notranslate nohighlight">\(\tilde\theta_{\mathrm{ofs}}\)</span> — mean value of the commutation offset difference between the align method and the reference method</p></li>
+<li><p>max <span class="math notranslate nohighlight">\(\tilde\theta_{\mathrm{ofs}}\)</span> — maximum value of the commutation offset difference between the align method and the reference method</p></li>
+<li><p>stdev <span class="math notranslate nohighlight">\(\hat\theta_{\mathrm{ofs}}\)</span> — standard deviation of commutation offset estimated by the align method</p></li>
+<li><p>span <span class="math notranslate nohighlight">\(\hat\theta_{\mathrm{ofs}}\)</span> — difference between minimum and maximum commutation offset estimated by the align method</p></li>
+</ul>
+<p>The BLY342D-24V-3000-1024SI5 required a larger angle shift (60°) to work reliably. With the default value of
+30°, initial conditions near 180° from equilibrium cause the motor to get stuck in semistable
+equilibrium. This is more severe with the BLY342D-24V-3000 than the BLY342D-48V-3200; both motors
+use the same lamination stack and rotor but are wound differently, with the BLY342D-24V-3000 having
+higher rated current and a lower value of <span class="math notranslate nohighlight">\(K_e\)</span>,
+so that the 2.08A is not able to exert as much torque during the align phase.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.4.3.3.2. Align method</a><ul>
+<li><a class="reference internal" href="#overview">5.4.3.3.2.1. Overview</a></li>
+<li><a class="reference internal" href="#limitations">5.4.3.3.2.2. Limitations</a></li>
+<li><a class="reference internal" href="#practical-implementation-issues">5.4.3.3.2.3. Practical implementation issues</a></li>
+<li><a class="reference internal" href="#example-data">5.4.3.3.2.4. Example data</a></li>
+<li><a class="reference internal" href="#accuracy-and-repeatability-tests">5.4.3.3.2.5. Accuracy and repeatability tests</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="common.html"
+                          title="previous chapter"><span class="section-number">5.4.3.3.1. </span>Implementation issues common to all methods</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="align-sweep.html"
+                          title="next chapter"><span class="section-number">5.4.3.3.3. </span>Align-and-sweep method</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="align-sweep.html" title="5.4.3.3.3. Align-and-sweep method"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="common.html" title="5.4.3.3.1. Implementation issues common to all methods"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../estimators.html" ><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../qei.html" ><span class="section-number">5.4.3. </span>Quadrature encoder support</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.3.3.2. </span>Align method</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

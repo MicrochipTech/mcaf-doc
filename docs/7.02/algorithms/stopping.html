@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.3. Stopping &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.4. Position and Velocity Estimation" href="estimators.html" />
+    <link rel="prev" title="5.2. Startup" href="startup.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="estimators.html" title="5.4. Position and Velocity Estimation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="startup.html" title="5.2. Startup"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.3. </span>Stopping</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="stopping">
+<span id="algorithm-stopping"></span><span id="index-0"></span><h1><span class="section-number">5.3. </span>Stopping<a class="headerlink" href="#stopping" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">5.3.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>“Stopping” is the process of bringing the motor to a
+complete stop, after normal operation,
+with the intent of leaving the motor unpowered and at rest in the <a class="reference internal" href="../components/statemach.html#component-statemachine-states"><span class="std std-ref">STOPPED state</span></a>.</p>
+<p>MCAF includes <a class="reference internal" href="../implementation/ui-customization.html#customize-operation-stopping-type"><span class="std std-ref">several different options for stopping</span></a>
+which can be selected in the Customize page of motorBench<sup>®</sup> Development Suite:</p>
+<ul class="simple">
+<li><p>Minimal-impact PWM (“open-loop” stopping or “coastdown”)</p></li>
+<li><p>Closed-loop current</p></li>
+<li><p>Closed-loop velocity</p></li>
+</ul>
+<p>In each of these, operation in the <a class="reference internal" href="../components/statemach.html#component-statemachine-states"><span class="std std-ref">STOPPING state</span></a>
+continues until one of the following conditions is true:</p>
+<ul class="simple">
+<li><p>something causes the motor to exit normal operation (example: a fault occurs,
+or an operator enters a test mode using real-time diagnostic tools)</p></li>
+<li><p>the motor is requested to run again</p></li>
+<li><p>a stop completion flag is set — this condition is determined differently
+for each of the different stopping methods.</p></li>
+</ul>
+</section>
+<section id="minimal-impact-pwm">
+<span id="algorithm-stopping-min-impact"></span><span id="index-1"></span><h2><span class="section-number">5.3.2. </span>Minimal-impact PWM<a class="headerlink" href="#minimal-impact-pwm" title="Permalink to this heading">¶</a></h2>
+<p>With minimal-impact PWM — also known as “open-loop” stopping or “coastdown”
+— the PWM outputs are changed to
+<a class="reference internal" href="../components/hal.html#hardware-pwm-minimal-impact"><span class="std std-ref">the minimal-impact state</span></a>.
+This is essentially an open-circuit condition on the three-phase bridge;
+for bootstrap gate drives, the lower transistors are maintained at a low duty cycle
+to maintain charge in the bootstrap capacitors.</p>
+<p>Current measurements may be lost, and sensorless estimators may not be able
+to provide valid estimates of commutation angle and motor velocity.</p>
+<p><strong>Stop completion:</strong> Because a velocity estimate may not be available,
+open-loop stopping waits for a fixed coastdown time interval
+<span class="math notranslate nohighlight">\(t_{\rm coast}\)</span>, assuming that
+the initial velocity is the worst-case maximum (in case the angle estimator is wrong,
+or the system comes out of reset).
+At the end of the coastdown interval, the stop completion flag is set,
+when it is likely that motor velocity is below
+<a class="reference internal" href="../implementation/ui-customization.html#customize-operation-coastdown-end-velocity"><span class="std std-ref">the coastdown speed threshold</span></a>.</p>
+<p>Under these conditions, the only torque acting on the motor is assumed to be from
+viscous damping <span class="math notranslate nohighlight">\(B\)</span> and friction <span class="math notranslate nohighlight">\(T_{\mathrm{fr}}\)</span> acting on the rotor inertia <span class="math notranslate nohighlight">\(J\)</span> so that the motor coasts down towards rest,
+as shown in <a class="reference internal" href="#fig-coastdown-1"><span class="std std-numref">Figure 5.54</span></a> and described in Equation <a class="reference internal" href="#equation-eq-coastdown-1">5.22</a>:</p>
+<figure class="align-center" id="id1">
+<span id="fig-coastdown-1"></span><img alt="../_images/stopping-open-loop.svg" src="../_images/stopping-open-loop.svg" /><figcaption>
+<p><span class="caption-number">Figure 5.54 </span><span class="caption-text">Coastdown curve showing the time from initial velocity <span class="math notranslate nohighlight">\(\omega_i\)</span>
+to reach a threshold velocity <span class="math notranslate nohighlight">\(\omega_f\)</span></span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<div class="math notranslate nohighlight" id="equation-eq-coastdown-1">
+<span class="eqno">(5.22)<a class="headerlink" href="#equation-eq-coastdown-1" title="Permalink to this equation">¶</a></span>\[\begin{aligned}
+J\frac{d\omega_m}{dt} &amp;= -B\omega_m - T_{\mathrm{fr}}\operatorname{sgn}\omega_m
+\end{aligned}\]</div>
+<p>This can be solved analytically for the mechanical velocity:</p>
+<div class="math notranslate nohighlight" id="equation-eq-coastdown-2">
+<span class="eqno">(5.23)<a class="headerlink" href="#equation-eq-coastdown-2" title="Permalink to this equation">¶</a></span>\[\omega_m = -\omega_{\mathrm{fr}}+(\omega_i+\omega_{\mathrm{fr}})e^{-t/\tau}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\omega_i\)</span> is the initial velocity,
+<span class="math notranslate nohighlight">\(\omega_{\mathrm{fr}}=T_{\mathrm{fr}}/B\)</span>, and time constant <span class="math notranslate nohighlight">\(\tau = J/B\)</span>.</p>
+<p>The coastdown time <span class="math notranslate nohighlight">\(t_{\mathrm{coast}}\)</span> is estimated from Equation <a class="reference internal" href="#equation-eq-coastdown-2">5.23</a>
+to determine the time at which motor velocity <span class="math notranslate nohighlight">\(\omega_m\)</span> is below
+the coastdown speed threshold <span class="math notranslate nohighlight">\(\omega_f\)</span>.</p>
+<p><strong>NOTE</strong>: Minimal-impact PWM should <strong>not</strong> be relied on under any the following conditions:</p>
+<ul class="simple">
+<li><p>the motor has high inertia (can coast down for at least several seconds)
+and the motor parameters are uncertain</p></li>
+<li><p>the motor is subject to regenerative torque from its environment
+that can maintain motor velocity
+(example: e-bikes, generators, fans subject to windmilling, etc.)</p></li>
+</ul>
+</section>
+<section id="closed-loop-methods">
+<span id="algorithm-stopping-closed-loop"></span><span id="index-2"></span><h2><span class="section-number">5.3.3. </span>Closed-loop methods<a class="headerlink" href="#closed-loop-methods" title="Permalink to this heading">¶</a></h2>
+<p>Under closed-loop stopping, field-oriented current control is maintained,
+with PWM outputs continuing normal switch-mode operation.
+This allows sensorless estimators to continue operating,
+so that a velocity estimate is still available.</p>
+<p><strong>Stop completion:</strong> The stop completion flag is set
+when the motor velocity has remained below a speed threshold for a minimum time interval.</p>
+<p><strong>NOTE</strong>: Closed-loop stopping methods should only be used with estimators that
+are able to maintain velocity estimates below the stopping threshold.
+(ZS/MT and QEI are good examples. The AN1292 PLL may be able to maintain a velocity estimate,
+but use of closed-loop stopping should be checked carefully. The ATPLL is known to have
+stability issues operating at very low speeds.)</p>
+<section id="closed-loop-current">
+<span id="algorithm-stopping-closed-loop-current"></span><h3><span class="section-number">5.3.3.1. </span>Closed-loop current<a class="headerlink" href="#closed-loop-current" title="Permalink to this heading">¶</a></h3>
+<p>Under closed-loop current stopping, the motor current is commanded to zero.
+This allows the motor to coast down towards rest
+with similar dynamics as in the minimal-impact PWM case.</p>
+</section>
+<section id="closed-loop-velocity">
+<span id="algorithm-stopping-closed-loop-velocity"></span><h3><span class="section-number">5.3.3.2. </span>Closed-loop velocity<a class="headerlink" href="#closed-loop-velocity" title="Permalink to this heading">¶</a></h3>
+<p>Under closed-loop velocity stopping, the outer loop is commanded to zero velocity.
+This will bring the motor to rest very quickly, but also regenerates energy back
+onto the DC link.</p>
+<p><strong>NOTE</strong>: Closed-loop velocity control should only be when there is a reliable
+path for the regenerated energy to flow — for example, a shunt voltage regulator
+or a battery connected to the DC link.</p>
+</section>
+</section>
+<section id="implementation-notes">
+<h2><span class="section-number">5.3.4. </span>Implementation notes<a class="headerlink" href="#implementation-notes" title="Permalink to this heading">¶</a></h2>
+<p>Support for closed-loop methods was added in MCAF R7.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.3. Stopping</a><ul>
+<li><a class="reference internal" href="#overview">5.3.1. Overview</a></li>
+<li><a class="reference internal" href="#minimal-impact-pwm">5.3.2. Minimal-impact PWM</a></li>
+<li><a class="reference internal" href="#closed-loop-methods">5.3.3. Closed-loop methods</a><ul>
+<li><a class="reference internal" href="#closed-loop-current">5.3.3.1. Closed-loop current</a></li>
+<li><a class="reference internal" href="#closed-loop-velocity">5.3.3.2. Closed-loop velocity</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementation-notes">5.3.4. Implementation notes</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="startup.html"
+                          title="previous chapter"><span class="section-number">5.2. </span>Startup</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="estimators.html"
+                          title="next chapter"><span class="section-number">5.4. </span>Position and Velocity Estimation</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="estimators.html" title="5.4. Position and Velocity Estimation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="startup.html" title="5.2. Startup"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.3. </span>Stopping</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

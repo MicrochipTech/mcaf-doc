@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="dataflow-diagrams.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/contrib/auto-render.min.js"></script>
+	<script type='text/javascript' src='diagram_lib.js'></script>
+	<script type='text/javascript'>
+	  window.addEventListener('DOMContentLoaded',function() {
+		renderMathInElement(document.getElementById('description-container'), {delimiters:
+			[
+			  {left: "$$", right: "$$", display: true},
+			  {left: "\\(", right: "\\)", display: false},
+			  {left: "\\[", right: "\\]", display: true}
+			]
+		 });
+		
+		var dh = new DiagramHandler(diagram_data, document.getElementById('image-container'),
+		document.getElementById('description-container'));
+	  });
+	</script>
+	<script type='text/javascript'>
+	var diagram_data = [];
+	function pushAll(array, items)
+	{
+		items.forEach(function(item) { array.push(item); });
+	}
+	var diagram_data = [
+	
+		{"location": [209, 29, 292, 59], "diagram": "FOC"},
+		{"location": [757, 52, 838, 82], "diagram": "FOC"},
+		{"location": [1183, 52, 1268, 82], "diagram": "FOC"},
+		{"location": [1274, 94, 1350, 124], "diagram": "FOC"},
+		{"location": [1522, 98, 1604, 128], "diagram": "FOC"},
+		{"location": [1449, 60, 1484, 87], "diagram": "FOC"},
+		{"location": [1716, 130, 1739, 154], "diagram": "FOC"},
+		{"location": [1777, 133, 1805, 154], "diagram": "FOC"},
+		{"location": [36, 164, 114, 191], "diagram": "FOC"},
+		{"location": [180, 199, 204, 223], "diagram": "FOC"},
+		{"location": [155, 133, 229, 159], "diagram": "FOC"},
+		{"location": [384, 97, 447, 123], "diagram": "FOC"},
+		{"location": [615, 146, 676, 172], "diagram": "FOC"},
+		{"location": [615, 195, 677, 221], "diagram": "FOC"},
+		{"location": [717, 223, 741, 247], "diagram": "FOC"},
+		{"location": [708, 157, 780, 183], "diagram": "FOC"},
+		{"location": [921, 121, 982, 147], "diagram": "FOC"},
+		{"location": [1006, 121, 1069, 147], "diagram": "FOC"},
+		{"location": [1177, 223, 1200, 247], "diagram": "FOC"},
+		{"location": [1165, 157, 1211, 183], "diagram": "FOC"},
+		{"location": [1229, 273, 1264, 299], "diagram": "FOC"},
+		{"location": [1443, 223, 1467, 247], "diagram": "FOC"},
+		{"location": [1429, 157, 1480, 183], "diagram": "FOC"},
+		{"location": [1508, 262, 1548, 288], "diagram": "FOC"},
+		{"location": [1677, 173, 1731, 199], "diagram": "FOC"},
+		{"location": [1738, 262, 1799, 288], "diagram": "FOC"},
+		{"location": [1831, 124, 1892, 150], "diagram": "FOC"},
+		{"location": [2018, 223, 2042, 247], "diagram": "FOC"},
+		{"location": [1999, 160, 2060, 186], "diagram": "FOC"},
+		{"location": [1830, 287, 1903, 313], "diagram": "FOC"},
+		{"location": [1018, 333, 1039, 359], "diagram": "FOC"},
+		{"location": [1222, 335, 1241, 359], "diagram": "FOC"},
+		{"location": [1521, 360, 1571, 387], "diagram": "FOC"},
+		{"location": [1937, 506, 1969, 532], "diagram": "FOC"},
+		{"location": [1453, 503, 1489, 529], "diagram": "FOC"},
+		{"location": [1247, 503, 1278, 529], "diagram": "FOC"},
+		{"location": [1069, 564, 1180, 610], "diagram": "FOC"},
+		{"location": [606, 599, 717, 629], "diagram": "FOC"},
+		{"location": [1239, 609, 1260, 641], "diagram": "FOC"},
+		{"location": [1186, 655, 1220, 681], "diagram": "FOC"},
+		{"location": [1060, 738, 1099, 768], "diagram": "FOC"},
+	];
+	</script>
+</head>
+<body>
+	<div id="image-container">
+    <div id="header"><span class="header-content">Data flow diagram: MCAF R7 RC37</span>
+	</div>
+	<div class="diagram-container">
+	<img id="diagram-FOC" src="accret-bdiag.svg" >
+	</div>	
+	</div>
+	<div id="description-container" class="descriptions">
+		<table>
+		<colgroup>
+		  <col class="col-symbol">
+		  <col class="col-variable">
+		  <col class="col-description">
+		</colgroup>
+		<thead>
+			<tr>
+				<th class="col-symbol">Symbol</th>
+				<th class="col-variable">Program variable</th>
+				<th class="col-description">Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr data-row="00000" id="row-00000">
+				<td class="col-symbol">\( \omega_{m,\rm pert} \)</td>
+				<td class="col-variable"><code>motor.testing.sqwave.velocity / motor.testing.perturb.phase[k].velocity</code></td>
+				<td class="col-description">MCAF firmware contains amplitude of velocity command perturbation &mdash; note: used only in OM_FORCE_VOLTAGE. <br />       <a href="../components/testharness.html#test-perturbation-asymmetric">Asymmetric perturbation </a> located in <code>motor.testing.perturb.phase[k]</code></td>
+			</tr>
+	
+			<tr data-row="00001" id="row-00001">
+				<td class="col-symbol">\( I_{dq,\rm pert} \)</td>
+				<td class="col-variable"><code>motor.testing.sqwave.idq / motor.testing.perturb.phase[k].idq</code></td>
+				<td class="col-description">MCAF firmware contains amplitude of current command perturbation (d- and q-axis components) <br /> <a href="../components/testharness.html#test-perturbation-asymmetric">Asymmetric perturbation </a> located in <code>motor.testing.perturb.phase[k]</code></td>
+			</tr>
+	
+			<tr data-row="00002" id="row-00002">
+				<td class="col-symbol">\( V_{dq,\rm pert} \)</td>
+				<td class="col-variable"><code>motor.testing.sqwave.vdq / motor.testing.perturb.phase[k].vdq</code></td>
+				<td class="col-description">MCAF firmware contains amplitude of voltage command perturbation (d- and q-axis components) <br /> <a href="../components/testharness.html#test-perturbation-asymmetric">Asymmetric perturbation </a> located in <code>motor.testing.perturb.phase[k]</code></td>
+			</tr>
+	
+			<tr data-row="00003" id="row-00003">
+				<td class="col-symbol">\( V_{dq,\rm exc} \)</td>
+				<td class="col-variable"><code>N/A</code></td>
+				<td class="col-description">Represents excitation voltage added in the dq-frame.<br /> Result of <code>MCAF_CommutationExcitationVd()</code> and <code>MCAF_CommutationExcitationVq()</code>;  this is zero for <a href="../algorithms/estimator-interface.html#terminology">non-intrusive estimators</a>, and will be optimized away.</td>
+			</tr>
+	
+			<tr data-row="00004" id="row-00004">
+				<td class="col-symbol">\( V_{\alpha\beta,\rm exc} \)</td>
+				<td class="col-variable"><code>N/A</code></td>
+				<td class="col-description">Represents excitation voltage added in the &alpha;&beta; frame.<br /> Result of <code>MCAF_CommutationExcitationValpha()</code> and <code>MCAF_CommutationExcitationVbeta()</code>;  this is zero for <a href="../algorithms/estimator-interface.html#terminology">non-intrusive estimators</a>, and will be optimized away.</td>
+			</tr>
+	
+			<tr data-row="00005" id="row-00005">
+				<td class="col-symbol">\( V_{dc} \)</td>
+				<td class="col-variable"><code>systemData.vDC</code></td>
+				<td class="col-description">DC link voltage</td>
+			</tr>
+	
+			<tr data-row="00006" id="row-00006">
+				<td class="col-symbol">V6</td>
+				<td class="col-variable"><code>motor.testing.overrides : 4 (zero = "on")</code></td>
+				<td class="col-description">"Valve" to enable data flow into reciprocal voltage</td>
+			</tr>
+	
+			<tr data-row="00007" id="row-00007">
+				<td class="col-symbol">\( R_V \)</td>
+				<td class="col-variable"><code>motor.rVdc</code></td>
+				<td class="col-description">reciprocal of DC link voltage</td>
+			</tr>
+	
+			<tr data-row="00008" id="row-00008">
+				<td class="col-symbol">\( \omega_{m,\rm cmd} \)</td>
+				<td class="col-variable"><code>motor.velocityControl.velocityCmdApi</code></td>
+				<td class="col-description">MCAF R7: Velocity command from Motion Control API</td>
+			</tr>
+	
+			<tr data-row="00009" id="row-00009">
+				<td class="col-symbol">V1</td>
+				<td class="col-variable"><code>motor.testing.overrides : 1 (zero = "on")</code></td>
+				<td class="col-description">"Valve" to enable data flow into velocity command</td>
+			</tr>
+	
+			<tr data-row="00010" id="row-00010">
+				<td class="col-symbol">\( \omega_{m,\rm ref0} \)</td>
+				<td class="col-variable"><code>motor.velocityControl.velocityCmd</code></td>
+				<td class="col-description"></td>
+			</tr>
+	
+			<tr data-row="00011" id="row-00011">
+				<td class="col-symbol">\( \omega_{m,\rm ref} \)</td>
+				<td class="col-variable"><code>motor.velocityControl.velocityCmdRateLimited</code></td>
+				<td class="col-description">rate-limited velocity command</td>
+			</tr>
+	
+			<tr data-row="00012" id="row-00012">
+				<td class="col-symbol">\( I_{q,\rm ref0} \)</td>
+				<td class="col-variable"><code>[not stored in MCAF but see valve V2]</code></td>
+				<td class="col-description">Desired q-axis current from velocity controller</td>
+			</tr>
+	
+			<tr data-row="00013" id="row-00013">
+				<td class="col-symbol">\( I_{d,\rm ref0} \)</td>
+				<td class="col-variable"><code>[not stored in MCAF but see valve V2]</code></td>
+				<td class="col-description">Desired d-axis current from flux control module</td>
+			</tr>
+	
+			<tr data-row="00014" id="row-00014">
+				<td class="col-symbol">V2</td>
+				<td class="col-variable"><code>motor.testing.operatingMode = OM_NORMAL and startup complete</code></td>
+				<td class="col-description">"Valve" to enable data flow into current command</td>
+			</tr>
+	
+			<tr data-row="00015" id="row-00015">
+				<td class="col-symbol">\( I_{dq,\rm ref0} \)</td>
+				<td class="col-variable"><code>motor.idqCmdRaw</code></td>
+				<td class="col-description">Desired dq-frame currents, prior to perturbation</td>
+			</tr>
+	
+			<tr data-row="00016" id="row-00016">
+				<td class="col-symbol">\( I_{dq,\rm ref} \)</td>
+				<td class="col-variable"><code>motor.idqCmd</code></td>
+				<td class="col-description">Desired dq-frame currents</td>
+			</tr>
+	
+			<tr data-row="00017" id="row-00017">
+				<td class="col-symbol">\( I_{dq,\rm err} \)</td>
+				<td class="col-variable"><code>[not stored in MCAF]</code></td>
+				<td class="col-description"></td>
+			</tr>
+	
+			<tr data-row="00018" id="row-00018">
+				<td class="col-symbol">V3</td>
+				<td class="col-variable"><code>motor.testing.operatingMode = OM_FORCE_CURRENT or greater</code></td>
+				<td class="col-description">"Valve" to enable data flow into voltage command</td>
+			</tr>
+	
+			<tr data-row="00019" id="row-00019">
+				<td class="col-symbol">\( V_{dq0} \)</td>
+				<td class="col-variable"><code>motor.vdqCmd</code></td>
+				<td class="col-description">Desired dq-frame (synchronous) voltages prior to perturbation</td>
+			</tr>
+	
+			<tr data-row="00020" id="row-00020">
+				<td class="col-symbol">\( V_{dq} \)</td>
+				<td class="col-variable"><code>motor.vdq</code></td>
+				<td class="col-description">Desired dq-frame (synchronous) voltages</td>
+			</tr>
+	
+			<tr data-row="00021" id="row-00021">
+				<td class="col-symbol">V4</td>
+				<td class="col-variable"><code>[Not implemented in MCAF R7]</code></td>
+				<td class="col-description">"Valve" to enable data flow into alphabeta voltage command</td>
+			</tr>
+	
+			<tr data-row="00022" id="row-00022">
+				<td class="col-symbol">\( V_{\alpha\beta0} \)</td>
+				<td class="col-variable"><code>motor.valphabeta</code></td>
+				<td class="col-description">Desired alphabeta-frame (stationary) voltages prior to perturbation</td>
+			</tr>
+	
+			<tr data-row="00023" id="row-00023">
+				<td class="col-symbol">\( V_{\alpha\beta} \)</td>
+				<td class="col-variable"><code>motor.valphabetaPerturbed</code></td>
+				<td class="col-description">Desired alphabeta-frame (stationary) voltages</td>
+			</tr>
+	
+			<tr data-row="00024" id="row-00024">
+				<td class="col-symbol">\( V_{abc0} \)</td>
+				<td class="col-variable"><code>motor.vabc</code></td>
+				<td class="col-description">Desired phase voltages</td>
+			</tr>
+	
+			<tr data-row="00025" id="row-00025">
+				<td class="col-symbol">\( D_{abc0} \)</td>
+				<td class="col-variable"><code>motor.dabcRaw</code></td>
+				<td class="col-description">Duty cycle outputs prior to dead-time compensation, ZSM and clipping</td>
+			</tr>
+	
+			<tr data-row="00026" id="row-00026">
+				<td class="col-symbol">\( D_{abc1} \)</td>
+				<td class="col-variable"><code>motor.dabcUnshifted</code></td>
+				<td class="col-description">Duty cycle outputs after dead-time compensation but before ZSM and clipping</td>
+			</tr>
+	
+			<tr data-row="00027" id="row-00027">
+				<td class="col-symbol">V5</td>
+				<td class="col-variable"><code>[Not implemented in MCAF R7]</code></td>
+				<td class="col-description">"Valve" to enable data flow into output duty cycle</td>
+			</tr>
+	
+			<tr data-row="00028" id="row-00028">
+				<td class="col-symbol">\( D_{abc2} \)</td>
+				<td class="col-variable"><code>motor.dabc</code></td>
+				<td class="col-description">Duty cycle outputs after ZSM and clipping</td>
+			</tr>
+	
+			<tr data-row="00029" id="row-00029">
+				<td class="col-symbol">\( \Delta D_{abc} \)</td>
+				<td class="col-variable"><code>motor.deadTimeCompensation.dabcForwardPath if applicable</code></td>
+				<td class="col-description">Forward-path dead-time compensation of duty cycle; zero if "<code>none</code>" variant used</td>
+			</tr>
+	
+			<tr data-row="00030" id="row-00030">
+				<td class="col-symbol">\( \theta_e \)</td>
+				<td class="col-variable"><code>motor.thetaElectrical</code></td>
+				<td class="col-description">electrical angle</td>
+			</tr>
+	
+			<tr data-row="00031" id="row-00031">
+				<td class="col-symbol">cs</td>
+				<td class="col-variable"><code>motor.sincos</code></td>
+				<td class="col-description">sine and cosine of electrical angle</td>
+			</tr>
+	
+			<tr data-row="00032" id="row-00032">
+				<td class="col-symbol">\( V_{\alpha\beta f} \)</td>
+				<td class="col-variable"><code>motor.valphabetaOut</code></td>
+				<td class="col-description">Estimated alphabeta-frame (stationary) feedback voltages</td>
+			</tr>
+	
+			<tr data-row="00033" id="row-00033">
+				<td class="col-symbol">\( I_{ab} \)</td>
+				<td class="col-variable"><code>motor.iabc</code></td>
+				<td class="col-description">measured motor phase currents</td>
+			</tr>
+	
+			<tr data-row="00034" id="row-00034">
+				<td class="col-symbol">\( I_{\alpha\beta} \)</td>
+				<td class="col-variable"><code>motor.ialphabeta</code></td>
+				<td class="col-description">alphabeta-frame (stationary) measured current</td>
+			</tr>
+	
+			<tr data-row="00035" id="row-00035">
+				<td class="col-symbol">\( I_{dq} \)</td>
+				<td class="col-variable"><code>motor.idq</code></td>
+				<td class="col-description">dq-frame (synchronous) measured current</td>
+			</tr>
+	
+			<tr data-row="00036" id="row-00036">
+				<td class="col-symbol">commutation override</td>
+				<td class="col-variable"><code>motor.testing.overrides : 2 (zero = normal commutation from estimator)</code></td>
+				<td class="col-description">determines source of commutation angle</td>
+			</tr>
+	
+			<tr data-row="00037" id="row-00037">
+				<td class="col-symbol">\( \omega_{e,\rm override} \)</td>
+				<td class="col-variable"><code>motor.testing.overrideOmegaElectrical</code></td>
+				<td class="col-description">Commutation override electrical frequency</td>
+			</tr>
+	
+			<tr data-row="00038" id="row-00038">
+				<td class="col-symbol">\( \hat{\theta}_r \)</td>
+				<td class="col-variable"><code>motor.estimator.theta</code></td>
+				<td class="col-description">Estimated electrical angle</td>
+			</tr>
+	
+			<tr data-row="00039" id="row-00039">
+				<td class="col-symbol">\( \hat{\omega}_m \)</td>
+				<td class="col-variable"><code>motor.omegaElectrical</code></td>
+				<td class="col-description">Estimated electrical frequency (note: in MCAF the equivalent electrical and mechanical frequencies are represented by the same integer values and are interchangeable during computations.)</td>
+			</tr>
+	
+			<tr data-row="00040" id="row-00040">
+				<td class="col-symbol">\( \theta_{\rm ofs} \)</td>
+				<td class="col-variable"><code>motor.startup.thetaError</code></td>
+				<td class="col-description">Commutation angle offset</td>
+			</tr>
+	</tbody></table>
+	</div>
+</body>
+</html>

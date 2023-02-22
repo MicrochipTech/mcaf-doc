@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>7.1. Glossary &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="7.2. Error code list" href="error_codes.html" />
+    <link rel="prev" title="7. Appendix" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="error_codes.html" title="7.2. Error code list"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="7. Appendix"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">7. </span>Appendix</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">7.1. </span>Glossary</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="glossary">
+<span id="appendix-glossary"></span><h1><span class="section-number">7.1. </span>Glossary<a class="headerlink" href="#glossary" title="Permalink to this heading">¶</a></h1>
+<dl class="glossary">
+<dt id="term-ADC">ADC<a class="headerlink" href="#term-ADC" title="Permalink to this term">¶</a></dt><dd><p>analog-to-digital converter</p>
+</dd>
+<dt id="term-API">API<a class="headerlink" href="#term-API" title="Permalink to this term">¶</a></dt><dd><p><a class="reference external" href="https://en.wikipedia.org/wiki/Application_programming_interface">Application Programming Interface</a></p>
+</dd>
+<dt id="term-BLDC">BLDC<a class="headerlink" href="#term-BLDC" title="Permalink to this term">¶</a></dt><dd><p>brushless DC motor — generally used in six-step control.
+Also known as <a class="reference internal" href="#term-PMSM"><span class="xref std std-term">PMSM</span></a></p>
+</dd>
+<dt id="term-feedback-path">feedback path<a class="headerlink" href="#term-feedback-path" title="Permalink to this term">¶</a></dt><dd><p>The section of the <a class="reference internal" href="../components/foc.html#foc"><span class="std std-ref">current control loop</span></a>
+between ADC inputs and the current controllers,
+including Park and Clarke transforms.
+See also <a class="reference internal" href="../algorithms/foc/fundamentals.html#foc-blkdiag"><span class="std std-ref">FOC block diagram</span></a>.</p>
+</dd>
+<dt id="term-FOC">FOC<a class="headerlink" href="#term-FOC" title="Permalink to this term">¶</a></dt><dd><p><a class="reference internal" href="../components/foc.html#foc"><span class="std std-ref">field-oriented control</span></a> — a type of control scheme for
+permanent-magnet synchronous motors or induction motors,
+where the stator field is controlled relative to the rotor field.
+It generally results in smoother torque, slightly higher efficiency,
+and higher torque-speed curve, compared to six-step control,
+but requires a measurement or estimate of rotor position, and
+is more computationally intensive.</p>
+</dd>
+<dt id="term-forward-path">forward path<a class="headerlink" href="#term-forward-path" title="Permalink to this term">¶</a></dt><dd><p>The section of the <a class="reference internal" href="../components/foc.html#foc"><span class="std std-ref">current control loop</span></a> between the output
+of the current controllers and the transistor gate drives,
+including inverse Park and Clarke transforms,
+<a class="reference internal" href="../algorithms/foc/dclink-comp.html#algorithm-dclinkcompensation"><span class="std std-ref">DC link compensation</span></a>,
+<a class="reference internal" href="../components/foc.html#foc-zsm"><span class="std std-ref">zero sequence modulation</span></a>,
+and <a class="reference internal" href="../algorithms/foc/overmodulation.html#algorithm-overmodulation"><span class="std std-ref">overmodulation</span></a>.
+See also <a class="reference internal" href="../algorithms/foc/fundamentals.html#foc-blkdiag"><span class="std std-ref">FOC block diagram</span></a>.</p>
+</dd>
+<dt id="term-HAL">HAL<a class="headerlink" href="#term-HAL" title="Permalink to this term">¶</a></dt><dd><p><a class="reference internal" href="../components/hal.html#hal"><span class="std std-ref">Hardware Abstraction Layer</span></a></p>
+</dd>
+<dt id="term-IPM">IPM<a class="headerlink" href="#term-IPM" title="Permalink to this term">¶</a></dt><dd><p>interior permanent-magnet motors (see <a class="reference internal" href="#term-rotor-saliency"><span class="xref std std-term">rotor saliency</span></a>)</p>
+</dd>
+<dt id="term-IPMSM">IPMSM<a class="headerlink" href="#term-IPMSM" title="Permalink to this term">¶</a></dt><dd><p>interior permanent-magnet synchronous motors (see <a class="reference internal" href="#term-rotor-saliency"><span class="xref std std-term">rotor saliency</span></a>)</p>
+</dd>
+<dt id="term-ISR">ISR<a class="headerlink" href="#term-ISR" title="Permalink to this term">¶</a></dt><dd><p>interrupt service routine</p>
+</dd>
+<dt id="term-MCAF">MCAF<a class="headerlink" href="#term-MCAF" title="Permalink to this term">¶</a></dt><dd><p>Motor Control Application Framework</p>
+</dd>
+<dt id="term-MIMO">MIMO<a class="headerlink" href="#term-MIMO" title="Permalink to this term">¶</a></dt><dd><p>Multi-input, multi-output systems, usually specified and
+analyzed with state-space equations. See also <a class="reference internal" href="#term-SISO"><span class="xref std std-term">SISO</span></a>.</p>
+</dd>
+<dt id="term-MCAPI">MCAPI<a class="headerlink" href="#term-MCAPI" title="Permalink to this term">¶</a></dt><dd><p><a class="reference internal" href="../components/mcapi.html#mcapi"><span class="std std-ref">Motion Control API</span></a></p>
+</dd>
+<dt id="term-MTPA">MTPA<a class="headerlink" href="#term-MTPA" title="Permalink to this term">¶</a></dt><dd><p><a class="reference internal" href="../algorithms/flux_control/mtpa.html#algorithm-mtpa"><span class="std std-ref">Maximum Torque per Ampere</span></a></p>
+</dd>
+<dt id="term-PIM">PIM<a class="headerlink" href="#term-PIM" title="Permalink to this term">¶</a></dt><dd><p><a class="reference external" href="http://www.microchip.com/pim">Plug-In Module</a> — a small
+circuit board containing a processor and several passive components
+(such as bypass capacitors), meant to plug in to one of Microchip’s
+development boards.</p>
+</dd>
+<dt id="term-PLL">PLL<a class="headerlink" href="#term-PLL" title="Permalink to this term">¶</a></dt><dd><p>phase-locked loop — see <a class="reference external" href="http://www.microchip.com/wwwAppNotes/AppNotes.aspx?appnote=en544825">AN1292</a>
+for the Microchip Application Note covering the PLL-style sensorless estimator.</p>
+</dd>
+<dt id="term-PMSM">PMSM<a class="headerlink" href="#term-PMSM" title="Permalink to this term">¶</a></dt><dd><p>permanent-magnet synchronous motor — generally used with <a class="reference internal" href="#term-FOC"><span class="xref std std-term">FOC</span></a>.
+Also known as <a class="reference internal" href="#term-BLDC"><span class="xref std std-term">BLDC</span></a>.</p>
+</dd>
+<dt id="term-PWM">PWM<a class="headerlink" href="#term-PWM" title="Permalink to this term">¶</a></dt><dd><p><a class="reference external" href="https://en.wikipedia.org/wiki/Pulse-width_modulation">pulse-width modulation</a></p>
+</dd>
+<dt id="term-QEI">QEI<a class="headerlink" href="#term-QEI" title="Permalink to this term">¶</a></dt><dd><p>Quadrature Encoder Interface — the name of the
+hardware encoder counter peripheral in some Microchip devices.</p>
+</dd>
+<dt id="term-rotor-saliency">rotor saliency<a class="headerlink" href="#term-rotor-saliency" title="Permalink to this term">¶</a></dt><dd><p>Permanent magnet synchronous motors can be divided into two types,
+interior permanent-magnet synchronous motors (IPM or IPMSM)
+with magnets located inside the rotor,
+and surface permanent-magnet synchronous motors (SPM or SPMSM)
+with magnets placed evenly over the surface of the rotor.</p>
+<p>These can be distinguished quantitatively through the ratio
+of the synchronous inductances <span class="math notranslate nohighlight">\(\xi = L_q/L_d\)</span>, known
+as the saliency ratio.</p>
+<p>The SPMSM has stator inductance which is independent of rotor position,
+and has no significant difference between the two synchronous inductances,
+so <span class="math notranslate nohighlight">\(\xi = L_q/L_d \approx 1\)</span>.</p>
+<p>The IPMSM has stator inductance which is dependent of rotor position,
+and has significant difference between the two synchronous inductances,
+typically with saliency ratio <span class="math notranslate nohighlight">\(\xi = L_q/L_d &gt; 1\)</span>.</p>
+</dd>
+<dt id="term-SISO">SISO<a class="headerlink" href="#term-SISO" title="Permalink to this term">¶</a></dt><dd><p>Single-input, single-output systems, usually specified and
+analyzed with state-space equations. See also <a class="reference internal" href="#term-MIMO"><span class="xref std std-term">MIMO</span></a>.</p>
+</dd>
+<dt id="term-SMO">SMO<a class="headerlink" href="#term-SMO" title="Permalink to this term">¶</a></dt><dd><p>sliding-mode observer — see <a class="reference external" href="http://www.microchip.com/wwwAppNotes/AppNotes.aspx?appnote=en536986">AN1078</a>
+for the Microchip Application Note covering the SMO-style sensorless estimator.</p>
+</dd>
+<dt id="term-SPM">SPM<a class="headerlink" href="#term-SPM" title="Permalink to this term">¶</a></dt><dd><p>surface permanent-magnet motors (see <a class="reference internal" href="#term-rotor-saliency"><span class="xref std std-term">rotor saliency</span></a>)</p>
+</dd>
+<dt id="term-SPMSM">SPMSM<a class="headerlink" href="#term-SPMSM" title="Permalink to this term">¶</a></dt><dd><p>surface permanent-magnet synchronous motors (see <a class="reference internal" href="#term-rotor-saliency"><span class="xref std std-term">rotor saliency</span></a>)</p>
+</dd>
+<dt id="term-ZS-MT">ZS/MT<a class="headerlink" href="#term-ZS-MT" title="Permalink to this term">¶</a></dt><dd><p><a class="reference internal" href="../algorithms/zsmt.html#algorithm-zsmt"><span class="std std-ref">Zero-Speed / Maximum Torque</span></a> estimator</p>
+</dd>
+</dl>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter"><span class="section-number">7. </span>Appendix</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="error_codes.html"
+                          title="next chapter"><span class="section-number">7.2. </span>Error code list</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="error_codes.html" title="7.2. Error code list"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="7. Appendix"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">7. </span>Appendix</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">7.1. </span>Glossary</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

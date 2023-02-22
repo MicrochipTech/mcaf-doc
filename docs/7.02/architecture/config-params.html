@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>3.5. Configuration Parameters &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3.6. Scheduling and Optimization" href="schedopt.html" />
+    <link rel="prev" title="3.4. Code Generation" href="codegen.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="schedopt.html" title="3.6. Scheduling and Optimization"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="codegen.html" title="3.4. Code Generation"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">3. </span>Architecture</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3.5. </span>Configuration Parameters</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="configuration-parameters">
+<span id="config-params"></span><h1><span class="section-number">3.5. </span>Configuration Parameters<a class="headerlink" href="#configuration-parameters" title="Permalink to this heading">¶</a></h1>
+<p>There are many configurable parameters in the MCAF:</p>
+<ul class="simple">
+<li><p>control gains</p></li>
+<li><p>time delays</p></li>
+<li><p>ramp rates</p></li>
+<li><p>filter time constants</p></li>
+<li><p>full-scale values (current, voltage, duty cycle, etc.)</p></li>
+<li><p>limits (current, voltage, duty cycle, etc.)</p></li>
+</ul>
+<p>and so on. The velocity control loop is a good example.
+Algebraically it looks like this:</p>
+<div class="math notranslate nohighlight" id="equation-architecture-config-params-0">
+<span class="eqno">(3.1)<a class="headerlink" href="#equation-architecture-config-params-0" title="Permalink to this equation">¶</a></span>\[I_q = K_p \omega_{\mathrm{err}} + \int K_i \omega_{\mathrm{err}}\ dt\]</div>
+<p>The question becomes: how can we manage parameters such as <code class="docutils literal notranslate"><span class="pre">K_p</span></code> and <code class="docutils literal notranslate"><span class="pre">K_i</span></code>
+for each control loop and take advantage of fixed-point mathematics?</p>
+<section id="classic-application-notes">
+<h2><span class="section-number">3.5.1. </span>Classic Application Notes<a class="headerlink" href="#classic-application-notes" title="Permalink to this heading">¶</a></h2>
+<p>Microchip’s classic application notes, such as AN1292 and AN1078 used
+calculations expressed via the C preprocessor. For example:</p>
+<div class="literal-block-wrapper docutils container" id="code-config-0">
+<div class="code-block-caption"><span class="caption-number">Listing 3.7 </span><span class="caption-text">from AN1078 <code class="docutils literal notranslate"><span class="pre">UserParms.h</span></code></span><a class="headerlink" href="#code-config-0" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#define DFCY        70000000         </span><span class="c1">// Instruction cycle frequency (Hz)</span>
+<span class="cp">#define DTCY        (1.0/DFCY)               </span><span class="c1">// Instruction cycle period (sec)</span>
+<span class="cp">#define DDEADTIME   (unsigned int)(DEADTIMESEC*DFCY) </span><span class="c1">// Dead time in dTcys</span>
+<span class="cp">#define LOOPTIMEINSEC (1.0/PWMFREQUENCY) </span><span class="c1">// PWM Period = 1.0 / PWMFREQUENCY</span>
+<span class="cp">#define IRP_PERCALC (unsigned int)(SPEEDLOOPTIME/LOOPTIMEINSEC)      </span><span class="c1">// PWM loops per velocity calculation</span>
+<span class="c1">// PWM loops necessary for transitioning from open loop to closed loop</span>
+<span class="cp">#define TRANSITION_STEPS   IRP_PERCALC/4</span>
+
+<span class="cp">#define SPEEDLOOPTIME (float)(1.0/SPEEDLOOPFREQ) </span><span class="c1">// Speed Control Period</span>
+<span class="cp">#define LOOPINTCY    DFCY/PWMFREQUENCY   </span><span class="c1">// Basic loop period in units of Tcy</span>
+<span class="cp">#define LOCKTIME     (unsigned int)(LOCKTIMEINSEC*(1.0/LOOPTIMEINSEC))</span>
+<span class="c1">// Time it takes to ramp from zero to MINSPEEDINRPM. Time represented in seconds</span>
+<span class="cp">#define DELTA_STARTUP_RAMP   (unsigned int)(MINSPEEDINRPM*POLEPAIRS*LOOPTIMEINSEC* \</span>
+<span class="cp">                                                     LOOPTIMEINSEC*65536*65536/(60*OPENLOOPTIMEINSEC))</span>
+<span class="c1">// Number of control loops that must execute before the button routine is executed.</span>
+<span class="cp">#define      BUTPOLLOOPCNT   (unsigned int)(BUTPOLLOOPTIME/LOOPTIMEINSEC)</span>
+</pre></div>
+</div>
+</div>
+<p>Advantages of this approach are that the formula used to derive each value is
+visible.</p>
+<p>Disadvantages of this approach revolve around the way the C preprocessor works.
+The <code class="docutils literal notranslate"><span class="pre">#define</span></code> approach is purely a text substitution, and the preprocessor
+does not actually do any calculations; the compiler optimizes by computing
+any calculations it can do at compile-time (also known as
+<a class="reference external" href="https://en.wikipedia.org/wiki/Constant_folding">constant folding</a>) but does not
+see the original code prior to preprocessing. Specific disadvantages are</p>
+<ul>
+<li><p>Potential for cryptic or invisible errors due to overflow, type mismatch,
+or unsafe calculations (lack of parentheses to control
+precedence, no checking of values out of range). For example:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#define FOSC 70e6</span>
+<span class="cp">#define SLOW_BAUDRATE 38400</span>
+<span class="cp">#define FAST_BAUDRATE 3*SLOW_BAUDRATE</span>
+<span class="cp">#define BRG_DIVIDER FOSC/16/FAST_BAUDRATE</span>
+<span class="n">U1BRG</span> <span class="o">=</span> <span class="n">BRG_DIVIDER</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>This code has an error; the substituted code looks like</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">U1BRG</span> <span class="o">=</span> <span class="mf">70e6</span><span class="o">/</span><span class="mi">16</span><span class="o">/</span><span class="mi">3</span><span class="o">*</span><span class="n">SLOW_BAUDRATE</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>which is missing parentheses around <code class="docutils literal notranslate"><span class="pre">3*SLOW_BAUDRATE</span></code></p>
+</li>
+<li><p>No visibility of the intermediate or final computed values</p></li>
+<li><p>No debugging of preprocessor calculations is possible</p></li>
+<li><p>Can cover “built-in” function calls (standard math) but not more complicated
+calculations (e.g. requiring loops, advanced math functions like <code class="docutils literal notranslate"><span class="pre">erf</span></code>
+or Bessel functions, or other numerical analysis)</p></li>
+</ul>
+</section>
+<section id="motor-control-application-framework">
+<h2><span class="section-number">3.5.2. </span>Motor Control Application Framework<a class="headerlink" href="#motor-control-application-framework" title="Permalink to this heading">¶</a></h2>
+<p>The MCAF approach takes advantage of the <a class="reference internal" href="codegen.html#codegen"><span class="std std-ref">code generation</span></a>
+features in motorBench<sup>®</sup> Development Suite. These features use a templating engine; in the MCAF
+firmware package are files containing parameterized code with placeholder expressions:</p>
+<div class="literal-block-wrapper docutils container" id="code-config-1">
+<div class="code-block-caption"><span class="caption-number">Listing 3.8 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">pi_gains.h.template</span></code></span><a class="headerlink" href="#code-config-1" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Current loop gains</span>
+<span class="cp">#define KII  ${INTEGRAL_GAIN_HERE    } </span><span class="c1">// integral gain</span>
+<span class="cp">#define KIP  ${PROPORTIONAL_GAIN_HERE} </span><span class="c1">// proportional gain</span>
+</pre></div>
+</div>
+</div>
+<p>which will get values substituted into the <code class="docutils literal notranslate"><span class="pre">${SOME_EXPRESSION}</span></code> blocks
+and end up looking like</p>
+<div class="literal-block-wrapper docutils container" id="code-config-2">
+<div class="code-block-caption"><span class="caption-number">Listing 3.9 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">pi_gains.h</span></code></span><a class="headerlink" href="#code-config-2" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Current loop gains</span>
+<span class="cp">#define KII  3.021 </span><span class="c1">// integral gain</span>
+<span class="cp">#define KIP  7.413 </span><span class="c1">// proportional gain</span>
+</pre></div>
+</div>
+</div>
+<p>This provides a couple of advantages:</p>
+<ul class="simple">
+<li><p>Calculations can be made at code generation time using mechanisms that can
+be debugged</p></li>
+<li><p>Intermediate and final results can be made visible</p></li>
+<li><p>Reporting of floating-point / engineering equivalents can be added</p></li>
+<li><p>Almost any computable equation can be used</p></li>
+</ul>
+<p>The sample code above is an example of floating-point parameters; since we
+tend to use fixed-point calculations, the firmware package templates could look
+more like</p>
+<div class="literal-block-wrapper docutils container" id="code-config-3">
+<div class="code-block-caption"><span class="caption-number">Listing 3.10 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">pi_gains.h.template</span></code></span><a class="headerlink" href="#code-config-3" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Current loop gains</span>
+<span class="cp">#define KII_Q12  &lt;@describe_constant Q12(INTEGRAL_GAIN) /&gt;</span>
+<span class="cp">#define KIP_Q12  &lt;@describe_constant Q12(PROPORTIONAL_GAIN) /&gt;</span>
+</pre></div>
+</div>
+</div>
+<p>using templating macros that produce both integer counts and an equivalent
+floating-point value in a comment:</p>
+<div class="literal-block-wrapper docutils container" id="code-config-4">
+<div class="code-block-caption"><span class="caption-number">Listing 3.11 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">pi_gains.h</span></code></span><a class="headerlink" href="#code-config-4" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Current loop gains</span>
+<span class="cp">#define KII_Q12  12370   </span><span class="c1">// 3.021 Q12</span>
+<span class="cp">#define KIP_Q12  30364   </span><span class="c1">// 7.413 Q12</span>
+</pre></div>
+</div>
+</div>
+<p>Then we can apply the defined constants in code:</p>
+<div class="literal-block-wrapper docutils container" id="code-config-5">
+<div class="code-block-caption"><span class="caption-number">Listing 3.12 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">pi_controller.c</span></code></span><a class="headerlink" href="#code-config-5" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">control_motor</span><span class="p">(</span><span class="n">motor</span> <span class="o">*</span><span class="n">pmotor</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="p">...</span>
+   <span class="kt">int16_t</span> <span class="n">current_error</span> <span class="o">=</span> <span class="n">pmotor</span><span class="o">-&gt;</span><span class="n">iCmd</span> <span class="o">-</span> <span class="n">pmotor</span><span class="o">-&gt;</span><span class="n">iMeas</span><span class="p">;</span>
+   <span class="n">pmotor</span><span class="o">-&gt;</span><span class="n">applied_voltage</span> <span class="o">=</span>
+     <span class="p">((</span><span class="kt">int32_t</span><span class="p">)</span><span class="n">CURRENT_LOOP_GAIN_Q12</span> <span class="o">*</span> <span class="n">current_error</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">12</span><span class="p">;</span>
+   <span class="p">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>This approach of <em>compile-time separation</em> (splitting configurable parameters into a definition in a
+template-generated C header file, and usage in one or more C source files)
+is essentially the one used in the MCAF. In general it has some important characteristics:</p>
+<ul class="simple">
+<li><p>Good for optimization — the compiler sees the constant value, might be able
+to speed up the calculation.</p></li>
+<li><p>Bad for modularity — What if we have software driving two motors with different
+gains? Then we need <code class="docutils literal notranslate"><span class="pre">KII_Q12_MOTOR1</span></code> and <code class="docutils literal notranslate"><span class="pre">KII_Q12_MOTOR2</span></code> and somehow
+in our C code we need to determine when to apply each.</p></li>
+<li><p>Bad for development — We can’t use run-time diagnostic tools to try out
+different gains.</p></li>
+<li><p>Definition and point of use are separated — this is an inevitable casualty
+of modular design.</p></li>
+</ul>
+<p>We are addressing some of these concerns by taking a slightly different approach,
+using <em>run-time separation</em>, storing configuration parameters in state variables:</p>
+<div class="literal-block-wrapper docutils container" id="code-config-6">
+<div class="code-block-caption"><span class="caption-number">Listing 3.13 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">pi_controller.c</span></code></span><a class="headerlink" href="#code-config-6" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">control_motor</span><span class="p">(</span><span class="n">motor</span> <span class="o">*</span><span class="n">pmotor</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="p">...</span>
+   <span class="kt">int16_t</span> <span class="n">current_error</span> <span class="o">=</span> <span class="n">pmotor</span><span class="o">-&gt;</span><span class="n">iCmd</span> <span class="o">-</span> <span class="n">pmotor</span><span class="o">-&gt;</span><span class="n">iMeas</span><span class="p">;</span>
+   <span class="n">pmotor</span><span class="o">-&gt;</span><span class="n">applied_voltage</span> <span class="o">=</span>
+     <span class="p">((</span><span class="kt">int32_t</span><span class="p">)</span> <span class="n">pmotor</span><span class="o">-&gt;</span><span class="n">kp</span> <span class="o">*</span> <span class="n">current_error</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">pmotor</span><span class="o">-&gt;</span><span class="n">kp_shift</span><span class="p">;</span>
+   <span class="p">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="code-config-7">
+<div class="code-block-caption"><span class="caption-number">Listing 3.14 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">init_motor.c</span></code> (dynamically generated)</span><a class="headerlink" href="#code-config-7" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span> <span class="kt">void</span> <span class="nf">init_motor_1</span><span class="p">(</span><span class="n">motor</span> <span class="o">*</span><span class="n">pmotor</span><span class="p">)</span>
+ <span class="p">{</span>
+    <span class="n">pmotor</span><span class="o">-&gt;</span><span class="n">kp</span> <span class="o">=</span> <span class="mi">12370</span><span class="p">;</span>    <span class="c1">// 3.02 Q12</span>
+    <span class="n">pmotor</span><span class="o">-&gt;</span><span class="n">kp_shift</span> <span class="o">=</span> <span class="mi">12</span><span class="p">;</span>
+ <span class="p">}</span>
+ <span class="kt">void</span> <span class="nf">init_motor_2</span><span class="p">(</span><span class="n">motor</span> <span class="o">*</span><span class="n">pmotor</span><span class="p">)</span>
+ <span class="p">{</span>
+    <span class="n">pmotor</span><span class="o">-&gt;</span><span class="n">kp</span> <span class="o">=</span> <span class="mi">15147</span><span class="p">;</span>    <span class="c1">// 1.849 Q13</span>
+    <span class="n">pmotor</span><span class="o">-&gt;</span><span class="n">kp_shift</span> <span class="o">=</span> <span class="mi">13</span><span class="p">;</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>This allows a code architecture so that</p>
+<ul class="simple">
+<li><p>more than one motor can be used with different gains for each</p></li>
+<li><p>variable shift counts can be used, to support a dynamic range that is
+optimized for each motor.</p></li>
+<li><p>parameters can be changed at run-time during development and testing</p></li>
+</ul>
+<p>The run-time cost is slightly higher than in the case where each line
+of C code uses a constant fixed at compile-time, rather than a run-time parameter,
+but is a better approach for the MCAF.</p>
+<p>As of MCAF version 1.0, there is a mix of compile-time and run-time separation;
+we are migrating to use purely run-time separation in future versions. All
+generated code relating to configurable parameters is located in the
+<code class="docutils literal notranslate"><span class="pre">parameters/xyz_params.h</span></code> files.</p>
+<p>One drawback of the code generation approach is that it is not very easy to
+be “transparent”; that is, to show equations of where the calculated values
+came from. We are working to address this issue in the future.</p>
+<p>Sample generated parameters of the MCAF:</p>
+<div class="literal-block-wrapper docutils container" id="code-config-8">
+<div class="code-block-caption"><span class="caption-number">Listing 3.15 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">parameters/operating_params.h</span></code></span><a class="headerlink" href="#code-config-8" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span> <span class="cm">/* --- commutation slewrate parameters --- */</span>
+
+ <span class="cm">/*</span>
+<span class="cm">  * slewrate_accel:                 7.426 krad/s^2</span>
+<span class="cm">  *                                70.909 kRPM/s</span>
+<span class="cm">  * slewrate_decel:                 2.335 krad/s^2</span>
+<span class="cm">  *                                22.296 kRPM/s</span>
+<span class="cm">  * t_coastdown:                  248.983 ms</span>
+<span class="cm">  */</span>
+
+ <span class="cp">#define VELOCITY_SLEWRATE_LIMIT1 32000</span>
+ <span class="cp">#define VELOCITY_SLEWRATE_LIMIT_ACCEL         387      </span><span class="c1">// Q15(  0.01181) =   +7.42063 rad/s       =   +7.42562 rad/s       - 0.0671%</span>
+ <span class="cp">#define VELOCITY_SLEWRATE_LIMIT_DECEL         122      </span><span class="c1">// Q15(  0.00372) =   +2.33932 rad/s       =   +2.33479 rad/s       + 0.1938%</span>
+ <span class="cp">#define VELOCITY_COASTDOWN_TIME              4980      </span><span class="c1">// Q0(4980.00000) = +249.00000 ms          = +248.98273 ms          + 0.0069%</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="code-config-9">
+<div class="code-block-caption"><span class="caption-number">Listing 3.16 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">parameters/foc_params.h</span></code></span><a class="headerlink" href="#code-config-9" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">//************** PI Coefficients **************</span>
+<span class="c1">//// Current loop</span>
+<span class="c1">// phase margin = 80 deg</span>
+<span class="c1">// PI phase at crossover = 45.000 deg</span>
+<span class="c1">// crossover frequency = 2.442 k rad/s (388.596 Hz)</span>
+<span class="cp">#define KIP                                  9151      </span><span class="c1">// Q15(  0.27927) = +436.37336 mV/A        = +436.37526 mV/A        - 0.0004%</span>
+<span class="cp">#define KIP_Q                        15</span>
+<span class="cp">#define KII                                  1117      </span><span class="c1">// Q15(  0.03409) =   +1.06530 kV/A/s      =   +1.06546 kV/A/s      - 0.0152%</span>
+<span class="cp">#define KII_Q                        15</span>
+<span class="c1">//// Velocity loop</span>
+<span class="c1">// phase margin = 50 deg</span>
+<span class="c1">// PI phase at crossover = 10.000 deg</span>
+<span class="c1">// crossover frequency = 142.852 rad/s (22.736 Hz)</span>
+<span class="cp">#define KWP                                 14933      </span><span class="c1">// Q13(  1.82288) =  +25.73362 mA/(rad/s)  =  +25.73375 mA/(rad/s)  - 0.0005%</span>
+<span class="cp">#define KWP_Q                        13</span>
+<span class="cp">#define KWI                                  1505      </span><span class="c1">// Q15(  0.04593) = +648.38105 mA/rad      = +648.19737 mA/rad      + 0.0283%</span>
+<span class="cp">#define KWI_Q                        15</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">3.5. Configuration Parameters</a><ul>
+<li><a class="reference internal" href="#classic-application-notes">3.5.1. Classic Application Notes</a></li>
+<li><a class="reference internal" href="#motor-control-application-framework">3.5.2. Motor Control Application Framework</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="codegen.html"
+                          title="previous chapter"><span class="section-number">3.4. </span>Code Generation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="schedopt.html"
+                          title="next chapter"><span class="section-number">3.6. </span>Scheduling and Optimization</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="schedopt.html" title="3.6. Scheduling and Optimization"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="codegen.html" title="3.4. Code Generation"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">3. </span>Architecture</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3.5. </span>Configuration Parameters</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

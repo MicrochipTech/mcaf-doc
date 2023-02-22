@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.4.3.3.3. Align-and-sweep method &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../../_static/svgcrop.js"></script>
+    <script src="../../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.4.3.3.4. Pullout torque method" href="pullout.html" />
+    <link rel="prev" title="5.4.3.3.2. Align method" href="align.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pullout.html" title="5.4.3.3.4. Pullout torque method"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="align.html" title="5.4.3.3.2. Align method"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../estimators.html" ><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../qei.html" accesskey="U"><span class="section-number">5.4.3. </span>Quadrature encoder support</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.3.3.3. </span>Align-and-sweep method</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="qei-sync-align-sweep"></span><section id="align-and-sweep-method">
+<span id="index-0"></span><h1><span class="section-number">5.4.3.3.3. </span>Align-and-sweep method<a class="headerlink" href="#align-and-sweep-method" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">5.4.3.3.3.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>The align-and-sweep method is a slight modification to the
+<a class="reference internal" href="align.html#qei-sync-align"><span class="std std-ref">align method</span></a>. Instead of a fixed angle
+during the align state, the applied electrical angle is slowly
+rotated for one full mechanical cycle in both directions,
+and a commutation offset is estimated by taking an average
+angle difference between applied and measured angle over these two cycles.
+(The same calculation is used as in the align method, but
+a mean value over many measurements is used instead of a single measurement.)
+The intent is that by covering a complete mechanical rotation, angle
+variations due to cogging torque would be averaged out. Averaging over both
+positive and negative rotation cancels out most of the impact of
+friction torque.</p>
+<p>The resulting commutation offset has extremely good
+<a class="reference internal" href="#qei-sync-align-sweep-accuracy"><span class="std std-ref">accuracy and repeatability behavior</span></a>.
+It takes more time, however, than the simple align method,
+and is slightly more complex.</p>
+</section>
+<section id="limitations">
+<span id="qei-sync-align-sweep-limitations"></span><h2><span class="section-number">5.4.3.3.3.2. </span>Limitations<a class="headerlink" href="#limitations" title="Permalink to this heading">¶</a></h2>
+<p>The <a class="reference internal" href="align.html#qei-sync-align-limitations"><span class="std std-ref">limitations of the align method</span></a>,
+namely torque disturbances and semistable equilibrium, are less of an impact
+in the align-and-sweep method. Disturbance torques can still cause measurement
+error, however, and should be avoided.</p>
+</section>
+<section id="practical-implementation-issues">
+<h2><span class="section-number">5.4.3.3.3.3. </span>Practical implementation issues<a class="headerlink" href="#practical-implementation-issues" title="Permalink to this heading">¶</a></h2>
+<p>Rampup and align angles are not particularly important to this algorithm.</p>
+<p>With this method, initial alignment transients need to settle before
+making measurements. Alignment transients occur with any acceleration,
+so reversing the rotation direction causes a transient, as well as
+changing from no motion to the slow electrical rotation.</p>
+<p>To manage these transients, the align-and-sweep method includes “setup” intervals.
+During the setup intervals, angular frequency is kept constant and allows alignment
+transients to settle, prior to the beginning of measurement intervals.</p>
+<section id="selection-of-rotation-rate">
+<h3><span class="section-number">5.4.3.3.3.3.1. </span>Selection of rotation rate<a class="headerlink" href="#selection-of-rotation-rate" title="Permalink to this heading">¶</a></h3>
+<p>MCAF R4 allows three choices of rotation rate during the align-and-sweep
+method: 1, 2, and 4 counts per control ISR, where each count is 1/65536 of
+an electrical cycle ≈ 0.0055°. The 4-count option is fastest,
+and the 1-count option is slowest.</p>
+<p>There are tradeoffs between rotation speed and accuracy.
+Running the align-and-sweep method at higher rotation speeds
+will complete the measurement more quickly, but will experience
+larger angle fluctuations, and the resulting angle offset
+may have more random errors. Slower rotation speeds will
+improve accuracy, but will increase the measurement time.</p>
+</section>
+<section id="calculations-involving-angles">
+<h3><span class="section-number">5.4.3.3.3.3.2. </span>Calculations involving angles<a class="headerlink" href="#calculations-involving-angles" title="Permalink to this heading">¶</a></h3>
+<p>Averaging measurements of angles, which involve wraparound semantics,
+can be tricky, since the calculations involve “good” and “bad” overflows that must
+be distinguished, and avoiding overflow does not necessarily guarantee
+a correct result. As an example, suppose we wish to find the average value
+of the following sequence
+of angles: +176°, -170°, -174°,  -167°,  +177°.
+A simple mean value calculation will come up with -31.6°,
+which is not correct. There are at least two ways to handle this issue:</p>
+<ul class="simple">
+<li><p><strong>Unwrap the angles prior to averaging.</strong> “Unwrap” here means to
+translate small angle changes so that the angle values remain equivalent,
+but are adjusted by an integer number of rotations so that there
+is never a jump across the branch point of ±180°.
+In the example sequence above, unwrapping the angles would produce
+the sequence +176°, +190°, +186°, +193°,
++177°, which yields the correct average of +184.4° = -175.6°.</p></li>
+<li><p><strong>Offset the angles prior to averaging.</strong> One simple way to avoid jumps
+across the branch point is to move the branch point by a fixed offset.
+We can use an offset that subtracts out the first measurement,
+and as long as the net change in angle from this
+first measurement stays below 180°, then it will not cross the
+branch point. In the example sequence above, an offset of -176°
+(the negation of the first measurement) is used, and the resulting
+sequence becomes 0, +14°, +10°, +17°, +1°,
+which has an average of +8.4°; add back the first measurement of
++176° and we get +176° + 8.4° = -175.6°.</p></li>
+</ul>
+<p>In the align-and-sweep method, the offset approach is used rather than the
+unwrap approach; the offset approach is less complex, and requires
+less memory to avoid overflow.</p>
+</section>
+<section id="state-machine">
+<h3><span class="section-number">5.4.3.3.3.3.3. </span>State machine<a class="headerlink" href="#state-machine" title="Permalink to this heading">¶</a></h3>
+<p>To manage the setup and measurement intervals, the align-and-sweep
+method includes a simple state machine that runs through a fixed
+sequence:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">START</span></code> — records initial angle measurement to use as a reference
+point for avoiding wraparound problems.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FORWARD_SETUP</span></code> — begins slow rotation of applied electrical angle
+in a positive direction, over a specified angle interval.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FORWARD_MEASURE</span></code> — computes and accumulates the angle difference between
+the applied angle and the measured encoder angle. Continues
+slow positive rotation over one complete mechanical cycle.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">REVERSE_SETUP</span></code> — begins slow rotation of applied electrical angle
+in a negative direction, over a specified angle interval.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">REVERSE_MEASURE</span></code> — computes and accumulates the angle difference between
+the applied angle and the measured encoder angle. Continues
+slow negative rotation over one complete mechanical cycle.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">INACTIVE</span></code> — leaves electrical angle alone, allows the
+<a class="reference internal" href="../startup.html#startup-sequence"><span class="std std-ref">startup sequence</span></a>
+to continue past the align state.</p></li>
+</ul>
+<p>While in all states other than the <code class="docutils literal notranslate"><span class="pre">INACTIVE</span></code> state, the
+<a class="reference internal" href="../startup.html#startup-sequence"><span class="std std-ref">startup sequence</span></a> is held in the align state
+in order to complete the synchronization steps.</p>
+</section>
+</section>
+<section id="example-data">
+<h2><span class="section-number">5.4.3.3.3.4. </span>Example data<a class="headerlink" href="#example-data" title="Permalink to this heading">¶</a></h2>
+<p><a class="reference internal" href="#fig-qei-align-sweep1"><span class="std std-numref">Figure 5.64</span></a> shows the use of the align-and-sweep method
+with the Anaheim Automation BLWS232D-24V-1350-1024SI5, which has a 1024-line
+encoder and fairly low cogging torque.
+For this motor, the align-and-sweep method works very well, with low error.
+The yellow highlights show the two setup states (<code class="docutils literal notranslate"><span class="pre">FORWARD_SETUP</span></code> and <code class="docutils literal notranslate"><span class="pre">REVERSE_SETUP</span></code>),
+and the green highlights show the two measurement states
+(<code class="docutils literal notranslate"><span class="pre">FORWARD_MEASURE</span></code> and <code class="docutils literal notranslate"><span class="pre">REVERSE_MEASURE</span></code>). The setup states
+allow transients to settle down sufficiently before measurement.
+This motor shows only around ±10° of fluctuations
+due to cogging torque, and the fluctuations average out.</p>
+<figure class="align-center" id="id1">
+<span id="fig-qei-align-sweep1"></span><img alt="../../_images/2242-blws232d-24v-1350.png" src="../../_images/2242-blws232d-24v-1350.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.64 </span><span class="caption-text">Align-and-sweep method with BLWS232D-24V-1350-1024SI5,
+sweep rate = 4 counts per control ISR</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The BLY342D-24V-3000-1024SI5 has high cogging torque and presents
+more of a challenge for back-emf synchronization.
+<a class="reference internal" href="#fig-qei-align-sweep2"><span class="std std-numref">Figures 5.65</span></a>
+and <a class="reference internal" href="#fig-qei-align-sweep3"><span class="std std-numref">5.66</span></a>
+show the align-and-sweep method in action with this motor; the two
+figures show different sweep rates. Angle fluctuations can be over 60°
+peak-to-peak, and the effect of Coulomb friction is easily visible
+as a direction-dependent offset. The lower sweep rate
+helps reduce angle fluctuations, and produces a more accurate result,
+at the cost of the measurements taking longer.</p>
+<figure class="align-center" id="id2">
+<span id="fig-qei-align-sweep2"></span><img alt="../../_images/2242-bly342d-24v-3000-r1.png" src="../../_images/2242-bly342d-24v-3000-r1.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.65 </span><span class="caption-text">Align-and-sweep method with BLY342D-24V-3000-1024SI5,
+sweep rate = 1 counts per control ISR</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id3">
+<span id="fig-qei-align-sweep3"></span><img alt="../../_images/2242-bly342d-24v-3000-r4.png" src="../../_images/2242-bly342d-24v-3000-r4.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.66 </span><span class="caption-text">Align-and-sweep method with BLY342D-24V-3000-1024SI5,
+sweep rate = 4 counts per control ISR</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="accuracy-and-repeatability-tests">
+<span id="qei-sync-align-sweep-accuracy"></span><h2><span class="section-number">5.4.3.3.3.5. </span>Accuracy and repeatability tests<a class="headerlink" href="#accuracy-and-repeatability-tests" title="Permalink to this heading">¶</a></h2>
+<p>The align-and-sweep method was tested with MCAF R4, and the resulting commutation offset from index
+(<code class="docutils literal notranslate"><span class="pre">motor.estimator.qei.position.commutationOffsetFromIndex</span></code>) was compared against a reference
+method using open-circuit voltage measurements of the motor terminals with the motor
+rotated mechanically at constant speed.</p>
+<p><a class="reference internal" href="#table-qei-sync-align-sweep-accuracy"><span class="std std-numref">Table 5.3</span></a> describes the results.
+In each case, 16 iterations of the align-and-sweep method were performed.
+(Initial conditions were identical but do not have a significant influence
+over the resulting estimated offsets since the method rotates the motor
+over the entire mechanical rotation.)
+Each motor was used with a dsPICDEM<sup>®</sup> MCLV‑2 Development Board, with default current limit of 2.29A, and default
+startup current at 91% of the current limit = 2.08A.</p>
+<table class="docutils align-default" id="table-qei-sync-align-sweep-accuracy">
+<caption><span class="caption-number">Table 5.3 </span><span class="caption-text">Accuracy and repeatability metrics for the align-and-sweep method. <br />
+The value <em>r</em> represents the sweep rate, in counts/ISR.</span><a class="headerlink" href="#table-qei-sync-align-sweep-accuracy" title="Permalink to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>mean <span class="math notranslate nohighlight">\(\tilde\theta_{\mathrm{ofs}}\)</span></p></th>
+<th class="head"><p>max <span class="math notranslate nohighlight">\(\tilde\theta_{\mathrm{ofs}}\)</span></p></th>
+<th class="head"><p>stdev <span class="math notranslate nohighlight">\(\hat\theta_{\mathrm{ofs}}\)</span></p></th>
+<th class="head"><p>span <span class="math notranslate nohighlight">\(\hat\theta_{\mathrm{ofs}}\)</span></p></th>
+<th class="head"><p>r</p></th>
+<th class="head"><p>Test case</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0.02°</p></td>
+<td><p>0.03°</p></td>
+<td><p>0.007°</p></td>
+<td><p>0.02°</p></td>
+<td><p>2</p></td>
+<td><p>BLWS232D-24V-1350-1024SI5</p></td>
+</tr>
+<tr class="row-odd"><td><p>0.03°</p></td>
+<td><p>0.06°</p></td>
+<td><p>0.013°</p></td>
+<td><p>0.06°</p></td>
+<td><p>4</p></td>
+<td><p>BLWS232D-24V-1350-1024SI5</p></td>
+</tr>
+<tr class="row-even"><td><p>0.06°</p></td>
+<td><p>0.08°</p></td>
+<td><p>0.010°</p></td>
+<td><p>0.03°</p></td>
+<td><p>2</p></td>
+<td><p>BLY171D-24V-4000 with 4096-line encoder</p></td>
+</tr>
+<tr class="row-odd"><td><p>0.05°</p></td>
+<td><p>0.07°</p></td>
+<td><p>0.009°</p></td>
+<td><p>0.03°</p></td>
+<td><p>4</p></td>
+<td><p>BLY171D-24V-4000 with 4096-line encoder</p></td>
+</tr>
+<tr class="row-even"><td><p>0.08°</p></td>
+<td><p>0.10°</p></td>
+<td><p>0.016°</p></td>
+<td><p>0.07°</p></td>
+<td><p>1</p></td>
+<td><p>BLY342D-24V-3000-1024SI5</p></td>
+</tr>
+<tr class="row-odd"><td><p>0.18°</p></td>
+<td><p>0.22°</p></td>
+<td><p>0.016°</p></td>
+<td><p>0.07°</p></td>
+<td><p>2</p></td>
+<td><p>BLY342D-24V-3000-1024SI5</p></td>
+</tr>
+<tr class="row-even"><td><p>0.15°</p></td>
+<td><p>0.47°</p></td>
+<td><p>0.195°</p></td>
+<td><p>0.58°</p></td>
+<td><p>4</p></td>
+<td><p>BLY342D-24V-3000-1024SI5</p></td>
+</tr>
+<tr class="row-odd"><td><p>0.08°</p></td>
+<td><p>0.10°</p></td>
+<td><p>0.008°</p></td>
+<td><p>0.03°</p></td>
+<td><p>2</p></td>
+<td><p>BLY342D-48V-3200-1024SI5</p></td>
+</tr>
+<tr class="row-even"><td><p>0.18°</p></td>
+<td><p>0.22°</p></td>
+<td><p>0.029°</p></td>
+<td><p>0.12°</p></td>
+<td><p>4</p></td>
+<td><p>BLY342D-48V-3200-1024SI5</p></td>
+</tr>
+</tbody>
+</table>
+<p>The error metrics are as follows:</p>
+<ul class="simple">
+<li><p>mean <span class="math notranslate nohighlight">\(\tilde\theta_{\mathrm{ofs}}\)</span> — mean value of the commutation offset difference between the align-and-sweep method and the reference method</p></li>
+<li><p>max <span class="math notranslate nohighlight">\(\tilde\theta_{\mathrm{ofs}}\)</span> — maximum value of the commutation offset difference between the align-and-sweep method and the reference method</p></li>
+<li><p>stdev <span class="math notranslate nohighlight">\(\hat\theta_{\mathrm{ofs}}\)</span> — standard deviation of commutation offset estimated by the align-and-sweep method</p></li>
+<li><p>span <span class="math notranslate nohighlight">\(\hat\theta_{\mathrm{ofs}}\)</span> — difference between minimum and maximum commutation offset estimated by the align-and-sweep method</p></li>
+</ul>
+<p>All of the motors were able to produce estimates with excellent repeatability at 4 counts/ISR sweep rate,
+with the exception of the BLY342D-24V-3000-1024SI5, which showed degraded accuracy at 4 counts/ISR compared to 2 counts/ISR.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.4.3.3.3. Align-and-sweep method</a><ul>
+<li><a class="reference internal" href="#overview">5.4.3.3.3.1. Overview</a></li>
+<li><a class="reference internal" href="#limitations">5.4.3.3.3.2. Limitations</a></li>
+<li><a class="reference internal" href="#practical-implementation-issues">5.4.3.3.3.3. Practical implementation issues</a><ul>
+<li><a class="reference internal" href="#selection-of-rotation-rate">5.4.3.3.3.3.1. Selection of rotation rate</a></li>
+<li><a class="reference internal" href="#calculations-involving-angles">5.4.3.3.3.3.2. Calculations involving angles</a></li>
+<li><a class="reference internal" href="#state-machine">5.4.3.3.3.3.3. State machine</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#example-data">5.4.3.3.3.4. Example data</a></li>
+<li><a class="reference internal" href="#accuracy-and-repeatability-tests">5.4.3.3.3.5. Accuracy and repeatability tests</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="align.html"
+                          title="previous chapter"><span class="section-number">5.4.3.3.2. </span>Align method</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="pullout.html"
+                          title="next chapter"><span class="section-number">5.4.3.3.4. </span>Pullout torque method</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pullout.html" title="5.4.3.3.4. Pullout torque method"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="align.html" title="5.4.3.3.2. Align method"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../estimators.html" ><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../qei.html" ><span class="section-number">5.4.3. </span>Quadrature encoder support</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.3.3.3. </span>Align-and-sweep method</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

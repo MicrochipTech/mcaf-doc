@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>4.8. Diagnostic Kernel &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.9. Hardware Abstraction Layer (HAL)" href="hal.html" />
+    <link rel="prev" title="4.7. External Interface" href="ext-interface.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="hal.html" title="4.9. Hardware Abstraction Layer (HAL)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ext-interface.html" title="4.7. External Interface"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">4. </span>Components</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">4.8. </span>Diagnostic Kernel</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="diagnostic-kernel">
+<span id="diag-kernel"></span><h1><span class="section-number">4.8. </span>Diagnostic Kernel<a class="headerlink" href="#diagnostic-kernel" title="Permalink to this heading">¶</a></h1>
+<p></p>
+<p>The diagnostic kernel allows real-time diagnostics and testing through
+interaction with an external host PC. At this time, two variants can be used:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://gallery.microchip.com/packages/x2c-scope/">X2C-Scope</a> from
+the Linz Center of Mechatronics GmbH, for use with the X2C-Scope plugin for MPLAB<sup>®</sup> X.
+This is the default variant.</p></li>
+<li><p><a class="reference external" href="http://www.microchip.com/development-tools/resources/real-time-data-monitoring-tool---rtdm">RTDM</a>
+from Microchip, for use with the MPLAB<sup>®</sup> DMCI plugin.
+Please <a class="reference internal" href="../faq.html#faq-support"><span class="std std-ref">contact Microchip</span></a> if you wish to use this variant instead.</p></li>
+</ul>
+<p>Both variants are configured to sample data at the control <a class="reference internal" href="../appendix/glossary.html#term-ISR"><span class="xref std std-term">ISR</span></a> (nominally 20 kHz)
+and use a UART channel for communication with the host PC.</p>
+<section id="implementation-notes">
+<h2><span class="section-number">4.8.1. </span>Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permalink to this heading">¶</a></h2>
+<section id="modules">
+<h3><span class="section-number">4.8.1.1. </span>Modules<a class="headerlink" href="#modules" title="Permalink to this heading">¶</a></h3>
+<span id="index-0"></span><table class="components-table docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Module</p></th>
+<th class="head"><p>Files</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">diagnostics</span></code></td>
+<td class="longcolumn-1"><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">diagnostics.c</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">diagnostics.h</span></code></div>
+</div>
+</td>
+<td><p>Top-level diagnostics</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">rtdm</span></code></td>
+<td class="longcolumn-3"><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rtdm.c</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rtdm.h</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rtdm_hal_adapter.h</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rtdm_select_channels.c</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">rtdm_select_channels.h</span></code></div>
+</div>
+</td>
+<td><p>RTDM testing and diagnostics</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">4.8. Diagnostic Kernel</a><ul>
+<li><a class="reference internal" href="#implementation-notes">4.8.1. Implementation Notes</a><ul>
+<li><a class="reference internal" href="#modules">4.8.1.1. Modules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="ext-interface.html"
+                          title="previous chapter"><span class="section-number">4.7. </span>External Interface</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="hal.html"
+                          title="next chapter"><span class="section-number">4.9. </span>Hardware Abstraction Layer (HAL)</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="hal.html" title="4.9. Hardware Abstraction Layer (HAL)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ext-interface.html" title="4.7. External Interface"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">4. </span>Components</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">4.8. </span>Diagnostic Kernel</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

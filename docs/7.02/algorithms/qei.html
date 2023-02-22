@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.4.3. Quadrature encoder support &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.4.3.3.1. Implementation issues common to all methods" href="qei_sync/common.html" />
+    <link rel="prev" title="5.4.2. AN1292 Phase-locked Loop (PLL)" href="pll.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="qei_sync/common.html" title="5.4.3.3.1. Implementation issues common to all methods"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pll.html" title="5.4.2. AN1292 Phase-locked Loop (PLL)"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="estimators.html" accesskey="U"><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.3. </span>Quadrature encoder support</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="quadrature-encoder-support">
+<span id="algorithm-qei"></span><span id="index-0"></span><h1><span class="section-number">5.4.3. </span>Quadrature encoder support<a class="headerlink" href="#quadrature-encoder-support" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">5.4.3.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>MCAF supports the use of a quadrature encoder (with or without index pulse) for closed-loop velocity operation,
+through the dsPIC<sup>®</sup> DSC QEI (Quadrature Encoder Interface) peripheral.</p>
+<p>Use of a quadrature encoder can be very valuable during prototyping stages, and it can be used in conjunction
+with a sensorless estimator to validate or troubleshoot estimator operation. MCAF allows more than one
+estimator to execute — at the cost of additional CPU usage — but only one estimator can be used for commutation.</p>
+<p>A quadrature encoder can provide accurate tracking of relative position changes,
+as long as the encoder signals are received without significant errors. Furthermore,
+angle resolution is a function of the encoder; high-end encoders can provide thousands of counts per
+mechanical revolution. An encoder cannot, however, provide these features on its own:</p>
+<ul class="simple">
+<li><p>absolute position accuracy at all times</p>
+<ul>
+<li><p>Encoders without index pulses can never provide absolute position accuracy</p></li>
+<li><p>Encoders with an index pulse can provide absolute accuracy once the index pulse has been detected,
+but prior to that, there is no way to determine absolute position from the encoder</p></li>
+</ul>
+</li>
+<li><p>a measurement of velocity — the encoder provides quantized position;
+velocity must be estimated from position through a separate algorithm</p></li>
+<li><p>determination of the electrical commutation offset for a <a class="reference internal" href="../appendix/glossary.html#term-PMSM"><span class="xref std std-term">PMSM</span></a>, to locate the
+motor’s position of maximum rotor flux relative to encoder position</p></li>
+</ul>
+<p>MCAF provides these features with <a class="reference internal" href="#qei-sync"><span class="std std-ref">back-emf synchronization</span></a> for determining
+commutation offset, and a <a class="reference internal" href="#tracking-loop"><span class="std std-ref">tracking loop</span></a> for
+estimating velocity from position.</p>
+<section id="usage-notes">
+<h3><span class="section-number">5.4.3.1.1. </span>Usage notes<a class="headerlink" href="#usage-notes" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Encoders are usually specified in “lines” or “cycles per revolution” (CPR). There is a 4:1
+relationship between counts per revolution and lines or CPR: for example, 256 lines = 256 CPR = 1024 counts
+per revolution.</p></li>
+<li><p>The dsPICDEM<sup>®</sup> MCLV‑2 Development Board has 100 pF filter capacitors on its encoder/Hall inputs. These may cause problems for
+encoders with high count rates, in which case capacitors C49, C50, and C51 should be removed,
+or replaced with smaller values such as 10 pF.</p></li>
+</ul>
+</section>
+<section id="limitations">
+<h3><span class="section-number">5.4.3.1.2. </span>Limitations<a class="headerlink" href="#limitations" title="Permalink to this heading">¶</a></h3>
+<p>As of MCAF R7:</p>
+<ul class="simple">
+<li><p>Position control is not supported</p></li>
+<li><p>Operation near zero speed is not supported — the QEI support is limited to use as a drop-in replacement
+for sensorless estimators, and startup through forced commutation is required.</p></li>
+<li><p>Index pulses are supported only for encoder resolutions that are a power of two. Non-power-of-two
+encoder counts are supported by the QEI peripheral’s modulo mode; index pulses are supported by
+the use of the QEI peripheral’s position capture feature, which cannot be used simultaneously with
+modulo mode in dsPIC<sup>®</sup> DSC 33F, 33E, and 33C devices.</p></li>
+</ul>
+<span class="target" id="tracking-loop"></span></section>
+</section>
+<section id="index-1">
+<span id="id1"></span><h2><span class="section-number">5.4.3.2. </span>Tracking loop<a class="headerlink" href="#index-1" title="Permalink to this heading">¶</a></h2>
+<section id="id2">
+<h3><span class="section-number">5.4.3.2.1. </span>Overview<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h3>
+<p>There are many ways to estimate velocity from encoder position. A naïve implementation
+would attempt to differentiate the velocity signal, but because the encoder quantizes rotor position,
+the result at moderate speeds would be a bunch of zeros and ones. (For example, consider a 1024 count-per-revolution
+encoder on a motor running at 1000 RPM = 16.667 revolutions/second. This produces encoder counts at the rate
+of around 17067 counts/second. A control ISR running at 20 kHz would see a change of either 0 or 1 counts
+per ISR. At 10000 RPM the same motor/encoder pair would produce 170667 counts/second, and the control
+ISR would see either changes of either 8 or 9 counts per ISR. In either case, the maximum quantization
+error of velocity would equal 0.5 counts per ISR = 1/2048 revolution * 20 kHz = 9.77 revolutions/second = 586 RPM.)</p>
+<p>One way to estimate velocity is to compute the change in position each control cycle, and use a low-pass
+filter to determine velocity. MCAF uses something slightly different, known as a tracking loop.</p>
+<p>Tracking loops are essentially just a low-pass filter
+in state-variable form to produce useful estimates.
+In the tracking loop shown in <a class="reference internal" href="#fig-tracking-loop"><span class="std std-numref">Figure 5.56</span></a>,
+the input angle <span class="math notranslate nohighlight">\(\theta\)</span> may be noisy, whether through analog noise or, in the case
+of an encoder, quantization noise. The loop itself just consists of a PI controller
+to estimate a velocity <span class="math notranslate nohighlight">\(\hat{\omega}\)</span>
+which is then integrated to form an estimated angle <span class="math notranslate nohighlight">\(\hat{\theta}\)</span>
+used to form an error term for the PI loop.</p>
+<figure class="align-center" id="id3">
+<span id="fig-tracking-loop"></span><img alt="../_images/tracking-loop-bdiag.png" src="../_images/tracking-loop-bdiag.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.56 </span><span class="caption-text">Tracking loop for estimating velocity from position</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The outputs of a tracking loop are</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\hat\omega_{LPF}\)</span> — the integrator output can be used as a moderate-bandwidth estimate of velocity.</p></li>
+<li><p><span class="math notranslate nohighlight">\(\hat\omega\)</span> — the PI output contains high-frequency content needed to drive the error towards zero.
+It is generally not appropriate for general use, because noise from <span class="math notranslate nohighlight">\(\theta\)</span>
+feeds directly into it from the proportional (P) term.</p></li>
+<li><p><span class="math notranslate nohighlight">\(\hat\theta\)</span> — the estimated angle filters out high-frequency component
+of quantization noise, and can be used for position control applications;
+it can also be used for commutation applications, but the phase lag is critical
+and must be analyzed carefully.</p></li>
+</ul>
+<p><strong>Note on the choice of units:</strong> a tracking loop can operate equally well
+on any sort of quantity that requires estimation of a low-frequency
+derivative; its input could be temperature in °C, with an output
+in °C/s, rather than an input of position with an output of velocity.</p>
+</section>
+<section id="frequency-domain-equivalent">
+<h3><span class="section-number">5.4.3.2.2. </span>Frequency-domain equivalent<a class="headerlink" href="#frequency-domain-equivalent" title="Permalink to this heading">¶</a></h3>
+<p>Transfer functions from real angle/velocity inputs (assuming additive noise) to outputs are:</p>
+<div class="math notranslate nohighlight" id="equation-algorithms-qei-0">
+<span class="eqno">(5.26)<a class="headerlink" href="#equation-algorithms-qei-0" title="Permalink to this equation">¶</a></span>\[\begin{aligned}
+H_{\theta\rightarrow\hat{\omega}_{LPF}}(s) &amp;= \frac{K_i/s}{1+K_p/s+K_i/s^2} = \frac{s}{1/K_is^2+K_p/K_is+1} \cr
+H_{\theta\rightarrow\hat{\omega}}(s) &amp;= \frac{K_p+K_i/s}{1+K_p/s+K_i/s^2} = \frac{K_p/K_is^2+s}{1/K_is^2+K_p/K_is+1}\cr
+H_{\theta\rightarrow\hat{\theta}}(s) &amp;= \frac{K_p/s+K_i/s^2}{1+K_p/s+K_i/s^2}= \frac{K_p/K_is+1}{1/K_is^2+K_p/K_is+1}\cr
+H_{\omega\rightarrow\hat{\omega}_{LPF}}(s) &amp;= \frac{K_i}{1+K_p/s+K_i/s^2} = \frac{1}{1/K_is^2+K_p/K_is+1} \cr
+H_{\omega\rightarrow\hat{\omega}}(s) &amp;= \frac{K_ps+K_i}{1+K_p/s+K_i/s^2} = \frac{K_p/K_is+1}{1/K_is^2+K_p/K_is+1}\cr
+\end{aligned}\]</div>
+<p>A few things to note:</p>
+<ul class="simple">
+<li><p>The denominator in all cases forms a 2nd-order system, and can be written in the form <span class="math notranslate nohighlight">\(\tau^2s^2 + 2\zeta\tau s+1\)</span>
+with <span class="math notranslate nohighlight">\(K_i = 1/\tau^2\)</span> and <span class="math notranslate nohighlight">\(K_p = 2\zeta/\tau\)</span>. The quantity <span class="math notranslate nohighlight">\(\zeta\)</span> represents damping factor and should be set conservatively,
+perhaps something in the 1 – 1.5 range. The time constant <span class="math notranslate nohighlight">\(\tau = 1/\omega_n\)</span> is inversely proportional to bandwidth.</p></li>
+<li><p>The velocity transfer function to <span class="math notranslate nohighlight">\(\hat{\omega}_{LPF}\)</span> has no zeros; the velocity transfer function to <span class="math notranslate nohighlight">\(\hat{\omega}\)</span> has a zero
+at <span class="math notranslate nohighlight">\(s=-K_i/K_p=-1/2\zeta\tau\)</span>.</p></li>
+</ul>
+</section>
+<section id="implementation-notes">
+<h3><span class="section-number">5.4.3.2.3. </span>Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permalink to this heading">¶</a></h3>
+<p>The tracking loop used in MCAF for quadrature encoder support
+operates on mechanical angle
+<span class="math notranslate nohighlight">\(\theta_m\)</span>, with an output of estimated mechanical angular velocity
+<span class="math notranslate nohighlight">\(\omega_m\)</span>. This choice preserves angular location within one complete mechanical rotation, to support future position control applications.</p>
+<p>MCAF uses the filtered velocity, <span class="math notranslate nohighlight">\(\hat{\omega}_{LPF}\)</span>, for velocity
+estimates.</p>
+<p>The MCAF implementation of the tracking loop
+adds a limiter block, shown in <a class="reference internal" href="#fig-tracking-loop-impl"><span class="std std-numref">Figure 5.57</span></a>,
+which prevents overflow in the calculation of <span class="math notranslate nohighlight">\(\hat\omega\)</span>.</p>
+<figure class="align-center" id="id4">
+<span id="fig-tracking-loop-impl"></span><img alt="../_images/tracking-loop-impl-bdiag.png" src="../_images/tracking-loop-impl-bdiag.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.57 </span><span class="caption-text">Tracking loop implementation</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="back-emf-synchronization">
+<span id="qei-sync"></span><span id="index-2"></span><h2><span class="section-number">5.4.3.3. </span>Back-EMF synchronization<a class="headerlink" href="#back-emf-synchronization" title="Permalink to this heading">¶</a></h2>
+<p>The goal of back-EMF synchronization is to estimate a commutation offset such that
+<a class="reference internal" href="../appendix/glossary.html#term-FOC"><span class="xref std std-term">FOC</span></a> can operate with a reference frame in perfect alignment.
+When a rotor (<span class="math notranslate nohighlight">\(dq\)</span>) reference frame is perfectly aligned with a <a class="reference internal" href="../appendix/glossary.html#term-PMSM"><span class="xref std std-term">PMSM</span></a>’s rotor flux and back-EMF,
+it has the following properties:</p>
+<ul class="simple">
+<li><p><strong>back-EMF</strong> — With <span class="math notranslate nohighlight">\(I_q = I_d = 0\)</span> at nonzero speed, the terminal voltage of the motor is along the q-axis
+and is proportional to mechanical velocity <span class="math notranslate nohighlight">\(\omega_m\)</span>; the terminal voltage has no d-axis component.
+Changes in commutation offset would cause nonzero d-axis component.</p></li>
+<li><p><strong>d-axis torque</strong> — With <span class="math notranslate nohighlight">\(I_q = 0, I_d \ne 0\)</span>, no torque is produced.
+Small changes in commutation offset would cause a
+net electromechanical torque that is proportional to <span class="math notranslate nohighlight">\(\tilde\theta\)</span>, the error in commutation offset:
+<span class="math notranslate nohighlight">\(T_{em} = \frac{3}{2}K_eI_d \sin\tilde\theta\)</span>.</p></li>
+<li><p><strong>q-axis torque direction</strong> — With <span class="math notranslate nohighlight">\(I_d = 0, I_q &gt; 0\)</span>, positive torque is produced. (180° offset error produces negative torque)</p></li>
+<li><p><strong>MTPA</strong> — For surface permanent magnet motors (SPMSM), <span class="math notranslate nohighlight">\(I_d = 0, I_q &gt; 0\)</span> produces maximum torque, and any
+change in commutation offset reduces the generated torque. This condition is known as
+“maximum torque per ampere” or MTPA.</p></li>
+<li><p><strong>anisotropy due to saturation</strong> — With <span class="math notranslate nohighlight">\(I_q = 0, I_d &gt; 0\)</span>, iron saturation occurs at a lower current than with any change in
+commutation offset. Saturation results in a decreased incremental inductance <span class="math notranslate nohighlight">\(\partial \psi \over \partial I\)</span>.
+This is because the stator field adds to the magnetic field of the rotor to maximize the resulting stator field for
+a given stator current.</p></li>
+<li><p><strong>anisotropy due to saliency</strong> — For motors with rotor saliency (such as interior permanent magnet motors = IPMSM), the d- and q-axes
+are eigenvectors of the inductance matrix, and therefore changes in <span class="math notranslate nohighlight">\(I_d\)</span> produce changes in
+stator flux <span class="math notranslate nohighlight">\(\psi_d\)</span> with no change in <span class="math notranslate nohighlight">\(\psi_q\)</span>, and similarly changes in <span class="math notranslate nohighlight">\(I_q\)</span> produce
+changes in stator flux <span class="math notranslate nohighlight">\(\psi_q\)</span> with no change in <span class="math notranslate nohighlight">\(\psi_d\)</span>. In other words, the flux equation
+can be written in the form shown in equation <a class="reference internal" href="#equation-eqn-ipmsm-flux">5.27</a>, which has no off-diagonal
+terms in the inductance matrix. Changes in commutation offset
+would cause nonzero cross-axis terms in the flux equation.</p></li>
+</ul>
+<div class="math notranslate nohighlight" id="equation-eqn-ipmsm-flux">
+<span class="eqno">(5.27)<a class="headerlink" href="#equation-eqn-ipmsm-flux" title="Permalink to this equation">¶</a></span>\[\begin{bmatrix}\psi_d \cr \psi_q\end{bmatrix} =
+\begin{bmatrix}L_d &amp; 0\cr 0 &amp; L_q\end{bmatrix}
+\begin{bmatrix}I_d \cr I_q\end{bmatrix} +
+\begin{bmatrix}\psi_m \cr 0\end{bmatrix}\]</div>
+<p>All sensorless estimators take advantage of at least one of these properties to discern the true rotor
+reference frame, with various tradeoffs in bandwidth, stability, convergence, complexity, power consumption,
+and accuracy.</p>
+<p>MCAF R4 introduced back-emf synchronization in the <code class="docutils literal notranslate"><span class="pre">qei_sync</span></code> module. One of three methods
+can be selected, each of which interacts with hooks in the <a class="reference internal" href="startup.html#startup-sequence"><span class="std std-ref">startup sequence</span></a>:</p>
+<ul class="simple">
+<li><p><strong>align</strong> — the align method applies a fixed current at a fixed angle during the align phase of startup,
+and expects that the rotor has a minimal mechanical load at low speeds and will rotate so that
+its d-axis aligns with the applied current vector. (This method relies on the d-axis torque property.)
+This is the default method of MCAF, is very fast, and works well for most
+motors, as long as cogging torque or other mechanical loads are relatively low, and the
+effect of any rotor saliency is fairly small at low torque loads.</p></li>
+<li><p><strong>pullout</strong> — the pullout method reduces the current used in the spin phase of startup until
+it observes the rotor angle start to decrease significantly from the angle of applied current.
+(This method relies on the MTPA property.)
+This method is immune from errors in cogging torque, but is sensitive to the dynamics of forced commutation.</p></li>
+<li><p><strong>align-and-sweep</strong> — the align-and-sweep method applies a fixed current at a slowly changing angle
+during the align phase of startup. The applied electrical angle rotates through one full mechanical rotation
+in both forward and reverse directions, and over the two resulting intervals, averages the difference between
+applied electrical angle and measured encoder angle to obtain an estimate of commutation offset.
+This method is slow but can produce very accurate estimates of
+commutation offsets in most motors.</p></li>
+</ul>
+<p>These methods are described in more detail in the following sections.</p>
+<p>In all cases, commutation offset is estimated during only one startup iteration;
+once complete, the resulting value is reused, and subsequent startup sequences will
+skip back-emf synchronization.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="qei_sync/common.html">5.4.3.3.1. Implementation issues common to all methods</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/common.html#api-of-qei-sync">5.4.3.3.1.1. API of <code class="docutils literal notranslate"><span class="pre">qei_sync</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/common.html#important-data-elements">5.4.3.3.1.2. Important data elements</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="qei_sync/align.html">5.4.3.3.2. Align method</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/align.html#overview">5.4.3.3.2.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/align.html#limitations">5.4.3.3.2.2. Limitations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/align.html#practical-implementation-issues">5.4.3.3.2.3. Practical implementation issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/align.html#example-data">5.4.3.3.2.4. Example data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/align.html#accuracy-and-repeatability-tests">5.4.3.3.2.5. Accuracy and repeatability tests</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="qei_sync/align-sweep.html">5.4.3.3.3. Align-and-sweep method</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/align-sweep.html#overview">5.4.3.3.3.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/align-sweep.html#limitations">5.4.3.3.3.2. Limitations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/align-sweep.html#practical-implementation-issues">5.4.3.3.3.3. Practical implementation issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/align-sweep.html#example-data">5.4.3.3.3.4. Example data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/align-sweep.html#accuracy-and-repeatability-tests">5.4.3.3.3.5. Accuracy and repeatability tests</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="qei_sync/pullout.html">5.4.3.3.4. Pullout torque method</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/pullout.html#overview">5.4.3.3.4.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/pullout.html#limitations">5.4.3.3.4.2. Limitations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/pullout.html#practical-implementation-issues">5.4.3.3.4.3. Practical implementation issues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/pullout.html#example-data">5.4.3.3.4.4. Example data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei_sync/pullout.html#accuracy-and-repeatability-tests">5.4.3.3.4.5. Accuracy and repeatability tests</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.4.3. Quadrature encoder support</a><ul>
+<li><a class="reference internal" href="#overview">5.4.3.1. Overview</a><ul>
+<li><a class="reference internal" href="#usage-notes">5.4.3.1.1. Usage notes</a></li>
+<li><a class="reference internal" href="#limitations">5.4.3.1.2. Limitations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#index-1">5.4.3.2. Tracking loop</a><ul>
+<li><a class="reference internal" href="#id2">5.4.3.2.1. Overview</a></li>
+<li><a class="reference internal" href="#frequency-domain-equivalent">5.4.3.2.2. Frequency-domain equivalent</a></li>
+<li><a class="reference internal" href="#implementation-notes">5.4.3.2.3. Implementation Notes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#back-emf-synchronization">5.4.3.3. Back-EMF synchronization</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="pll.html"
+                          title="previous chapter"><span class="section-number">5.4.2. </span>AN1292 Phase-locked Loop (PLL)</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="qei_sync/common.html"
+                          title="next chapter"><span class="section-number">5.4.3.3.1. </span>Implementation issues common to all methods</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="qei_sync/common.html" title="5.4.3.3.1. Implementation issues common to all methods"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pll.html" title="5.4.2. AN1292 Phase-locked Loop (PLL)"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="estimators.html" ><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.3. </span>Quadrature encoder support</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

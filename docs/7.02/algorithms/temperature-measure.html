@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.9. Temperature measurement &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="6. General Implementation Issues" href="../implementation/index.html" />
+    <link rel="prev" title="5.8. Voltage Control" href="voltage-control.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../implementation/index.html" title="6. General Implementation Issues"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="voltage-control.html" title="5.8. Voltage Control"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.9. </span>Temperature measurement</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="temperature-measurement">
+<span id="algorithm-temperature"></span><h1><span class="section-number">5.9. </span>Temperature measurement<a class="headerlink" href="#temperature-measurement" title="Permalink to this heading">¶</a></h1>
+<p>Boards with a power stage temperature sensor (“bridge temperature”)
+are supported in MCAF with basic signal conditioning.
+This temperature sensor should be placed on or near
+the power transistors of the three-phase bridge.</p>
+<p>The bridge temperature signal is available for general use
+(for example, validation of <a class="reference internal" href="current-limit.html#algorithm-ilimit"><span class="std std-ref">dynamic current limit</span></a>
+parameters)
+and is also used to <a class="reference internal" href="../components/supervisory.html#supervisory-overtemperature"><span class="std std-ref">detect an overtemperature fault condition</span></a>,
+which causes the <a class="reference internal" href="../components/statemach.html#component-statemachine"><span class="std std-ref">state machine</span></a>
+to enter the <code class="docutils literal notranslate"><span class="pre">MCSM_FAULT</span></code> state and disable the drive.</p>
+<section id="filtering">
+<span id="algorithm-temperature-filtering"></span><h2><span class="section-number">5.9.1. </span>Filtering<a class="headerlink" href="#filtering" title="Permalink to this heading">¶</a></h2>
+<p>To reduce the impact of noisy measurements, a low-pass filter
+is used to process the raw temperature measurements <span class="math notranslate nohighlight">\(T_{\rm raw}\)</span>,
+as shown in <a class="reference internal" href="#fig-temperature-blkdiag"><span class="std std-numref">Figure 5.118</span></a>,
+into a temperature estimate <span class="math notranslate nohighlight">\(\hat{T}\)</span>.</p>
+<figure class="align-center" id="id1">
+<span id="fig-temperature-blkdiag"></span><img alt="../_images/3652-temperature-filtering.svg" src="../_images/3652-temperature-filtering.svg" /><figcaption>
+<p><span class="caption-number">Figure 5.118 </span><span class="caption-text">Block diagram of temperature filtering</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>This low-pass filter
+includes a slew-rate limit.
+As long as the output slew rate stays below a specified maximum
+rate of temperature change, the transfer function of the
+low-pass filter is <span class="math notranslate nohighlight">\(\frac{1}{\tau s + 1}\)</span>,
+where <span class="math notranslate nohighlight">\(\tau = 1/\alpha\)</span> is the effective time constant of the filter,
+determined by gain <span class="math notranslate nohighlight">\(\alpha\)</span>.</p>
+<p>The slew rate limiter is present to reduce the impact
+of burst noise on the temperature measurements. An example of this
+is shown in <a class="reference internal" href="#fig-temperature-sim"><span class="std std-numref">Figure 5.119</span></a>.</p>
+<figure class="align-center" id="id2">
+<span id="fig-temperature-sim"></span><img alt="../_images/3652-temperature-filtering-simulation.png" src="../_images/3652-temperature-filtering-simulation.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.119 </span><span class="caption-text">Simulation of burst noise in temperature filtering</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>While the presence of noise spikes on the raw temperature reading
+is a red flag that should be investigated to identify circuit design
+or EMI management issues, the temperature filtering in MCAF is intended
+to take advantage of oversampling the output of temperature sensors.</p>
+</section>
+<section id="implementation-notes">
+<h2><span class="section-number">5.9.2. </span>Implementation notes<a class="headerlink" href="#implementation-notes" title="Permalink to this heading">¶</a></h2>
+<p>Temperature sensing was added in MCAF R7.</p>
+<section id="implementation-source-code">
+<h3><span class="section-number">5.9.2.1. </span>Implementation source code<a class="headerlink" href="#implementation-source-code" title="Permalink to this heading">¶</a></h3>
+<p>Filtering of the temperature sensors is done in <code class="docutils literal notranslate"><span class="pre">MCAF_ADCReadNonCritical()</span></code>,
+located in the <code class="docutils literal notranslate"><span class="pre">adc_compensation</span></code> module.</p>
+</section>
+<section id="scaling">
+<h3><span class="section-number">5.9.2.2. </span>Scaling<a class="headerlink" href="#scaling" title="Permalink to this heading">¶</a></h3>
+<p>Temperature signals in MCAF are scaled at 0.01°C per count,
+for a range of −327.68°C to +327.67°C.</p>
+<p>MCAF R7 supports only linear temperature sensors at this time.</p>
+</section>
+<section id="filtering-parameters-and-state-variables">
+<h3><span class="section-number">5.9.2.3. </span>Filtering parameters and state variables<a class="headerlink" href="#filtering-parameters-and-state-variables" title="Permalink to this heading">¶</a></h3>
+<p>MCAF filters the temperature sense signals in each current loop sampling period
+<span class="math notranslate nohighlight">\(T_s\)</span>, typically 50 μs.
+The state variable for the estimated temperature <span class="math notranslate nohighlight">\(\hat{T}\)</span>
+is a 32-bit integer with the high 16 bits used as its output — in other words,
+0.01°C per 65536 counts for the state variable itself.
+This permits filter time constants as long as <span class="math notranslate nohighlight">\(\tau = 65536 T_s\)</span>.
+(3.27 s for <span class="math notranslate nohighlight">\(T_s =\)</span> 50 μs)</p>
+<p>Slew rates between 1 and 32767 counts per sampling period —
+0.003°C/s to 100°C/s for <span class="math notranslate nohighlight">\(T_s =\)</span> 50 μs —
+are supported.</p>
+</section>
+<section id="board-support">
+<span id="algorithm-temperature-board-support"></span><h3><span class="section-number">5.9.2.4. </span>Board support<a class="headerlink" href="#board-support" title="Permalink to this heading">¶</a></h3>
+<p>Both the <a class="reference external" href="https://www.microchip.com/en-us/development-tool/DM330031">dsPIC33CK Low Voltage Motor Control (LVMC) Development Board</a> and <a class="reference external" href="https://www.microchip.com/en-us/development-tool/EV18H47A">MCS MCLV‑48V‑300W Development Board</a> boards include
+an MCP9700 temperature sensor (10mV/°C, 0.5V offset)
+mounted among the power transistors.</p>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.9. Temperature measurement</a><ul>
+<li><a class="reference internal" href="#filtering">5.9.1. Filtering</a></li>
+<li><a class="reference internal" href="#implementation-notes">5.9.2. Implementation notes</a><ul>
+<li><a class="reference internal" href="#implementation-source-code">5.9.2.1. Implementation source code</a></li>
+<li><a class="reference internal" href="#scaling">5.9.2.2. Scaling</a></li>
+<li><a class="reference internal" href="#filtering-parameters-and-state-variables">5.9.2.3. Filtering parameters and state variables</a></li>
+<li><a class="reference internal" href="#board-support">5.9.2.4. Board support</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="voltage-control.html"
+                          title="previous chapter"><span class="section-number">5.8. </span>Voltage Control</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../implementation/index.html"
+                          title="next chapter"><span class="section-number">6. </span>General Implementation Issues</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../implementation/index.html" title="6. General Implementation Issues"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="voltage-control.html" title="5.8. Voltage Control"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.9. </span>Temperature measurement</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

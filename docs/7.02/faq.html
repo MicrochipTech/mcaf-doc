@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>8. Frequently Asked Questions (FAQ) &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="_static/rendermath.js"></script>
+    <script src="_static/svgcrop.js"></script>
+    <script src="_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="7.5. Revision History" href="appendix/rev_history.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="appendix/rev_history.html" title="7.5. Revision History"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">8. </span>Frequently Asked Questions (FAQ)</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="frequently-asked-questions-faq">
+<span id="faq"></span><h1><span class="section-number">8. </span>Frequently Asked Questions (FAQ)<a class="headerlink" href="#frequently-asked-questions-faq" title="Permalink to this heading">¶</a></h1>
+<section id="contacting-microchip">
+<span id="faq-support"></span><h2><span class="section-number">8.1. </span>Contacting Microchip<a class="headerlink" href="#contacting-microchip" title="Permalink to this heading">¶</a></h2>
+<p>We encourage you to contact your local Microchip representative for
+assistance with motorBench<sup>®</sup> Development Suite or MCAF. Feedback and comments are welcome!</p>
+<p>For more information on Microchip support resources, see the
+“Customer Support” section of the motorBench<sup>®</sup> Development Suite Release Notes.</p>
+</section>
+<section id="usb-compatibility">
+<span id="faq-usb"></span><h2><span class="section-number">8.2. </span>USB compatibility<a class="headerlink" href="#usb-compatibility" title="Permalink to this heading">¶</a></h2>
+<p>Microchip does manufacture a few motor control parts that include a USB
+peripheral (the dsPIC33EPXXXMU806/810/814 series). The application framework
+does not support USB at this time, but we are considering it in the future.</p>
+</section>
+<section id="rtos-compatibility">
+<h2><span class="section-number">8.3. </span>RTOS compatibility<a class="headerlink" href="#rtos-compatibility" title="Permalink to this heading">¶</a></h2>
+<p>We plan to investigate ways in which our application framework can meet the
+strict timing requirements of motor control, but also remain compatible with an
+RTOS. This is a future effort, and at this time is incomplete.</p>
+</section>
+<section id="matlabregsup-and-simulinkregsup">
+<h2><span class="section-number">8.4. </span>MATLAB<sup>®</sup> and Simulink<sup>®</sup><a class="headerlink" href="#matlabregsup-and-simulinkregsup" title="Permalink to this heading">¶</a></h2>
+<p>Our long-term goal is to support both customers that program PIC<sup>®</sup> microcontrollers and dsPIC<sup>®</sup> DSCs for
+motor control in C, and customers that use MATLAB<sup>®</sup> and Simulink<sup>®</sup> for code
+generation. At this time, the motor control application framework is aimed at
+motor control projects which rely on MPLAB<sup>®</sup> X and the XC16 C compiler, and it
+does not support Simulink code generation. The motor control application
+framework software has been written by hand to be readable and efficient;
+Simulink-generated C code is by its very nature not intended to be read or
+edited, but rather to be autogenerated for rapid prototyping and sufficient
+equivalency to simulation results, and it is constrained by features of the
+MATLAB code generation engine.</p>
+<p>We are considering ways to support both types of
+customer; at least in the short term, it is likely that our support for
+customers using MATLAB and Simulink will be through a separate application,
+specifically aimed to use Simulink.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">8. Frequently Asked Questions (FAQ)</a><ul>
+<li><a class="reference internal" href="#contacting-microchip">8.1. Contacting Microchip</a></li>
+<li><a class="reference internal" href="#usb-compatibility">8.2. USB compatibility</a></li>
+<li><a class="reference internal" href="#rtos-compatibility">8.3. RTOS compatibility</a></li>
+<li><a class="reference internal" href="#matlabregsup-and-simulinkregsup">8.4. MATLAB<sup>®</sup> and Simulink<sup>®</sup></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="appendix/rev_history.html"
+                          title="previous chapter"><span class="section-number">7.5. </span>Revision History</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="appendix/rev_history.html" title="7.5. Revision History"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">8. </span>Frequently Asked Questions (FAQ)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

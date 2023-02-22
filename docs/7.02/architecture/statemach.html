@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>3.7. State Machine &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3.8. Treatment of Numerical Algorithms" href="numerics.html" />
+    <link rel="prev" title="3.6. Scheduling and Optimization" href="schedopt.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="numerics.html" title="3.8. Treatment of Numerical Algorithms"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="schedopt.html" title="3.6. Scheduling and Optimization"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">3. </span>Architecture</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3.7. </span>State Machine</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="state-machine">
+<span id="architecture-statemachine"></span><h1><span class="section-number">3.7. </span>State Machine<a class="headerlink" href="#state-machine" title="Permalink to this heading">¶</a></h1>
+<p></p>
+<p>The motor control state machine can be described as a hierarchical state
+machine, shown below in <a class="reference internal" href="#fig-arch-state-machine"><span class="std std-numref">Figure 3.6</span></a>.
+The states are shown in blue; the names (<code class="docutils literal notranslate"><span class="pre">MCSM_xxxx</span></code>) are
+the ones used in the application framework code. Transition conditions are shown
+as labeled arrows.</p>
+<p>This state machine is intended to treat the motor controller at a very high
+level: rather than concern itself with detailed information about the motor (is
+a stall occurring? is there an overvoltage?), the state machine is designed
+around general events like whether a fault has been detected, or whether a start
+or stop sequence is complete.</p>
+<figure class="align-center" id="id1">
+<span id="fig-arch-state-machine"></span><img alt="../_images/state-machine.svg" src="../_images/state-machine.svg" /><figcaption>
+<p><span class="caption-number">Figure 3.6 </span><span class="caption-text">Motor controller state diagram</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<section id="states">
+<h2><span class="section-number">3.7.1. </span>States<a class="headerlink" href="#states" title="Permalink to this heading">¶</a></h2>
+<p>These states are divided into subgroups:</p>
+<ul class="simple">
+<li><p>Primary states: all the states except for those used in test operation.</p>
+<ul>
+<li><p>Normal states: states where a fault is not occurring.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MCSM_FAULT</span></code>: a fault has occurred.</p></li>
+</ul>
+</li>
+<li><p>Secondary states: all the states used in test operation. These states cause
+the normal state machine to be ignored, along with some of the fault detection
+algorithms that may produce false positives when in test modes.</p></li>
+</ul>
+<p>The grouping here forms a hierarchical state machine. For example: any of the
+normal states will transition to <code class="docutils literal notranslate"><span class="pre">MCSM_FAULT</span></code> if a fault has been detected.
+(Traditional state machines would require transitions to <code class="docutils literal notranslate"><span class="pre">MCSM_FAULT</span></code> to be shown
+from <code class="docutils literal notranslate"><span class="pre">MCSM_STOPPED</span></code>, <code class="docutils literal notranslate"><span class="pre">MCSM_STARTING</span></code>, <code class="docutils literal notranslate"><span class="pre">MCSM_RUNNING</span></code>, <code class="docutils literal notranslate"><span class="pre">MCSM_STOPPING</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">MCSM_INIT</span></code>.)</p>
+<p>Further detail is given in the <a class="reference internal" href="../components/statemach.html#component-statemachine"><span class="std std-ref">State Machine</span></a> section.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">3.7. State Machine</a><ul>
+<li><a class="reference internal" href="#states">3.7.1. States</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="schedopt.html"
+                          title="previous chapter"><span class="section-number">3.6. </span>Scheduling and Optimization</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="numerics.html"
+                          title="next chapter"><span class="section-number">3.8. </span>Treatment of Numerical Algorithms</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="numerics.html" title="3.8. Treatment of Numerical Algorithms"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="schedopt.html" title="3.6. Scheduling and Optimization"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">3. </span>Architecture</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3.7. </span>State Machine</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

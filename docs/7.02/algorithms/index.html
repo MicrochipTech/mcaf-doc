@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5. Detailed Algorithm Notes &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.1. Field-oriented Current Control" href="foc/index.html" />
+    <link rel="prev" title="4.11. Miscellaneous" href="../components/miscellaneous.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="foc/index.html" title="5.1. Field-oriented Current Control"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../components/miscellaneous.html" title="4.11. Miscellaneous"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5. </span>Detailed Algorithm Notes</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="detailed-algorithm-notes">
+<span id="algorithms"></span><h1><span class="section-number">5. </span>Detailed Algorithm Notes<a class="headerlink" href="#detailed-algorithm-notes" title="Permalink to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="foc/index.html">5.1. Field-oriented Current Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="foc/overview.html">5.1.1. Field-oriented control (FOC): an overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="foc/fundamentals.html">5.1.2. Fundamentals of FOC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="foc/current_measure.html">5.1.3. Current measurement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="foc/overmodulation.html">5.1.4. Overmodulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="foc/dclink-comp.html">5.1.5. DC link compensation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="foc/tuning.html">5.1.6. Current loop tuning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="foc/comparison-6step.html">5.1.7. Comparison between FOC and six-step control</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="startup.html">5.2. Startup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="startup.html#overview">5.2.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="startup.html#startup-sequence-and-common-elements">5.2.2. Startup sequence and common elements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="startup.html#classic-startup-current-decay">5.2.3. Classic startup (current decay)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="startup.html#weathervane-startup">5.2.4. Weathervane startup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="startup.html#zs-mt-ipc-startup">5.2.5. ZS/MT + IPC startup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="startup.html#active-damping">5.2.6. Active damping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="startup.html#slow-and-fast-acceleration">5.2.7. Slow and fast acceleration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="stopping.html">5.3. Stopping</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="stopping.html#overview">5.3.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stopping.html#minimal-impact-pwm">5.3.2. Minimal-impact PWM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stopping.html#closed-loop-methods">5.3.3. Closed-loop methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stopping.html#implementation-notes">5.3.4. Implementation notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="estimators.html">5.4. Position and Velocity Estimation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="estimator-interface.html">5.4.1. Firmware Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pll.html">5.4.2. AN1292 Phase-locked Loop (PLL)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qei.html">5.4.3. Quadrature encoder support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atpll.html">5.4.4. Angle-tracking Phase-locked Loop (ATPLL)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zsmt.html">5.4.5. Zero-Speed / Maximum Torque (ZS/MT)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="estimators.html#overview">5.4.6. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="estimators.html#comparative-analysis">5.4.7. Comparative analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="flux_control/index.html">5.5. Flux control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flux_control/flux_weakening.html">5.5.1. Flux weakening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flux_control/mtpa.html">5.5.2. Maximum Torque Per Ampere (MTPA)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flux_control/flux_weakening_mtpa_integration.html">5.5.3. D-axis current reference generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flux_control/index.html#overview">5.5.4. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flux_control/index.html#flow-chart-and-details">5.5.5. Flow chart and details</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="current-limit.html">5.6. Current limit</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="current-limit.html#overview">5.6.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="current-limit.html#implications-of-operating-at-the-current-limit">5.6.2. Implications of operating at the current limit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="current-limit.html#dynamic-current-limit">5.6.3. Dynamic current limit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="current-limit.html#thermal-modeling-background">5.6.4. Thermal modeling background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="current-limit.html#available-current-limit-algorithms-in-mcaf">5.6.5. Available current limit algorithms in MCAF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="current-limit.html#peak-and-continuous-limits">5.6.6. Peak and continuous limits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="current-limit.html#implementation-notes">5.6.7. Implementation notes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dead-time-comp.html">5.7. Dead-time Compensation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dead-time-comp.html#overview">5.7.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dead-time-comp.html#definition-and-origin-of-dead-time">5.7.2. Definition and origin of dead time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dead-time-comp.html#dead-time-distortion">5.7.3. Dead-time distortion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dead-time-comp.html#practical-effects-of-dead-time-distortion">5.7.4. Practical effects of dead-time distortion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dead-time-comp.html#id2">5.7.5. Dead-time compensation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dead-time-comp.html#references">5.7.6. References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="voltage-control.html">5.8. Voltage Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="voltage-control.html#overview">5.8.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="voltage-control.html#effects-of-motor-parameters-on-mechanical-compliance">5.8.2. Effects of motor parameters on mechanical compliance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="voltage-control.html#choosing-algorithm-parameters">5.8.3. Choosing algorithm parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="temperature-measure.html">5.9. Temperature measurement</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="temperature-measure.html#filtering">5.9.1. Filtering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="temperature-measure.html#implementation-notes">5.9.2. Implementation notes</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../components/miscellaneous.html"
+                          title="previous chapter"><span class="section-number">4.11. </span>Miscellaneous</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="foc/index.html"
+                          title="next chapter"><span class="section-number">5.1. </span>Field-oriented Current Control</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="foc/index.html" title="5.1. Field-oriented Current Control"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../components/miscellaneous.html" title="4.11. Miscellaneous"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5. </span>Detailed Algorithm Notes</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

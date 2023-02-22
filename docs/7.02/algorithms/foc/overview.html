@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.1.1. Field-oriented control (FOC): an overview &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../../_static/svgcrop.js"></script>
+    <script src="../../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.1.2. Fundamentals of FOC" href="fundamentals.html" />
+    <link rel="prev" title="5.1. Field-oriented Current Control" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="fundamentals.html" title="5.1.2. Fundamentals of FOC"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="5.1. Field-oriented Current Control"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U"><span class="section-number">5.1. </span>Field-oriented Current Control</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.1.1. </span>Field-oriented control (FOC): an overview</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="field-oriented-control-foc-an-overview">
+<span id="foc-overview"></span><h1><span class="section-number">5.1.1. </span>Field-oriented control (FOC): an overview<a class="headerlink" href="#field-oriented-control-foc-an-overview" title="Permalink to this heading">¶</a></h1>
+<p>Field-oriented control (FOC), also known as vector control,
+is a technique of controlling the stator magnetic field of a motor
+relative to a rotating reference frame of electrical excitation.
+It can achieve smooth torque, high torque capability, high efficiency, and high bandwidth.</p>
+<p>FOC can be used by several types of motors:
+permanent-magnet synchronous motors, synchronous reluctance motors, and induction motors.
+The reference frame is chosen to decouple the components of the stator field into a
+flux-producing component and a torque-producing component, which can be managed separately.
+In permanent-magnet synchronous motors and synchronous reluctance motors,
+a reference frame is used that rotates synchronously with the rotor,
+aligned along the axis of rotor magnetic flux.
+In induction motors, the reference frame rotates at the required synchronous speed
+needed to achieve a desired slip.</p>
+<p>FOC does have more stringent signal sensing and conditioning requirements
+than six-step control, requiring the following:</p>
+<ul class="simple">
+<li><p>phase current measurements, to estimate the stator field vector</p></li>
+<li><p>an estimate of rotor angle, usually within 5 – 10 electrical degrees
+(higher pole count motors require better mechanical accuracy)</p></li>
+</ul>
+<p>Computational requirements of FOC vary, but are generally higher than six-step.
+Currents and voltages are translated between reference frames by matrix multiplications,
+effectively a few calculations of the form <span class="math notranslate nohighlight">\(ax + by\)</span> or <span class="math notranslate nohighlight">\(ax + by + cz\)</span>.
+If the rotor angle is not sensed directly — with resolver or quadrature encoder —
+it can be estimated from a sensorless estimator
+through calculations based on current and voltage measurements.</p>
+<p>The benefits of high-performance torque control are often worth the costs,
+even in applications with relatively slow dynamics, such as pumps and fans.</p>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter"><span class="section-number">5.1. </span>Field-oriented Current Control</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="fundamentals.html"
+                          title="next chapter"><span class="section-number">5.1.2. </span>Fundamentals of FOC</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="fundamentals.html" title="5.1.2. Fundamentals of FOC"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="5.1. Field-oriented Current Control"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" ><span class="section-number">5.1. </span>Field-oriented Current Control</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.1.1. </span>Field-oriented control (FOC): an overview</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

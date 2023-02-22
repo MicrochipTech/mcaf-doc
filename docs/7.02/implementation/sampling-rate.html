@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>6.4. Sampling Rate and PWM Frequency Implications &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="6.5. Integration with Custom Code" href="integration.html" />
+    <link rel="prev" title="6.3. Parameter customization" href="ui-customization.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="integration.html" title="6.5. Integration with Custom Code"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ui-customization.html" title="6.3. Parameter customization"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.4. </span>Sampling Rate and PWM Frequency Implications</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="sampling-rate-and-pwm-frequency-implications">
+<span id="impl-sampling-rate"></span><h1><span class="section-number">6.4. </span>Sampling Rate and PWM Frequency Implications<a class="headerlink" href="#sampling-rate-and-pwm-frequency-implications" title="Permalink to this heading">¶</a></h1>
+<p><a class="reference internal" href="#impl-sampling-rate-revhist"><span class="std std-ref">Since MCAF R6</span></a>, changes in sampling rate and PWM frequency are supported through the Configure page of motorBench<sup>®</sup> Development Suite, under the Board section.</p>
+<p><a class="reference internal" href="#fig-sampling-rate"><span class="std std-numref">Figure 6.3</span></a> shows a screenshot of the Configure page and the three settings that control these rates:</p>
+<ul class="simple">
+<li><p><strong>Sampling time, current</strong> — controls the rate at which the bulk of motor control algorithms execute, including the current controller, reference transforms, and position and velocity estimator.</p></li>
+<li><p><strong>Sampling time, velocity</strong> — controls the rate at which the velocity controller runs</p></li>
+<li><p><strong>Switching frequency</strong> — controls the PWM switching frequency <span class="math notranslate nohighlight">\(f_{\text{PWM}}\)</span> (ignore minimum and maximum settings)</p></li>
+</ul>
+<figure class="align-center" id="id1">
+<span id="fig-sampling-rate"></span><img alt="../_images/sampling-rates-in-motorbench.png" src="../_images/sampling-rates-in-motorbench.png" />
+<figcaption>
+<p><span class="caption-number">Figure 6.3 </span><span class="caption-text"> </span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<section id="effects-of-changing-sampling-rate-and-pwm-frequency">
+<h2><span class="section-number">6.4.1. </span>Effects of changing sampling rate and PWM frequency<a class="headerlink" href="#effects-of-changing-sampling-rate-and-pwm-frequency" title="Permalink to this heading">¶</a></h2>
+<p>Changing the sampling rate or PWM frequency will have some effects on
+the system design. For the most part, MCAF operation is independent of these
+choices; some parameters in the generated code will have different scaling
+factors that depend on sampling rate and PWM frequency, but the net result
+is approximately the same. The autotuning feature of motorBench<sup>®</sup> Development Suite will produce
+approximately the same bandwidths of current and velocity loops.</p>
+<section id="pwm-frequency">
+<h3><span class="section-number">6.4.1.1. </span>PWM frequency<a class="headerlink" href="#pwm-frequency" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Amplitude of ripple current</strong> — ripple current amplitudes are
+proportional to <span class="math notranslate nohighlight">\(VT\over L\)</span>, so in general the ripple current is
+proportional to PWM period, and decreasing the PWM frequency will increase
+the amplitude of ripple current at harmonics of the PWM frequency.</p></li>
+<li><p><strong>Dead-time distortion</strong> — increasing PWM frequency will make the dead
+time a larger fraction of the PWM period. This not only increases
+dead-time distortion, but also reduces the effective utilization of voltage,
+since for the same dead time, higher PWM frequency causes the maximum duty
+cycle to be decreased, and the minimum duty cycle to be increased.</p></li>
+<li><p><strong>Switching losses</strong> — switching loss energy per PWM period
+<span class="math notranslate nohighlight">\(E_{sw}\)</span> is
+dependent on the switching speeds during turn-on and turn-off,
+and on the switching voltages and currents. Power dissipated in
+switching loss is equal to <span class="math notranslate nohighlight">\(f_{\text{PWM}} \times E_{sw}\)</span>,
+so increasing switching frequency leads
+to higher switching power dissipation.</p></li>
+</ul>
+</section>
+<section id="sampling-rate">
+<h3><span class="section-number">6.4.1.2. </span>Sampling rate<a class="headerlink" href="#sampling-rate" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>CPU usage</strong> — MCAF runs most of the motor control calculations
+in firmware once per control loop update, so increasing the sampling rate
+requires higher CPU usage.</p></li>
+<li><p><strong>Current loop gains and bandwidth</strong> — Current loop gains
+(in engineering units: <span class="math notranslate nohighlight">\(K_{ip}\)</span> has units of V/A,
+and <span class="math notranslate nohighlight">\(K_{ii}\)</span> has units of V/As) will change slightly due to the
+effects of sampling delay. This is most notable with an aggressive
+(high-bandwidth)
+current loop, where increasing the sampling rate lowers the delay from
+input sampling to output update, and allows a faster current loop bandwidth.
+If the current loop bandwidth is low (below <span class="math notranslate nohighlight">\(f_{\text{PWM}}/50\)</span>),
+changes in sampling rate are generally not noticeable.</p></li>
+<li><p><strong>Velocity loop gains and bandwidth</strong> — Velocity loop gains
+are affected similarly;
+increasing the velocity sampling rate will allow a faster maximum bandwidth
+of velocity loop, but will not have a significant impact if the velocity
+loop bandwidth is low. In addition, since the velocity control loop is
+cascaded outside the current loops, aggressive velocity loops will be
+limited by the current loop bandwidth.</p></li>
+<li><p><strong>Diagnostic kernel</strong> — the diagnostic kernel runs in the same ISR
+as the current control loop, so raising the sampling rate will increase
+the rate at which data is reported to a host PC, and will increase
+communications bandwidth requirements.</p></li>
+</ul>
+</section>
+<section id="compensating-parameters">
+<h3><span class="section-number">6.4.1.3. </span>Compensating parameters<a class="headerlink" href="#compensating-parameters" title="Permalink to this heading">¶</a></h3>
+<p>A number of parameters in the generated code will compensate for changes
+in PWM frequency and sampling rate.
+(Tuned gains and <a class="reference internal" href="ui-customization.html#impl-customization"><span class="std std-ref">customized application parameters</span></a>
+are always given in normalized unitless values or engineering units,
+and are independent
+of sampling times and PWM frequency, but are converted to fixed-point
+representation depending on scaling factors that may be dependent on
+sampling times or PWM frequency.)</p>
+<ul class="simple">
+<li><p>Time delays</p></li>
+<li><p>Slew rates, ramp rates, and acceleration rates</p></li>
+<li><p>Integrator gains</p></li>
+</ul>
+</section>
+</section>
+<section id="implementation-notes">
+<h2><span class="section-number">6.4.2. </span>Implementation notes<a class="headerlink" href="#implementation-notes" title="Permalink to this heading">¶</a></h2>
+<section id="revision-specific-information">
+<span id="impl-sampling-rate-revhist"></span><h3><span class="section-number">6.4.2.1. </span>Revision-specific information<a class="headerlink" href="#revision-specific-information" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>R1 – R5 supported only a fixed sampling rate and PWM frequency of 20 kHz.
+Certain gains and other parameters were calculated assuming this frequency.</p></li>
+<li><p>R6 added flexibility for setting the PWM frequency, with the sampling rate locked
+to the PWM frequency. (See <a class="reference internal" href="#impl-sampling-rate-restrictions"><span class="std std-ref">Restrictions</span></a> section.)</p>
+<ul>
+<li><p>If using MCC Melody (MCAF R7 for dsPIC33C devices), setting the PWM frequency
+in the Customize page of motorBench<sup>®</sup> Development Suite will automatically set the peripheral registers
+in Melody-generated code.</p></li>
+<li><p>If using MCC Classic (MCAF R6 for all devices, or MCAF R7 for dsPIC33E devices),
+PWM frequency set in motorBench<sup>®</sup> Development Suite must match the PWM frequency selected in MCC.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="restrictions">
+<span id="impl-sampling-rate-restrictions"></span><h3><span class="section-number">6.4.2.2. </span>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this heading">¶</a></h3>
+<p>In MCAF R6 – R7, sampling rates must be locked to specific ratios of the PWM frequency:</p>
+<ul class="simple">
+<li><p>Current sampling time <span class="math notranslate nohighlight">\(T_{s,I}\)</span> must equal the PWM period, so that the bulk of the motor control algorithms run at the PWM frequency (<span class="math notranslate nohighlight">\(f_{\text{PWM}} \times T_{s,I} = 1\)</span>)</p></li>
+<li><p>Velocity sampling time <span class="math notranslate nohighlight">\(T_{s,\omega}\)</span> must equal 20 times the PWM period, so that the velocity controller runs every 20 PWM periods (<span class="math notranslate nohighlight">\(f_{\text{PWM}} \times T_{s,\omega} = 20\)</span>)</p></li>
+</ul>
+<p>These restrictions will be removed in a future version of MCAF.</p>
+</section>
+</section>
+<section id="testing">
+<h2><span class="section-number">6.4.3. </span>Testing<a class="headerlink" href="#testing" title="Permalink to this heading">¶</a></h2>
+<p>MCAF R6 code was tested at several PWM frequencies
+(with current sampling rate locked to PWM frequency and
+velocity sampling rate locked to 1/20 PWM frequency,
+following the restrictions listed above):</p>
+<ul class="simple">
+<li><p>12.5kHz, 20kHz, and 25kHz for confirmation of timing and CPU usage on
+both the dsPIC33EP256MC506 and the dsPIC33CK256MP508</p></li>
+<li><p>10kHz, 12.5kHz, 16kHz, and 20kHz for general independence of tuning
+with PWM frequency and current loop sampling rate</p></li>
+<li><p>12.5kHz and 20kHz for detailed verification of step response and
+estimator independence, for all three
+<a class="reference internal" href="../algorithms/estimators.html#algorithm-estimators"><span class="std std-ref">position and velocity estimators</span></a>
+(<a class="reference internal" href="../algorithms/atpll.html#algorithm-atpll"><span class="std std-ref">ATPLL</span></a>, <a class="reference internal" href="../algorithms/pll.html#algorithm-pll"><span class="std std-ref">PLL</span></a>,
+<a class="reference internal" href="../algorithms/qei.html#algorithm-qei"><span class="std std-ref">quadrature encoder</span></a>) on the dsPIC33CK256MP508</p></li>
+</ul>
+<p>Step response tests used the <a class="reference internal" href="../components/testharness.html#test-harness"><span class="std std-ref">test harness</span></a> to
+add a <a class="reference internal" href="../components/testharness.html#test-perturbation"><span class="std std-ref">square-wave perturbation</span></a> to the
+velocity command, and record the velocity and currents.
+<a class="reference internal" href="#fig-sampling-rate-test-current"><span class="std std-numref">Figure 6.4</span></a> and
+<a class="reference internal" href="#fig-sampling-rate-test-velocity"><span class="std std-numref">Figure 6.5</span></a> show the current
+and velocity step response for the ATPLL, logged at 12.5kHz and 20kHz
+PWM frequencies. Note that the step responses change very little
+between these cases, as expected.</p>
+<figure class="align-center" id="id2">
+<span id="fig-sampling-rate-test-current"></span><img alt="../_images/2725-current-atpll.png" src="../_images/2725-current-atpll.png" />
+<figcaption>
+<p><span class="caption-number">Figure 6.4 </span><span class="caption-text">Step responses of current to changes in velocity command
+(orange = q-axis current command, blue = q-axis current)</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id3">
+<span id="fig-sampling-rate-test-velocity"></span><img alt="../_images/2725-velocity-atpll.png" src="../_images/2725-velocity-atpll.png" />
+<figcaption>
+<p><span class="caption-number">Figure 6.5 </span><span class="caption-text">Step responses of velocity to changes in velocity command
+(orange = velocity command, blue = estimated velocity)</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">6.4. Sampling Rate and PWM Frequency Implications</a><ul>
+<li><a class="reference internal" href="#effects-of-changing-sampling-rate-and-pwm-frequency">6.4.1. Effects of changing sampling rate and PWM frequency</a><ul>
+<li><a class="reference internal" href="#pwm-frequency">6.4.1.1. PWM frequency</a></li>
+<li><a class="reference internal" href="#sampling-rate">6.4.1.2. Sampling rate</a></li>
+<li><a class="reference internal" href="#compensating-parameters">6.4.1.3. Compensating parameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementation-notes">6.4.2. Implementation notes</a><ul>
+<li><a class="reference internal" href="#revision-specific-information">6.4.2.1. Revision-specific information</a></li>
+<li><a class="reference internal" href="#restrictions">6.4.2.2. Restrictions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#testing">6.4.3. Testing</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="ui-customization.html"
+                          title="previous chapter"><span class="section-number">6.3. </span>Parameter customization</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="integration.html"
+                          title="next chapter"><span class="section-number">6.5. </span>Integration with Custom Code</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="integration.html" title="6.5. Integration with Custom Code"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ui-customization.html" title="6.3. Parameter customization"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.4. </span>Sampling Rate and PWM Frequency Implications</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

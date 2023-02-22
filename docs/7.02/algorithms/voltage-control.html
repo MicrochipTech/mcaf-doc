@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.8. Voltage Control &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.9. Temperature measurement" href="temperature-measure.html" />
+    <link rel="prev" title="5.7. Dead-time Compensation" href="dead-time-comp.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="temperature-measure.html" title="5.9. Temperature measurement"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="dead-time-comp.html" title="5.7. Dead-time Compensation"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.8. </span>Voltage Control</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="voltage-control">
+<span id="algorithm-voltagecontrol"></span><span id="index-0"></span><h1><span class="section-number">5.8. </span>Voltage Control<a class="headerlink" href="#voltage-control" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">5.8.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>Voltage control is an alternative to velocity control. This feature provides the use of q-axis voltage
+<span class="math notranslate nohighlight">\(V_q\)</span> rather than velocity as an outer control loop. Voltage control acts upon back-emf as a proxy for
+velocity control, with some compliance (velocity is allowed to decrease with an increased torque load). The
+velocity command <span class="math notranslate nohighlight">\(\omega_{m,cmd}\)</span> is transformed to a equivalent voltage <span class="math notranslate nohighlight">\(V_{q,cmd}\)</span> using the
+back-emf constant of the motor. The modified FOC block diagram describing voltage control is shown in
+<a class="reference internal" href="#fig-foc-blkdiag-voltage"><span class="std std-numref">Figure 5.117</span></a>. This feature repurposes the velocity controller as a voltage controller
+with different control parameters.</p>
+<figure class="align-center" id="id1">
+<span id="fig-foc-blkdiag-voltage"></span><img alt="../_images/foc_blkdiag_voltage.svg" src="../_images/foc_blkdiag_voltage.svg" /><figcaption>
+<p><span class="caption-number">Figure 5.117 </span><span class="caption-text">Block diagram of MCAF Field Oriented Control using q-axis voltage as the outer control loop.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Voltage control can provide a high-bandwidth alternative to velocity control. In some
+motor control systems, a traditional velocity loop may be constrained in bandwidth, because of the error or
+the control delay (phase lag) does not allow a stable, high bandwidth voltage control loop. In such systems,
+a voltage controller can respond faster, limited only by the bandwidth of the current loop.</p>
+<p>Systems which need high bandwidth and cannot tolerate the phase lag of the velocity estimator may be able to
+use voltage control instead. This feeds back the q-axis voltage from the current controller, filtered, as a
+feedback term to use in the velocity controller, reappropriated as a voltage controller. The voltage
+controller will reach equilibrium when <span class="math notranslate nohighlight">\(V_{q,cmd} = K_e \omega_m + I_q R + \omega_e L_d I_d\)</span>. With
+<span class="math notranslate nohighlight">\(I_d = 0\)</span> (no flux weakening), this effectively is a velocity controller with a compliance or “droop”
+due to the IR drop across the stator. The phase lag caused by the voltage controller can be less than the
+position and velocity estimator, and in some applications the droop behavior may be advantageous.</p>
+<p><strong>Note:</strong> This feature has not been tested extensively. The guidance in this section is preliminary and is
+based on limited testing so far. Future work may help improve this guidance.</p>
+</section>
+<section id="effects-of-motor-parameters-on-mechanical-compliance">
+<h2><span class="section-number">5.8.2. </span>Effects of motor parameters on mechanical compliance<a class="headerlink" href="#effects-of-motor-parameters-on-mechanical-compliance" title="Permalink to this heading">¶</a></h2>
+<p>The torque compliance of voltage control can be stated analytically as follows:</p>
+<div class="math notranslate nohighlight" id="equation-eq-voltage-control-equilibrium-mech">
+<span class="eqno">(5.59)<a class="headerlink" href="#equation-eq-voltage-control-equilibrium-mech" title="Permalink to this equation">¶</a></span>\[ \begin{aligned}
+ \omega_{m,cmd} &amp;= \omega_m\left(1 + \alpha_\psi\right) + T_{em} / B'
+ \end{aligned}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\alpha_\psi = \tfrac{N_p L_d I_d}{K_e}\)</span> captures the effect of flux weakening due to nonzero
+d-axis current, and <span class="math notranslate nohighlight">\(B' = \tfrac{3K_e{}^2}{2R}\)</span> captures the mechanical compliance with load torque.</p>
+<p>Equation <a class="reference internal" href="#equation-eq-voltage-control-equilibrium-mech">5.59</a> can
+be derived from the PMSM voltage equations — Equation <a class="reference internal" href="foc/fundamentals.html#equation-eq-foc-voltage2">5.12</a> — in three steps:</p>
+<ul class="simple">
+<li><p>setting derivative <span class="math notranslate nohighlight">\(dI_q/dt\)</span> to zero, yielding <span class="math notranslate nohighlight">\(V_q = R_s I_q + \omega_e L_dI_d + K_e \omega_m\)</span></p></li>
+<li><p>substituting the equation for electromechanical torque: <span class="math notranslate nohighlight">\(T_{em} = \frac{3}{2} K_e I_q\)</span></p></li>
+<li><p>substituting the voltage control command: <span class="math notranslate nohighlight">\(V_{q,cmd} = K_e \omega_{m,cmd}\)</span></p></li>
+</ul>
+<p>and rewriting to relate velocity command, velocity, and torque when current is in steady state.</p>
+<p>With <span class="math notranslate nohighlight">\(I_d = 0\)</span> (no flux weakening), the mechanical compliance increases with greater back-emf
+and decreases with larger stator resistance.</p>
+</section>
+<section id="choosing-algorithm-parameters">
+<h2><span class="section-number">5.8.3. </span>Choosing algorithm parameters<a class="headerlink" href="#choosing-algorithm-parameters" title="Permalink to this heading">¶</a></h2>
+<p>The voltage controller is not autotuned; control parameters must be tuned manually. At this time, tuning guidance
+for the voltage loop is limited. Empirical tuning of the voltage loop is acceptable. One approach is to start with
+the default gains (<span class="math notranslate nohighlight">\(K_p = 0.1/R\)</span>, <span class="math notranslate nohighlight">\(\tau = 100ms\)</span>), increasing <span class="math notranslate nohighlight">\(K_p\)</span> gradually until there are
+hints of instability (increased noise in the current loop) and then increasing <span class="math notranslate nohighlight">\(K_i\)</span> until there are hints of
+further instability. (Firmware implementation uses <span class="math notranslate nohighlight">\(K_p\)</span>, <span class="math notranslate nohighlight">\(K_i\)</span>, so runtime adjustment of <span class="math notranslate nohighlight">\(\tau\)</span> is
+not directly possible; instead, adjust voltage loop <span class="math notranslate nohighlight">\(K_p\)</span>, <span class="math notranslate nohighlight">\(K_i\)</span>.)</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.8. Voltage Control</a><ul>
+<li><a class="reference internal" href="#overview">5.8.1. Overview</a></li>
+<li><a class="reference internal" href="#effects-of-motor-parameters-on-mechanical-compliance">5.8.2. Effects of motor parameters on mechanical compliance</a></li>
+<li><a class="reference internal" href="#choosing-algorithm-parameters">5.8.3. Choosing algorithm parameters</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="dead-time-comp.html"
+                          title="previous chapter"><span class="section-number">5.7. </span>Dead-time Compensation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="temperature-measure.html"
+                          title="next chapter"><span class="section-number">5.9. </span>Temperature measurement</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="temperature-measure.html" title="5.9. Temperature measurement"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="dead-time-comp.html" title="5.7. Dead-time Compensation"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.8. </span>Voltage Control</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>4.9. Hardware Abstraction Layer (HAL) &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.10. Motion Control API (MCAPI)" href="mcapi.html" />
+    <link rel="prev" title="4.8. Diagnostic Kernel" href="diagnostics.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="mcapi.html" title="4.10. Motion Control API (MCAPI)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="diagnostics.html" title="4.8. Diagnostic Kernel"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">4. </span>Components</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">4.9. </span>Hardware Abstraction Layer (HAL)</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="hardware-abstraction-layer-hal">
+<span id="hal"></span><h1><span class="section-number">4.9. </span>Hardware Abstraction Layer (HAL)<a class="headerlink" href="#hardware-abstraction-layer-hal" title="Permalink to this heading">¶</a></h1>
+<p>The HAL is used by the MCAF to decouple all knowledge of device-specific hardware
+registers, via well-known function calls. The HAL is made up of two layers:
+<a class="reference external" href="https://www.microchip.com/mplab/mplab-code-configurator">MPLAB<sup>®</sup> Code Configurator</a> (MCC) layer and HAF layer. The MCC layer is the base layer where device-specific
+hardware registers are abstracted out into a series of peripheral driver APIs. The HAF
+layer then calls functions in the MCC layer to abstract out device specific functionality,
+enabling the higher level MCAF layers to be device-independent.</p>
+<p>As long as the HAL function names and semantics are preserved, the HAL component
+can be swapped out and replaced with an alternative implementation.</p>
+<section id="hardware-related-behavior">
+<h2><span class="section-number">4.9.1. </span>Hardware-related behavior<a class="headerlink" href="#hardware-related-behavior" title="Permalink to this heading">¶</a></h2>
+<p>Certain aspects of the MCAF utilize the functions provided by the HAL,
+but the choice of behavior lies within the MCAF.
+Some of these choices have been made to facilitate portability between
+devices that have different underlying peripheral mechanisms.</p>
+<p><strong>Note: this portability comes at a cost</strong> — each series of microcontrollers
+has certain peripheral usage patterns that are optimal but which may
+not translate well across different series.</p>
+<p>Customers for whom
+CPU or peripheral performance is a severe constraint that takes
+precedence over portability and maintainability, should consider
+modifying the HAL as necessary to meet those constraints. Microchip does
+not recommend this approach unless absolutely necessary.</p>
+<section id="interrupt-priorities">
+<h3><span class="section-number">4.9.1.1. </span>Interrupt Priorities<a class="headerlink" href="#interrupt-priorities" title="Permalink to this heading">¶</a></h3>
+<p>The majority of MCAF code is executed in several different interrupt service routines. The following
+interrupts, listed from highest to lowest priority, are used by MCAF. See the
+<a class="reference internal" href="../architecture/schedopt.html#scheduling-requirements"><span class="std std-ref">scheduling requirements</span></a> section for more information.</p>
+<ul class="simple">
+<li><p>Main ADC ISR — Executes the <a class="reference internal" href="statemach.html#component-statemachine"><span class="std std-ref">state machine</span></a> and several other
+critical MCAF components once every PWM period.</p></li>
+<li><p>Single-channel ADC ISR — Samples the DC link current twice every PWM period. Only executed
+if <a class="reference internal" href="../algorithms/foc/current_measure.html#algorithm-current-single-channel"><span class="std std-ref">single-channel current measurement</span></a> is used.</p></li>
+<li><p>Timer ISR — Executes the <a class="reference internal" href="#board-service-module"><span class="std std-ref">board service</span></a> tasks and the
+<a class="reference internal" href="main.html#component-main"><span class="std std-ref">main application</span></a> periodically.</p></li>
+</ul>
+</section>
+<section id="pwm-outputs">
+<span id="hardware-pwm"></span><h3><span class="section-number">4.9.1.2. </span>PWM outputs<a class="headerlink" href="#pwm-outputs" title="Permalink to this heading">¶</a></h3>
+<p><a class="reference internal" href="../appendix/glossary.html#term-PWM"><span class="xref std std-term">PWM</span></a> outputs for the three-phase bridge are set in one of three modes:</p>
+<ul class="simple">
+<li><p><strong>off</strong> — at device reset, and during severe faults, the bridge is turned off completely</p></li>
+</ul>
+<span id="index-0"></span><ul class="simple" id="hardware-pwm-minimal-impact">
+<li><p><strong>“minimal impact”</strong> — when not applying voltage across the
+motor terminals (in certain states of the <a class="reference internal" href="statemach.html#component-statemachine"><span class="std std-ref">state machine</span></a>),
+the upper transistors are turned off completely, but the lower transistors
+are turned on at a low duty cycle (typically 1-3%),
+to maintain charge in bootstrap
+gate drive capacitors. See <code class="docutils literal notranslate"><span class="pre">MCAF_SetPwmMinimalImpact()</span></code>
+in the <a class="reference internal" href="statemach.html#component-statemachine"><span class="std std-ref">state_machine</span></a> module.</p></li>
+<li><p><strong>normal</strong> — when applying voltage across the motor terminals,
+all 6 of the transistors are switching, in three complementary pairs,
+one for each phase. Each phase has a dead-time between turn-off
+of one transistor and turn-on of the complementary transistor,
+to avoid shoot-through.</p></li>
+</ul>
+</section>
+<section id="overcurrent-fault-detection-and-clearing">
+<h3><span class="section-number">4.9.1.3. </span>Overcurrent fault detection and clearing<a class="headerlink" href="#overcurrent-fault-detection-and-clearing" title="Permalink to this heading">¶</a></h3>
+<p>MCAF requires a two phase fault clearing scheme to reset the latch circuitry. In order to clear the fault in Latched mode in dsPIC33EP devices, it is necessary to clear the interrupt flag and enable the fault mode at the next PWM cycle. Please refer to <a class="reference external" href="http://ww1.microchip.com/downloads/en/devicedoc/70645c.pdf#page=101">DS70645C p.14-101</a> for additional information.</p>
+<p>Phase 1 occurs at current PWM cycle</p>
+<ul class="simple">
+<li><p>33EP: Disable the fault latch mode</p></li>
+<li><p>33CK: Clear the fault latch</p></li>
+</ul>
+<p>Phase 2 occurs at the next PWM cycle</p>
+<ul class="simple">
+<li><p>33CK &amp; 33EP: Clear the fault interrupt flag</p></li>
+<li><p>33EP: Enable the fault latch</p></li>
+</ul>
+</section>
+<section id="analog-to-digital-conversion">
+<span id="index-1"></span><h3><span class="section-number">4.9.1.4. </span>Analog-to-digital conversion<a class="headerlink" href="#analog-to-digital-conversion" title="Permalink to this heading">¶</a></h3>
+<p>Some of the ADC inputs have strict timing requirements, as shown in <a class="reference internal" href="#table-hal-adc-sampling"><span class="std std-numref">Table 4.8</span></a>.</p>
+<p>(At present, MCAF requires a fixed <span class="math notranslate nohighlight">\(f_{PW\!M}\)</span> = 20 kHz.)</p>
+<table class="docutils align-default" id="table-hal-adc-sampling">
+<caption><span class="caption-number">Table 4.8 </span><span class="caption-text">Sampling requirements for MCAF</span><a class="headerlink" href="#table-hal-adc-sampling" title="Permalink to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Analog input</p></th>
+<th class="head"><p>Sampling frequency</p></th>
+<th class="head"><p>Timing requirements</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Motor currents (A,B,Sum)</p></td>
+<td><p><span class="math notranslate nohighlight">\(f_{PW\!M}/K\)</span></p></td>
+<td><p>Sample near the center of the PWM cycle(typically the start of center-aligned cycle).
+All samples should be complete within some small time Tskew. (Typically 1 μs or less)</p></td>
+</tr>
+<tr class="row-odd"><td><p>DC link voltage</p></td>
+<td><p><span class="math notranslate nohighlight">\(f_{PW\!M}/K\)</span></p></td>
+<td><p>K=1 or K=2 typical. (Minimizing K is preferred.) Otherwise, no strict timing requirements</p></td>
+</tr>
+<tr class="row-even"><td><p>Potentiometer</p></td>
+<td><p><span class="math notranslate nohighlight">\(f_{PW\!M}/K\)</span></p></td>
+<td><p>Depends on the application; MCAF uses K=2. Otherwise, no strict timing requirements</p></td>
+</tr>
+</tbody>
+</table>
+<p>Given the above constraints, multiple ADC sample scheduling schemes can be used. The timing diagrams below show the sampling schedules of motor phase currents, DC link voltage, and potentiometer in both 33CK and 33EP.</p>
+<figure class="align-center" id="id3">
+<span id="fig-hal-adc-33ck"></span><img alt="../_images/adc-33ck-timing-diagram.svg" src="../_images/adc-33ck-timing-diagram.svg" /><figcaption>
+<p><span class="caption-number">Figure 4.12 </span><span class="caption-text">Suggested ADC Timing on dsPIC33CK devices with multiple ADC cores (horizontal axis not to scale)</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p><a class="reference internal" href="#fig-hal-adc-33ck"><span class="std std-numref">Figure 4.12</span></a> shows an example of dsPIC33CK devices with multiple cores (such as the dsPIC33CK64MP105, and dsPIC33CK256MP508) sampling motor currents phase A and B simultaneously at the beginning of the center-aligned PWM cycle. After motor current phase B, with less than 1 μs between samples, the shared core sequentially samples the DC link voltage, and potentiometer, followed by the end of conversion of the potentiometer which triggers the ADC ISR.</p>
+<figure class="align-center" id="id4">
+<span id="fig-hal-adc-33ck64mc105"></span><img alt="../_images/adc-33ck64mc105-timing-diagram.svg" src="../_images/adc-33ck64mc105-timing-diagram.svg" /><figcaption>
+<p><span class="caption-number">Figure 4.13 </span><span class="caption-text">Suggested ADC Timing on dsPIC33CK devices with single ADC cores (horizontal axis not to scale)</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p><a class="reference internal" href="#fig-hal-adc-33ck64mc105"><span class="std std-numref">Figure 4.13</span></a> shows an example of dsPIC33CK devices with a single ADC core (such as dsPIC33CK64MC105) sampling analog inputs: motor currents phase A, B, DC link voltage, and potentiometer sequentially. At the end of the conversion sequence the ADC ISR is triggered and executes.</p>
+<figure class="align-center" id="id5">
+<span id="fig-hal-adc-33ep"></span><img alt="../_images/adc-33ep-timing-diagram.svg" src="../_images/adc-33ep-timing-diagram.svg" /><figcaption>
+<p><span class="caption-number">Figure 4.14 </span><span class="caption-text">Suggested ADC Timing on dsPIC33EP devices (horizontal axis not to scale)</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p><a class="reference internal" href="#fig-hal-adc-33ep"><span class="std std-numref">Figure 4.14</span></a> shows an example of dsPIC33EP256MC506 sampling all analog inputs simultaneously at the beginning of the center-aligned PWM cycle, with the exception of the potentiometer input. After analog inputs have been sampled and converted this triggers the beginning of the ADC ISR. At the next center-aligned PWM cycle the shared ADC core is switched from sensing DC link voltage to sensing the potentiometer input. At the next PWM boundary this cycle repeats.</p>
+<section id="difference-between-33ep-and-33ck-pwm-modules-and-its-implications-on-adc-operation">
+<h4><span class="section-number">4.9.1.4.1. </span>Difference between 33EP and 33CK PWM modules and its implications on ADC operation<a class="headerlink" href="#difference-between-33ep-and-33ck-pwm-modules-and-its-implications-on-adc-operation" title="Permalink to this heading">¶</a></h4>
+<p>To measure the motor phase currents accurately the ADC must begin sampling in the middle of the low-side duty cycle pulse. This is to allow enough time for current sense signal conditioning to settle and charge the ADC sampling capacitor before the low-side pulse has ended.</p>
+<figure class="align-center" id="id6">
+<span id="fig-hal-symmetric-asymmetric-deadtime"></span><img alt="../_images/symmetric-asymmetric-deadtime.svg" src="../_images/symmetric-asymmetric-deadtime.svg" /><figcaption>
+<p><span class="caption-number">Figure 4.15 </span><span class="caption-text"> </span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p><a class="reference internal" href="#fig-hal-symmetric-asymmetric-deadtime"><span class="std std-numref">Figure 4.15</span></a> shows the difference between symmetric and asymmetric dead time. In symmetric dead time high-to-low transitions are advanced by DT/2 and low-to-high transitions are delayed by DT/2. In asymmetric dead time low-to-high transitions are delayed by DT. This figure also shows that in asymmetric dead time insertion the PWM deadcenter event is delayed by T1.</p>
+<dl class="simple">
+<dt>dsPIC33EP:</dt><dd><ul class="simple">
+<li><p>Implements symmetric dead time in PWM module</p></li>
+<li><p>Due to symmetric dead time the beginning of the center-aligned cycle is aligned with the center of the low-side pulse.</p></li>
+<li><p>No delay is required to ensure sampling/conversion occurs in the middle of the low-side pulse.</p></li>
+</ul>
+</dd>
+<dt>dsPIC33CK:</dt><dd><ul class="simple">
+<li><p>Implements asymmetric dead time in PWM module</p></li>
+<li><p>Due to asymmetric dead time the beginning of the center-aligned cycle is slightly ahead of the center of the low-side pulse.</p></li>
+<li><p>We suggest adding a small delay of half the dead time to the ADC trigger to ensure sampling/conversion occurs in the middle of the low-side pulse.</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+</section>
+<section id="pwm-update-options">
+<span id="hal-pwm-update-options"></span><h3><span class="section-number">4.9.1.5. </span>PWM update options<a class="headerlink" href="#pwm-update-options" title="Permalink to this heading">¶</a></h3>
+<p>For center-aligned PWM, there are several choices that determine when
+updates to the PWM duty cycle registers
+are actually loaded into the PWM generator for use.</p>
+<p>These choices usually include the following:</p>
+<ul class="simple">
+<li><p><strong>immediate update</strong> — duty cycle register updates are
+loaded into the PWM generator immediately. This has the lowest
+additional delay, but can cause extra output transitions
+(for example, if the duty cycle registers are updated
+from an older larger duty cycle, to a newer smaller duty cycle,
+after the older duty cycle has already caused a low-to-high transition,
+but before the newer duty cycle would cause a low-to-high transition)
+or fall within known errata of the PWM module.
+Immediate update is not recommended for use with MCAF.</p></li>
+<li><p><strong>single update</strong> (single synchronous update) —
+duty cycle register updates are loaded into the PWM generator
+at the start of the center-aligned PWM period. This creates only
+one opportunity per PWM cycle for control loops to update the duty cycle.</p></li>
+<li><p><strong>double update</strong> (double synchronous update) —
+duty cycle register updates are loaded into the PWM generator
+both at the start and the center of the center-aligned PWM period.
+This creates two opportunities per PWM cycle
+for control loops to update the duty cycle.</p></li>
+</ul>
+<p>The choice of update creates an effective delay
+in the current control loop timing.
+The critical metric is the
+<a class="reference internal" href="../algorithms/foc/tuning.html#ituning-sample-update-delay"><span class="std std-ref">sample-to-update delay</span></a>
+<span class="math notranslate nohighlight">\(T_{su}\)</span>,
+which measures the time between the instant that information
+is available from ADC sampling, until a new set of PWM duty cycles
+is loaded into the PWM generator.
+Single update and double update are shown in
+<a class="reference internal" href="#fig-hal-pwm-update-timing"><span class="std std-numref">Figure 4.16</span></a>.
+Double-update PWM allows for a minimum delay <span class="math notranslate nohighlight">\(T_{su}\)</span>
+of one half PWM cycle. Single-update PWM allows for
+a minimum delay <span class="math notranslate nohighlight">\(T_{su}\)</span> of one full cycle.
+The actual delay depends on how quickly the control loop
+executes the critical code between ADC sampling
+and PWM duty cycle register update.</p>
+<figure class="align-center" id="id7">
+<span id="fig-hal-pwm-update-timing"></span><img alt="../_images/scheduling1.svg" src="../_images/scheduling1.svg" /><figcaption>
+<p><span class="caption-number">Figure 4.16 </span><span class="caption-text">Single update and double update. The dashed lines represent
+opportunities for PWM generator update.</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Double update is recommended for MCAF, to reduce sample-to-update delay.
+In dsPIC33C devices this feature is disabled by default
+and needs to be enabled in the peripheral configuration.
+In dsPIC33E devices this feature is enabled by default
+and does not require or allow any change in peripheral configuration.
+(Note: For dsPIC33E please check the device errata. Earlier silicon
+revisions for some devices implement the single-update behavior
+rather than double-update behavior.)</p>
+</section>
+<section id="board-service-module">
+<span id="id1"></span><h3><span class="section-number">4.9.1.6. </span>Board service module<a class="headerlink" href="#board-service-module" title="Permalink to this heading">¶</a></h3>
+<p>The board service module in MCAF works with Hardware Access Functions (HAF)
+in the HAL in order to provide MCAF with board-level functionality.
+It provides two main board-related features: a board handler and a
+PWM bootstrap charging routine.</p>
+<section id="board-handler">
+<span id="board-service-module-board-handler"></span><h4><span class="section-number">4.9.1.6.1. </span>Board handler<a class="headerlink" href="#board-handler" title="Permalink to this heading">¶</a></h4>
+<p>The board handler includes interfaces to configure and execute a
+board service process. The board service process uses a timer to periodically handle board level services. Working with appropriate HAL interfaces,
+the board handler provides services to push buttons, potentiometer
+and configurable PWM drivers (if available) to user-level applications, such as the <a class="reference internal" href="main.html#sample-application"><span class="std std-ref">sample application</span></a>.</p>
+</section>
+<section id="pwm-bootstrap-charging-routine">
+<span id="board-service-module-bootstrap-charging"></span><h4><span class="section-number">4.9.1.6.2. </span>PWM bootstrap charging routine<a class="headerlink" href="#pwm-bootstrap-charging-routine" title="Permalink to this heading">¶</a></h4>
+<p>The PWM bootstrap charging routine includes interfaces to initialize
+and execute the PWM bootstrap charging process. The routine begins by turning the high-side
+transistors off and setting the low-side transistors to 0% duty cycle. Then the PWM bootstrap charging
+routine delays a preset number of PWM cycles before beginning to charge the bootstrap capacitors.
+During the process, the PWM bootstrap capacitors are sequentially charged at a controlled rate
+(see <a class="reference internal" href="#hal-errata"><span class="std std-ref">errata</span></a>). The process begins by switching the phase A low-side transistor at a
+low duty cycle for a short time, before proceeding with phase B for a short time, and then phase C:</p>
+<figure class="align-center" id="id8">
+<span id="fig-bootstrap-charging-pwm-signals"></span><img alt="../_images/bootstrap-charging-pwm-signals.PNG" src="../_images/bootstrap-charging-pwm-signals.PNG" />
+<figcaption>
+<p><span class="caption-number">Figure 4.17 </span><span class="caption-text">PWM low-side signals during bootstrap charging routine.</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+</section>
+<section id="implementation">
+<h2><span class="section-number">4.9.2. </span>Implementation<a class="headerlink" href="#implementation" title="Permalink to this heading">¶</a></h2>
+<section id="mcc-integration">
+<h3><span class="section-number">4.9.2.1. </span>MCC integration<a class="headerlink" href="#mcc-integration" title="Permalink to this heading">¶</a></h3>
+<p>Prior to MCAF R3, generated code was not integrated with MCC; MCAF provided its own HAL completely.</p>
+<section id="mcaf-r3">
+<span id="hal-mcaf-r3"></span><h4><span class="section-number">4.9.2.1.1. </span>MCAF R3<a class="headerlink" href="#mcaf-r3" title="Permalink to this heading">¶</a></h4>
+<p>In MCAF R3, the following items have been removed from MCAF and made the responsibility of MCC:</p>
+<ul class="simple">
+<li><p>Configuration bits</p></li>
+<li><p>Oscillator setup</p></li>
+</ul>
+<p>Some aspects of the MCC system module are still present in MCAF. Both MCC and MCAF code
+executes; the MCAF code runs later and overrides any settings from MCC. The following areas
+are handled both by MCC and MCAF:</p>
+<ul class="simple">
+<li><p>GPIO configuration</p></li>
+<li><p>Interrupt initialization</p></li>
+<li><p>CORCON initialization</p></li>
+</ul>
+<p>This overlap is temporary, and these areas are planned to be shifted fully to MCC.</p>
+<p>Other modules such as ADC and PWM are configured solely by MCAF, and will be shifted to MCC in a future version of MCAF.</p>
+</section>
+<section id="mcaf-r4">
+<span id="hal-mcaf-r4"></span><h4><span class="section-number">4.9.2.1.2. </span>MCAF R4<a class="headerlink" href="#mcaf-r4" title="Permalink to this heading">¶</a></h4>
+<p>In MCAF R4, the following items have been removed from MCAF and made the responsibility of MCC:</p>
+<ul class="simple">
+<li><p>GPIO configuration</p></li>
+<li><p>Interrupt module</p></li>
+<li><p>CORCON initialization</p></li>
+<li><p>PWM module</p></li>
+<li><p>ADC module</p></li>
+<li><p>Timer module</p></li>
+<li><p>UART module</p></li>
+<li><p>DMA module</p></li>
+<li><p>Watchdog module</p></li>
+<li><p>LEDs module</p></li>
+<li><p>Switches module</p></li>
+<li><p>Pin Management (partially)</p></li>
+</ul>
+<p>MCC handles all peripheral initialization, pin initialization, pin management, and is the base layer for interacting with hardware. Currently, because MCC does not yet support QEI, pin management cannot be fully handled by MCC alone. First, the MCC system module configures all peripherals including device pin management. Then, after the MCC system module is done with configuration, MCAF pin management is run as well to initialize QEI pins. The QEI module is fully handled by MCAF and will be shifted to MCC when QEI support is available in MCC for 16-bit devices.</p>
+<p>Most hardware access actions occur through the HAF layer but a few calls to the MCC peripheral layer are made directly from the MCAF application. In the future, all hardware access will be delegated to the HAF layer. This is to avoid coupling between the MCAF application and MCC.</p>
+<p><code class="docutils literal notranslate"><span class="pre">HAL_InterruptVectorNumberGet()</span></code> is a function that has been added to the HAF layer. This function retrieves the interrupt vector number, and does not directly go through MCC to do so.</p>
+<p>More information about MCC configuration in MCAF is available in the <a class="reference internal" href="../appendix/otherdocs.html#otherdocs-mcc"><span class="std std-ref">MCC Peripheral documentation</span></a>.</p>
+</section>
+<section id="mcaf-r5">
+<span id="hal-mcaf-r5"></span><h4><span class="section-number">4.9.2.1.3. </span>MCAF R5<a class="headerlink" href="#mcaf-r5" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Added support for dsPIC33CK256MP508.</p></li>
+<li><p>All peripheral and hardware related functions called by MCAF are made through the Hardware Access Functions layer.</p></li>
+<li><p>MCAF requires certain instances of peripherals. Required instances are: PWM, ADC1, TMR1, SCCP1-TMR/TMR2, UART1 and QEI1</p></li>
+<li><p>MCC handles most peripheral generated code except for QEI and clearing of the fault interrupt status bits.</p></li>
+</ul>
+</section>
+<section id="mcaf-r6">
+<span id="hal-mcaf-r6"></span><h4><span class="section-number">4.9.2.1.4. </span>MCAF R6<a class="headerlink" href="#mcaf-r6" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Added support for dsPIC33CK64MP105, and dsPIC33CK64MC105.</p></li>
+<li><p>MCC now handles all of the peripheral generated code except for QEI.</p></li>
+<li><p>Board service module restructured to split into
+<a class="reference internal" href="#board-service-module-bootstrap-charging"><span class="std std-ref">PWM bootstrap charging</span></a>
+and <a class="reference internal" href="#board-service-module-board-handler"><span class="std std-ref">board handler</span></a> sections</p></li>
+</ul>
+</section>
+<section id="mcaf-r7">
+<span id="hal-mcaf-r7"></span><h4><span class="section-number">4.9.2.1.5. </span>MCAF R7<a class="headerlink" href="#mcaf-r7" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Added support for both <a class="reference external" href="https://www.microchip.com/en-us/tools-resources/configure/mplab-code-configurator/melody">MCC Melody</a> and <a class="reference external" href="https://www.microchip.com/en-us/tools-resources/configure/mplab-code-configurator/classic">MCC Classic</a>.</dt><dd><ul>
+<li><p>MCC Melody is supported only for the dsPIC33CK family of devices.</p></li>
+<li><p>MCC Classic is supported only for the dsPIC33EP family of devices.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>MCC Melody handles all of the peripheral generated code, including QEI. When using MCC Classic, MCAF provides
+QEI code.</p></li>
+<li><dl class="simple">
+<dt>The following priorities are assigned to the interrupts used by MCAF:</dt><dd><ul>
+<li><dl class="simple">
+<dt>MCC Classic:</dt><dd><ul>
+<li><p>Main ADC ISR — 4</p></li>
+<li><p>Timer ISR — 4</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>MCC Melody:</dt><dd><ul>
+<li><p>Main ADC ISR — 6</p></li>
+<li><p>Single-channel ADC ISR — 5</p></li>
+<li><p>Timer ISR — 4</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
+<section id="hal-errata">
+<span id="id2"></span><h3><span class="section-number">4.9.2.2. </span>HAL errata<a class="headerlink" href="#hal-errata" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAF_BootstrapChargeStepIsr()</span></code> includes a soft-start sequence intended to slowly turn on duty cycle and
+reduce gate drive power supply loading in order to charge up bootstrap capacitors. This sequence starts
+with duty cycles that are too low, and may produce runt pulses with certain gate drivers.
+(DB_MC-978; Applicability: MCAF R2 – R6)</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">4.9. Hardware Abstraction Layer (HAL)</a><ul>
+<li><a class="reference internal" href="#hardware-related-behavior">4.9.1. Hardware-related behavior</a><ul>
+<li><a class="reference internal" href="#interrupt-priorities">4.9.1.1. Interrupt Priorities</a></li>
+<li><a class="reference internal" href="#pwm-outputs">4.9.1.2. PWM outputs</a></li>
+<li><a class="reference internal" href="#overcurrent-fault-detection-and-clearing">4.9.1.3. Overcurrent fault detection and clearing</a></li>
+<li><a class="reference internal" href="#analog-to-digital-conversion">4.9.1.4. Analog-to-digital conversion</a><ul>
+<li><a class="reference internal" href="#difference-between-33ep-and-33ck-pwm-modules-and-its-implications-on-adc-operation">4.9.1.4.1. Difference between 33EP and 33CK PWM modules and its implications on ADC operation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pwm-update-options">4.9.1.5. PWM update options</a></li>
+<li><a class="reference internal" href="#board-service-module">4.9.1.6. Board service module</a><ul>
+<li><a class="reference internal" href="#board-handler">4.9.1.6.1. Board handler</a></li>
+<li><a class="reference internal" href="#pwm-bootstrap-charging-routine">4.9.1.6.2. PWM bootstrap charging routine</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementation">4.9.2. Implementation</a><ul>
+<li><a class="reference internal" href="#mcc-integration">4.9.2.1. MCC integration</a><ul>
+<li><a class="reference internal" href="#mcaf-r3">4.9.2.1.1. MCAF R3</a></li>
+<li><a class="reference internal" href="#mcaf-r4">4.9.2.1.2. MCAF R4</a></li>
+<li><a class="reference internal" href="#mcaf-r5">4.9.2.1.3. MCAF R5</a></li>
+<li><a class="reference internal" href="#mcaf-r6">4.9.2.1.4. MCAF R6</a></li>
+<li><a class="reference internal" href="#mcaf-r7">4.9.2.1.5. MCAF R7</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#hal-errata">4.9.2.2. HAL errata</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="diagnostics.html"
+                          title="previous chapter"><span class="section-number">4.8. </span>Diagnostic Kernel</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="mcapi.html"
+                          title="next chapter"><span class="section-number">4.10. </span>Motion Control API (MCAPI)</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="mcapi.html" title="4.10. Motion Control API (MCAPI)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="diagnostics.html" title="4.8. Diagnostic Kernel"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">4. </span>Components</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">4.9. </span>Hardware Abstraction Layer (HAL)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

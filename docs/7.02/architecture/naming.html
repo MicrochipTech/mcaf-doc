@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>3.2. Naming Conventions &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3.3. State management" href="statevar.html" />
+    <link rel="prev" title="3.1. Architectural Overview" href="overview.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="statevar.html" title="3.3. State management"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="3.1. Architectural Overview"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">3. </span>Architecture</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3.2. </span>Naming Conventions</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="naming"></span><section id="naming-conventions">
+<span id="index-0"></span><h1><span class="section-number">3.2. </span>Naming Conventions<a class="headerlink" href="#naming-conventions" title="Permalink to this heading">¶</a></h1>
+<p>The MCAF uses the following naming conventions:</p>
+<ul id="index-1">
+<li><p>A <strong>prefix</strong> is used for all functions and types, so that these functions
+are less likely to conflict with user-defined code. The major prefixes are</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">MC_</span></code> — Motor Control Library</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAF_</span></code> — Motor Control Application Framework</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">HAL_</span></code> — Hardware Abstraction Layer</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BSP_</span></code> — Board Support Package</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAPI_</span></code> — Motion Control API</p></li>
+</ul>
+</li>
+<li><p><strong>Functions</strong> use a prefix and UpperCamelCase, i.e. one or more words
+with each word capitalized including the first one. These generally fall
+into one of two types:</p>
+<ul>
+<li><p>Actions: <em>&lt;noun-phrase&gt;</em> <em>&lt;action&gt;</em></p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">MCAF_CoastdownTimerReset</span><span class="p">()</span>
+<span class="n">MCAF_PllEstimatorInit</span><span class="p">()</span>
+</pre></div>
+</div>
+</li>
+<li><p>Getters:
+<em>&lt;noun-phrase&gt;</em> <em>&lt;adjective-phrase&gt;</em> or
+<em>&lt;noun-phrase&gt;</em> <em>&lt;property&gt;</em></p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="n">MCAF_OperatingModeNormal</span><span class="p">()</span>
+<span class="n">MCAF_StartupHasCompleted</span><span class="p">()</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p><strong>Types</strong> are defined in all capital letters with underscores between words:</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span> <span class="k">struct</span>
+<span class="p">{</span>
+    <span class="kt">int16_t</span> <span class="n">d</span><span class="p">;</span>
+    <span class="kt">int16_t</span> <span class="n">q</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">MC_DQ_T</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Enum</strong> constants are defined in all capital letters with underscores between
+words. Enum constants in the same type should have a common prefix that is
+specific to that type, for instance the <code class="docutils literal notranslate"><span class="pre">MADC_</span></code> prefix in this example:</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span> <span class="k">enum</span> <span class="n">tagMCAF_ADC_SELECT</span>
+<span class="p">{</span>
+    <span class="n">MADC_VDC</span>           <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">MADC_POTENTIOMETER</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="p">}</span> <span class="n">MCAF_ADC_SELECT</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Variables</strong> and struct/union <strong>members</strong> are declared in lowerCamelCase,
+i.e. one or more words with each word capitalized except the first one:</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="kt">int16_t</span>           <span class="n">thetaElectrical</span><span class="p">;</span>
+<span class="kt">int16_t</span>           <span class="n">omegaElectrical</span><span class="p">;</span>
+<span class="n">MC_SINCOS_T</span>       <span class="n">sincos</span><span class="p">;</span>
+<span class="n">MCAF_MOTOR_DATA</span> <span class="o">*</span><span class="n">pmotor</span><span class="p">;</span>
+<span class="kt">uint16_t</span>          <span class="n">subsampleCounter</span><span class="p">;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Underscore characters in variable names and structure members are discouraged.</p></li>
+<li><p>Prefixes are not used in global variables, because the number of global
+variables is minimal. In addition, their names may be changed by
+customers without impact to the MCAF, since the framework’s
+modules do not access them directly.</p></li>
+</ul>
+</li>
+<li><p>The MCAF uses the standard C types defined in <code class="docutils literal notranslate"><span class="pre">&lt;stdint.h&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;stdbool.h&gt;</span></code>,
+such as <code class="docutils literal notranslate"><span class="pre">int16_t</span></code>, <code class="docutils literal notranslate"><span class="pre">uint16_t</span></code>, <code class="docutils literal notranslate"><span class="pre">int32_t</span></code>, and <code class="docutils literal notranslate"><span class="pre">bool</span></code>, to denote
+integers of specific bit widths. Earlier application note code included
+lines such as the following:</p>
+<div class="highlight-C notranslate"><div class="highlight"><pre><span></span><span class="c1">// use of implementation-dependent types</span>
+<span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">short</span> <span class="n">qVqRef</span><span class="p">;</span>
+<span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">Startup_Ramp</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="c1">// attempt to define specific type aliases</span>
+<span class="k">typedef</span> <span class="kt">unsigned</span> <span class="kt">short</span> <span class="n">WORD</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="kt">signed</span> <span class="kt">int</span> <span class="n">SFRAC16</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="kt">unsigned</span> <span class="kt">char</span>  <span class="n">BYTE</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="kt">unsigned</span> <span class="kt">char</span>  <span class="kt">bool</span><span class="p">;</span>
+<span class="cp">#define False  0</span>
+<span class="cp">#define True   1</span>
+</pre></div>
+</div>
+<p>These have since been converted to use <code class="docutils literal notranslate"><span class="pre">&lt;stdint.h&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;stdbool.h&gt;</span></code>.</p>
+</li>
+</ul>
+<section id="additional-naming-guidelines">
+<h2><span class="section-number">3.2.1. </span>Additional Naming Guidelines<a class="headerlink" href="#additional-naming-guidelines" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>The MCAF sometimes uses variable names which are symbolic in nature
+(for example <code class="docutils literal notranslate"><span class="pre">theta</span></code> or <code class="docutils literal notranslate"><span class="pre">omega</span></code> or <code class="docutils literal notranslate"><span class="pre">iq</span></code>) because these have specific
+meanings in motor control theory.</p></li>
+<li><p>The camelCase convention in symbolic names should not change the
+capitalization of subscripts, for example we use <code class="docutils literal notranslate"><span class="pre">idq</span></code> and <code class="docutils literal notranslate"><span class="pre">ialphabeta</span></code>
+rather than <code class="docutils literal notranslate"><span class="pre">iDQ</span></code> or <code class="docutils literal notranslate"><span class="pre">iAlphaBeta</span></code>.</p></li>
+<li><p>In general, variable names should start off with a general description of the
+quantity they represent and should be followed by more specific qualifiers.
+This allows related sibling variables or structure members to be
+alphabetically adjacent, and allows readers to narrow down the topic of
+interest as they read from left to right. Thus <code class="docutils literal notranslate"><span class="pre">iMaximum</span></code>, <code class="docutils literal notranslate"><span class="pre">iMinimum</span></code>,
+<code class="docutils literal notranslate"><span class="pre">vMaximum</span></code>, <code class="docutils literal notranslate"><span class="pre">vMinimum</span></code> is better than <code class="docutils literal notranslate"><span class="pre">maximumCurrent</span></code>, <code class="docutils literal notranslate"><span class="pre">minimumCurrent</span></code>,
+<code class="docutils literal notranslate"><span class="pre">minimumVoltage</span></code>, <code class="docutils literal notranslate"><span class="pre">maximumVoltage</span></code>.</p></li>
+</ul>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">3.2. Naming Conventions</a><ul>
+<li><a class="reference internal" href="#additional-naming-guidelines">3.2.1. Additional Naming Guidelines</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="overview.html"
+                          title="previous chapter"><span class="section-number">3.1. </span>Architectural Overview</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="statevar.html"
+                          title="next chapter"><span class="section-number">3.3. </span>State management</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="statevar.html" title="3.3. State management"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="3.1. Architectural Overview"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">3. </span>Architecture</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3.2. </span>Naming Conventions</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

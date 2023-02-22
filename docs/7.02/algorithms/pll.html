@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.4.2. AN1292 Phase-locked Loop (PLL) &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.4.3. Quadrature encoder support" href="qei.html" />
+    <link rel="prev" title="5.4.1. Firmware Interface" href="estimator-interface.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="qei.html" title="5.4.3. Quadrature encoder support"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="estimator-interface.html" title="5.4.1. Firmware Interface"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="estimators.html" accesskey="U"><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.2. </span>AN1292 Phase-locked Loop (PLL)</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="an1292-phase-locked-loop-pll">
+<span id="algorithm-pll"></span><span id="index-0"></span><h1><span class="section-number">5.4.2. </span>AN1292 Phase-locked Loop (PLL)<a class="headerlink" href="#an1292-phase-locked-loop-pll" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">5.4.2.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>The sensorless estimator used to estimate position and velocity is essentially
+the same one described in application note <a class="reference external" href="https://www.microchip.com/en-us/application-notes/an1292">AN1292</a>.</p>
+<figure class="align-center" id="id1">
+<span id="fig-pll-impl1"></span><img alt="../_images/an1292-pll-blkdiag.png" src="../_images/an1292-pll-blkdiag.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.55 </span><span class="caption-text">AN1292 Phase-locked loop block diagram</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Stationary-frame voltages <span class="math notranslate nohighlight">\(V_{\alpha\beta}\)</span> and currents <span class="math notranslate nohighlight">\(I_{\alpha\beta}\)</span>
+are used to estimate back-emf components <span class="math notranslate nohighlight">\(E_{\alpha\beta}\)</span> using a discrete-time
+approximation of the equation</p>
+<div class="math notranslate nohighlight" id="equation-eq-pll-backemf">
+<span class="eqno">(5.24)<a class="headerlink" href="#equation-eq-pll-backemf" title="Permalink to this equation">¶</a></span>\[E_{\alpha\beta} = V_{\alpha\beta} - R_sI_{\alpha\beta} - L_s\tfrac{d}{dt}I_{\alpha\beta}\]</div>
+<p>The feedback loop shown in <a class="reference internal" href="#fig-pll-impl1"><span class="std std-numref">Figure 5.55</span></a> is then used to rotate <span class="math notranslate nohighlight">\(E_{\alpha\beta}\)</span> into the synchronous (dq) frame to produce an error signal and update the electrical angle <span class="math notranslate nohighlight">\(\theta_e\)</span> (rather than <span class="math notranslate nohighlight">\(\rho_{\mathrm{estim}}\)</span> shown in the diagram) used for rotation, where</p>
+<div class="math notranslate nohighlight" id="equation-eq-pll-rotation">
+<span class="eqno">(5.25)<a class="headerlink" href="#equation-eq-pll-rotation" title="Permalink to this equation">¶</a></span>\[\theta_e = \rho_{\mathrm{estim}} + \rho_{\mathrm{ofs}}\]</div>
+<p>and <span class="math notranslate nohighlight">\(\rho_{\mathrm{ofs}}\)</span> (<code class="docutils literal notranslate"><span class="pre">motor.estimator.pll.rhoOffset</span></code> in firmware) is a parameter
+that defaults to zero, but can be adjusted manually
+with <a class="reference internal" href="../components/diagnostics.html#diag-kernel"><span class="std std-ref">real-time diagnostic tools</span></a>.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.4.2. AN1292 Phase-locked Loop (PLL)</a><ul>
+<li><a class="reference internal" href="#overview">5.4.2.1. Overview</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="estimator-interface.html"
+                          title="previous chapter"><span class="section-number">5.4.1. </span>Firmware Interface</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="qei.html"
+                          title="next chapter"><span class="section-number">5.4.3. </span>Quadrature encoder support</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="qei.html" title="5.4.3. Quadrature encoder support"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="estimator-interface.html" title="5.4.1. Firmware Interface"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="estimators.html" ><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.2. </span>AN1292 Phase-locked Loop (PLL)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

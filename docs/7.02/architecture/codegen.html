@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>3.4. Code Generation &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3.5. Configuration Parameters" href="config-params.html" />
+    <link rel="prev" title="3.3. State management" href="statevar.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="config-params.html" title="3.5. Configuration Parameters"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="statevar.html" title="3.3. State management"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">3. </span>Architecture</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3.4. </span>Code Generation</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="code-generation">
+<span id="codegen"></span><h1><span class="section-number">3.4. </span>Code Generation<a class="headerlink" href="#code-generation" title="Permalink to this heading">¶</a></h1>
+<p>The MCAF utilizes the <a class="reference external" href="http://freemarker.org/">FreeMarker</a>
+templating engine for generating code. This section describes an overview
+of the code generation process; while it is not necessary for understanding the
+output code, it may be helpful to understand some of the context
+behind the MCAF.</p>
+<section id="why-code-generation">
+<h2><span class="section-number">3.4.1. </span>Why Code Generation?<a class="headerlink" href="#why-code-generation" title="Permalink to this heading">¶</a></h2>
+<p>Some of the reasons for using code generation were mentioned in the
+<a class="reference internal" href="../introduction.html#introduction"><span class="std std-ref">introduction</span></a>:</p>
+<ul class="simple">
+<li><p><strong>Management of multiple hardware configurations</strong> — by using code generation,
+the MCAF can support the many combinations of processor, board, <a class="reference internal" href="../appendix/glossary.html#term-PIM"><span class="xref std std-term">PIM</span></a>,
+motor, and load with a single firmware package.</p></li>
+<li><p><strong>Automation of the tuning process</strong> — motorBench<sup>®</sup> Development Suite includes algorithms that will
+automatically tune the current and velocity controllers.</p></li>
+</ul>
+<p>There are also some more subtle reasons:</p>
+<ul>
+<li><p><strong>The C language has only limited support for computation at design time</strong> —
+essentially there are two mechanisms:</p>
+<ul class="simple">
+<li><p>constant-folding — the compiler will turn expressions like <code class="docutils literal notranslate"><span class="pre">(3*7)+1</span></code>
+into a single value (22) at compile-time rather than run-time</p></li>
+<li><p>preprocessor — the C preprocessor will substitute text in <code class="docutils literal notranslate"><span class="pre">#define</span></code>
+expressions at compile-time (just prior to compilation)</p></li>
+</ul>
+<p>These do not provide features for testing or verification. They are very
+fragile and often lead to errors, which either occur silently or
+with cryptic compiler messages. These issues are discussed in more
+detail in the next section on <a class="reference internal" href="config-params.html#config-params"><span class="std std-ref">configuration parameters</span></a>.</p>
+</li>
+<li><p><strong>Code generation can offer UI-driven flexibility.</strong> For example, motorBench<sup>®</sup> Development Suite has
+the capability to present a choice among several alternative options
+(for example: choosing a sensorless position estimator)</p>
+<figure class="align-center" id="fig-cg-option">
+<img alt="../_images/select-estimator.png" src="../_images/select-estimator.png" />
+</figure>
+<p>and then utilize appropriate source files from the MCAF firmware package
+to implement the selected option. (Note: the initial version of motorBench<sup>®</sup> Development Suite does not
+provide this feature, but it is planned for a future version.)</p>
+</li>
+</ul>
+</section>
+<section id="how-does-code-generation-work">
+<h2><span class="section-number">3.4.2. </span>How Does Code Generation Work?<a class="headerlink" href="#how-does-code-generation-work" title="Permalink to this heading">¶</a></h2>
+<p>Code generation in the MCAF is driven by a <strong>templating engine</strong> that operates on a
+static <strong>firmware package</strong> and a dynamic <strong>data model</strong>.</p>
+<figure class="align-center" id="fig-cg1">
+<img alt="../_images/codegen1.png" src="../_images/codegen1.png" />
+</figure>
+<p>The templating engine consists primarily of FreeMarker, but has other components
+as well, for example to support the use of configuration files, conditional
+code generation, and Jython scripts.</p>
+<p>The firmware package contains a fixed (static) set of template files,
+configuration files, and Jython scripts used to generate the source code.</p>
+<p>The data model is a set of named key-value pairs that is used by the
+code generation application (CGA, of which motorBench<sup>®</sup> Development Suite is the primary example) to
+organize different items of information in known places that are referenced
+by the firmware package. The data model will generally change from one
+code generation run to the next.</p>
+<p>The templating engine <strong>renders</strong> files in the firmware package, using the data
+model to determine the parts of the output files which are dependent on input
+data from the CGA. In some cases, the rendering operation is just a verbatim
+copy with no input dependencies; in others, complex calculations may occur;
+but in many cases, rendering is just simple expression evaluation and substitution.</p>
+<p>For example, we could have the template file shown in <a class="reference internal" href="#code-cg1"><span class="std std-numref">Listing 3.1</span></a>, along
+with the data model shown in <a class="reference internal" href="#code-cg2"><span class="std std-numref">Listing 3.2</span></a>:</p>
+<div class="literal-block-wrapper docutils container" id="code-cg1">
+<div class="code-block-caption"><span class="caption-number">Listing 3.1 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">limerick.txt.template</span></code></span><a class="headerlink" href="#code-cg1" title="Permalink to this code">¶</a></div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>There was an old lady of ${PLACE}
+Who was baked by mistake in a ${THING}
+To the household&#39;s disgust
+She emerged through the crust
+And exclaimed, with a yawn, &quot;${QUOTE}&quot;
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="code-cg2">
+<div class="code-block-caption"><span class="caption-number">Listing 3.2 </span><span class="caption-text">data model</span><a class="headerlink" href="#code-cg2" title="Permalink to this code">¶</a></div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">PLACE</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Rye</span>
+<span class="nt">THING</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">pie</span>
+<span class="nt">QUOTE</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Where am I?</span>
+</pre></div>
+</div>
+</div>
+<p>This would render into the output file shown in <a class="reference internal" href="#code-cg3"><span class="std std-numref">Listing 3.3</span></a>:</p>
+<div class="literal-block-wrapper docutils container" id="code-cg3">
+<div class="code-block-caption"><span class="caption-number">Listing 3.3 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">limerick.txt</span></code></span><a class="headerlink" href="#code-cg3" title="Permalink to this code">¶</a></div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>There was an old lady of Rye
+Who was baked by mistake in a pie
+To the household&#39;s disgust
+She emerged through the crust
+And exclaimed, with a yawn, &quot;Where am I?&quot;
+</pre></div>
+</div>
+</div>
+<p>The template contains special placeholders such as <code class="docutils literal notranslate"><span class="pre">${PLACE}</span></code> and <code class="docutils literal notranslate"><span class="pre">${THING}</span></code>
+which FreeMarker calls <a class="reference external" href="http://freemarker.org/docs/dgui_template_overallstructure.html">interpolations</a>.
+These contain an expression which is evaluated and substituted into the output
+text.</p>
+<p>Such an example isn’t very useful for motor control, but the same expression
+evaluation and substitution mechanism can also be used to generate C code
+or comments, as shown in <a class="reference internal" href="#code-cg4"><span class="std std-numref">Listing 3.4</span></a> and <a class="reference internal" href="#code-cg5"><span class="std std-numref">Listing 3.5</span></a>,
+which render to <a class="reference internal" href="#code-cg6"><span class="std std-numref">Listing 3.6</span></a>:</p>
+<div class="literal-block-wrapper docutils container" id="code-cg4">
+<div class="code-block-caption"><span class="caption-number">Listing 3.4 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">info.h.template</span></code></span><a class="headerlink" href="#code-cg4" title="Permalink to this code">¶</a></div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>/*
+ * L = ${(motor.L*1000)?string[&quot;#.###&quot;]} mH
+ * R = ${motor.R?string[&quot;#.###&quot;]} ohms
+ * Time constant = ${(motor.L/motor.R * 1000)?string[&quot;#.###&quot;]} ms
+ * Your inductance is &lt;#compress&gt;
+&lt;#if (motor.L &lt; 0.001) &gt;too low
+&lt;#elseif (motor.L &gt; 0.01) &gt;too high
+&lt;#else &gt;just right
+&lt;/#if&gt;&lt;/#compress&gt;!
+ */
+
+&lt;#assign velocity_scale=ScaleFactor(6000.0/30*PI, &quot;rad/s&quot;).q15() &gt;
+/* Maximum motor velocity, converted to integer counts:
+ * ${(motor.max_velocity*30/PI)?string[&quot;####.##&quot;]} RPM
+ * ${motor.max_velocity?string[&quot;####.##&quot;]} rad/s
+ */
+#define MAX_VEL ${velocity_scale.toCounts(motor.max_velocity)}
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="code-cg5">
+<div class="code-block-caption"><span class="caption-number">Listing 3.5 </span><span class="caption-text">data model</span><a class="headerlink" href="#code-cg5" title="Permalink to this code">¶</a></div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">motor</span><span class="p">:</span>
+  <span class="nt">L</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1.234567e-3</span>
+  <span class="nt">R</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">6.543210e-1</span>
+  <span class="nt">max_velocity</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">234.56</span>
+<span class="nt">ScaleFactor</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">&lt;some Java object created to facilitate engineering conversion&gt;</span>
+<span class="nt">PI</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">3.141592653589793</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="code-cg6">
+<div class="code-block-caption"><span class="caption-number">Listing 3.6 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">info.h</span></code></span><a class="headerlink" href="#code-cg6" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> * L = 1.235 mH</span>
+<span class="cm"> * R = 0.654 ohms</span>
+<span class="cm"> * Time constant = 1.887 ms</span>
+<span class="cm"> * Your inductance is just right!</span>
+<span class="cm"> */</span>
+
+<span class="cm">/* Maximum motor velocity, converted to integer counts:</span>
+<span class="cm"> * 2239.88 RPM</span>
+<span class="cm"> *  234.56 rad/s</span>
+<span class="cm"> */</span>
+<span class="cp">#define MAX_VEL 12233</span>
+</pre></div>
+</div>
+</div>
+<section id="data-model-preparation">
+<h3><span class="section-number">3.4.2.1. </span>Data Model Preparation<a class="headerlink" href="#data-model-preparation" title="Permalink to this heading">¶</a></h3>
+<p>Values can end up in the data model by several mechanisms:</p>
+<ul class="simple">
+<li><p><strong>From the CGA</strong> (motorBench<sup>®</sup> Development Suite). This will typically occur when there are values needed
+from customer-entered configuration data (motor name, number of poles, etc.) or
+when the values are computed by the CGA itself (automatically-tuned control
+loop gains).</p></li>
+<li><p><strong>From a configuration file in the MCAF firmware package.</strong> This will
+typically be used to manage certain constants that are common to the
+application framework, but should be decoupled from the CGA, so that they can
+be updated as part of improvements in the application framework package.</p></li>
+<li><p><strong>From a Jython script in the MCAF framework package.</strong> This will typically be
+used to handle computations that are not part of the CGA’s core functions,
+such as slew rates or other derived constants that are closely coupled to the
+application framework package itself.</p></li>
+</ul>
+<p>The templating engine doesn’t care where values came from, only that
+the named locations in the data model which are referenced by templates in the
+firmware package contain valid values that can be used to generate text strings
+in output files.</p>
+<p>The process of determining the data model can be envisioned as shown in
+<a class="reference internal" href="#fig-cg2"><span class="std std-numref">Figure 3.2</span></a>. In general, motorBench<sup>®</sup> Development Suite and the MCAF provide or compute engineering
+values, which are then represented as fixed-point integers in the generated
+code by appropriate choices of engineering unit scaling factors.</p>
+<blockquote>
+<div><figure class="align-center" id="id1">
+<span id="fig-cg2"></span><img alt="../_images/codegen2.png" src="../_images/codegen2.png" />
+<figcaption>
+<p><span class="caption-number">Figure 3.2 </span><span class="caption-text">Data model production process</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</div></blockquote>
+</section>
+<section id="conditional-code-generation">
+<h3><span class="section-number">3.4.2.2. </span>Conditional code generation<a class="headerlink" href="#conditional-code-generation" title="Permalink to this heading">¶</a></h3>
+<p>Sometimes we need to provide different content based upon something in the data
+model: for example, selecting among several position/velocity estimators. The
+templating engine supports this.</p>
+<ul class="simple">
+<li><p><strong>Per-character/per-line conditional generation</strong>
+There are conditional
+features available in FreeMarker (the <code class="docutils literal notranslate"><span class="pre">&lt;#if&gt;</span></code> directive, for example) which
+behave similarly to the <code class="docutils literal notranslate"><span class="pre">#if</span></code> preprocessor directives in C, except that they are
+processed at code-generation time rather than at compile-time. These may be
+used sparingly to enable or disable particular lines of code, or to select
+from more than one alternative.</p></li>
+<li><p><strong>Per-file conditional generation</strong>
+For inclusion or exclusion of entire modules, there are features in the
+templating engine that allow the template author to associate a particular
+source file with a “tag” to designate that this source file will be rendered
+only if the tag is present in a known location in the data model. This relieves
+the CGA from having to know which files should be included or excluded; instead,
+the CGA lists which tags to include as named features, and the application
+framework package then contains the association of tag name with source files.</p></li>
+</ul>
+</section>
+<section id="further-information">
+<h3><span class="section-number">3.4.2.3. </span>Further Information<a class="headerlink" href="#further-information" title="Permalink to this heading">¶</a></h3>
+<p>For further information on the code generation process, please
+<a class="reference internal" href="../faq.html#faq-support"><span class="std std-ref">contact Microchip</span></a>.</p>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">3.4. Code Generation</a><ul>
+<li><a class="reference internal" href="#why-code-generation">3.4.1. Why Code Generation?</a></li>
+<li><a class="reference internal" href="#how-does-code-generation-work">3.4.2. How Does Code Generation Work?</a><ul>
+<li><a class="reference internal" href="#data-model-preparation">3.4.2.1. Data Model Preparation</a></li>
+<li><a class="reference internal" href="#conditional-code-generation">3.4.2.2. Conditional code generation</a></li>
+<li><a class="reference internal" href="#further-information">3.4.2.3. Further Information</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="statevar.html"
+                          title="previous chapter"><span class="section-number">3.3. </span>State management</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="config-params.html"
+                          title="next chapter"><span class="section-number">3.5. </span>Configuration Parameters</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="config-params.html" title="3.5. Configuration Parameters"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="statevar.html" title="3.3. State management"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">3. </span>Architecture</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3.4. </span>Code Generation</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

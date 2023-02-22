@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>4.10. Motion Control API (MCAPI) &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.11. Miscellaneous" href="miscellaneous.html" />
+    <link rel="prev" title="4.9. Hardware Abstraction Layer (HAL)" href="hal.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="miscellaneous.html" title="4.11. Miscellaneous"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="hal.html" title="4.9. Hardware Abstraction Layer (HAL)"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">4. </span>Components</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">4.10. </span>Motion Control API (MCAPI)</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="motion-control-api-mcapi">
+<span id="mcapi"></span><span id="index-0"></span><h1><span class="section-number">4.10. </span>Motion Control API (MCAPI)<a class="headerlink" href="#motion-control-api-mcapi" title="Permalink to this heading">¶</a></h1>
+<p><a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a> provides a set of high-level interfaces that can be used by an application to control the motor and obtain feedback information from it while requiring no underlying knowledge of MCAF and its inner-workings.</p>
+<figure class="align-center" id="id2">
+<span id="fig-mcapi-block-diagram"></span><img alt="../_images/mcapi-block-diagram.svg" src="../_images/mcapi-block-diagram.svg" /><figcaption>
+<p><span class="caption-number">Figure 4.18 </span><span class="caption-text">Block diagram showing MCAPI relative to MCAF and the application</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<section id="overview">
+<h2><span class="section-number">4.10.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p><a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a> provides the following interfaces for an application to use:</p>
+<ol class="arabic simple">
+<li><p>Public functions to interact with MCAF — defined in <code class="docutils literal notranslate"><span class="pre">mcapi.h</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">enum</span></code> and <code class="docutils literal notranslate"><span class="pre">struct</span></code> typedefs to work with these <a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a> functions — defined in <code class="docutils literal notranslate"><span class="pre">mcapi_types.h</span></code></p></li>
+</ol>
+<p>All <a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a> functions are designed with following goals:</p>
+<ul class="simple">
+<li><p>Minimize CPU execution time</p></li>
+<li><p>Non-blocking implementation</p></li>
+<li><p>Do not need to be called at any particular rate and do not require any timing reference</p></li>
+<li><p>Do not require access to any of the device peripherals</p></li>
+</ul>
+</section>
+<section id="api-description">
+<h2><span class="section-number">4.10.2. </span>API Description<a class="headerlink" href="#api-description" title="Permalink to this heading">¶</a></h2>
+<p>All <a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a> functions that are defined in <code class="docutils literal notranslate"><span class="pre">mcapi.h</span></code> also include doc comments with relevant information. The table below shows a list of these functions and a brief summary of their description.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Top-level API feature</p></th>
+<th class="head"><p>API description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Start the motor</p></td>
+<td><p>Starts the specified motor. There will be no change if the motor is already running. If there is an active MCAF fault, this function will have no effect.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Stop the motor</p></td>
+<td><p>Stops the specified motor. There will be no change if the motor is already in fault, stopped or stopping states.</p></td>
+</tr>
+<tr class="row-even"><td><p>Set velocity reference</p></td>
+<td><p>Uses the specified value to update velocity reference for the motor. Input value is a signed Q15 number that has the same scaling factor for velocity as used within MCAF. Sign of the input value will determine the direction of rotation.</p>
+<p>Changes in velocity command when the motor is not in <code class="docutils literal notranslate"><span class="pre">MCAPI_MOTOR_RUNNING</span></code> state will be saved and will take effect only when the motor reaches this state.</p>
+<p>Before this function is called for the first time after initialization, the set value of velocity reference is either zero, or equal to the minimum value of velocity reference that is valid for MCAF.</p>
+<p><em>Note:</em></p>
+<ul class="simple">
+<li><p>There are slew rate limits within MCAF that will limit step changes in reference from taking effect on the motor on an immediate basis.</p></li>
+<li><p>Also, changes in the direction of rotation at runtime is not currently supported by MCAF. There is a band of velocity reference around zero that is considered as invalid input for MCAF.</p></li>
+<li><p>Invalid values of velocity reference will be limited to the minimum velocity parameter that is defined in MCAF.</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>Get velocity reference</p></td>
+<td><p>Returns a signed Q15 value of velocity reference for the motor. The return value will exactly match the set value set by “set velocity” function and have the same scaling factor for velocity as used within MCAF. Sign of the return value will determine the direction of rotation.</p>
+<p>Before the “set velocity” function is called for the first time after initialization, the return value of velocity reference is either zero, or equal to the minimum value of velocity reference that is valid for MCAF.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>Get motor velocity</p></td>
+<td><p>Returns a signed Q15 value of velocity for the motor as measured by an estimator in MCAF. The return value will have the same scaling factor for velocity as used within MCAF. Sign of the return value will determine the direction of rotation.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Get magnitude of current</p></td>
+<td><p>Returns a signed Q15 value that represents the amplitude of current in the motor. The return value is scaled in terms of the same scaling factor for full-scale current as used in MCAF.</p>
+<p>Since this value is derived from signals with low pass filtering, this is not an instantaneous value and will have some delay compared to the actual current in the motor. The filter time constant used in this case can be changed in the <code class="docutils literal notranslate"><span class="pre">Customize</span></code> page of motorBench<sup>®</sup> Development Suite.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>Get fault status</p></td>
+<td><p>Returns a <code class="docutils literal notranslate"><span class="pre">MCAPI_FAULT_FLAGS</span></code> type bit-field with individual flags for each fault type.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Clear fault status</p></td>
+<td><p>Clears the specified fault flag or a given set of fault flags. This function does not implicitly start the motor after clearing all pending faults.</p></td>
+</tr>
+<tr class="row-even"><td><p>Get motor status</p></td>
+<td><p>Returns <code class="docutils literal notranslate"><span class="pre">MCAPI_MOTOR_STATE</span></code> type motor status.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Get current Iq</p></td>
+<td><p>Returns a signed Q15 value that represents the q-axis current in the motor. This return value is scaled in terms of the same scaling factor for full-scale current as used in MCAF.</p>
+<p>Since this value is derived from signals with low pass filtering, this is not an instantaneous value and will have some delay compared to the actual current in the motor. The filter time constant used in this case can be changed in the <code class="docutils literal notranslate"><span class="pre">Customize</span></code> page of motorBench<sup>®</sup> Development Suite.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>Get <code class="docutils literal notranslate"><span class="pre">float</span></code> value of full-scale current</p></td>
+<td><p>Returns a floating point formatted full-scale value of current that is being used by MCAF.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Get <code class="docutils literal notranslate"><span class="pre">float</span></code> value of full-scale voltage</p></td>
+<td><p>Returns a floating point formatted full-scale value of voltage that is being used by MCAF.</p></td>
+</tr>
+<tr class="row-even"><td><p>Get <code class="docutils literal notranslate"><span class="pre">float</span></code> value of full-scale torque</p></td>
+<td><p>Returns a floating point formatted full-scale value of electromagnetic torque for the given hardware system being used with MCAF.</p>
+<p>Factors such as reluctance torque, iron saturation and changes in magnet flux due to temperature can impact the accuracy of this scaling factor. Hence, this is to be consumed by the application on a “for indication only” basis.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>Get <code class="docutils literal notranslate"><span class="pre">float</span></code> value of full-scale velocity</p></td>
+<td><p>Returns a floating point formatted full-scale value of velocity that is being used by MCAF.</p></td>
+</tr>
+<tr class="row-even"><td><p>Pre-ADC ISR function</p></td>
+<td><p>This is a place-holder implementation of the pre-ADC ISR function that will get called at the beginning of ADC ISR that is used by MCAF.</p>
+<p>This interface is intended to support the need for functional safety features that check for periodicity of interrupts and execute some test cases.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>Post-ADC ISR functions</p></td>
+<td><p>This is a place-holder implementation of the post-ADC ISR function that will get called at the end of ADC ISR that is used by MCAF.</p>
+<p>This interface is intended to support the need for functional safety features that check for periodicity of interrupts and execute some test cases.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>Get DC link voltage</p></td>
+<td><p>Returns a signed Q15 value that represents DC link voltage in the system. This return value is scaled in terms of the same scaling factor for full-scale voltage as used in MCAF.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Get upper current saturation limit</p></td>
+<td><p>Returns a signed Q15 value that represents upper bound of the current saturation limit that is implemented in MCAF.</p></td>
+</tr>
+<tr class="row-even"><td><p>Get lower current saturation limit</p></td>
+<td><p>Returns a signed Q15 value that represents lower bound of the current saturation limit that is implemented in MCAF.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Get maximum value of velocity reference</p></td>
+<td><p>Gets the maximum command value of velocity reference that is currently supported in the given configuration of MCAF.</p></td>
+</tr>
+<tr class="row-even"><td><p>Get minimum value of velocity reference</p></td>
+<td><p>Gets the minimum command value of velocity reference that is currently supported in the given configuration of MCAF.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Set application-level fault code</p></td>
+<td><p>Allows the application to set an application-level fault code that impacts the motor drive. The application is responsible for setting the following fault codes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ERR_APP_COMMUTATION_FAIL</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>Get application-level fault code</p></td>
+<td><p>Gets the fault code set by the application.</p></td>
+</tr>
+</tbody>
+</table>
+<p>The <code class="docutils literal notranslate"><span class="pre">MCAPI_FAULT_FLAGS</span></code> enum defines the possible fault flags in the bit-field returned by <code class="docutils literal notranslate"><span class="pre">MCAPI_ApplicationFaultCodeGet()</span></code>. The table below shows a list of these fault flags and a brief description.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>MCAPI Fault Flags</p></th>
+<th class="head"><p>Fault description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">MCAPI_FAULT_FLAG_OVERCURRENT</span></code></p></td>
+<td><p>An over-current fault has occurred</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">MCAPI_FAULT_FLAG_UNDERVOLTAGE</span></code></p></td>
+<td><p>An under-voltage fault has occurred</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">MCAPI_FAULT_FLAG_OVERVOLTAGE</span></code></p></td>
+<td><p>An over-voltage fault has occurred</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">MCAPI_FAULT_FLAG_OVERTEMPERATURE</span></code></p></td>
+<td><p>An over-temperature fault has occurred. This may be in the inverter power stage or the motor.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">MCAPI_FAULT_FLAG_MOTOR_DRIVE</span></code></p></td>
+<td><p>An unspecified fault has occurred. This fault flag encapsulates all errors that are not covered by the fault flags listed above. See <a class="reference internal" href="../appendix/error_codes.html#appendix-error-codes"><span class="std std-ref">Error Codes</span></a> for a complete list of possible errors.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="usage-notes">
+<h2><span class="section-number">4.10.3. </span>Usage Notes<a class="headerlink" href="#usage-notes" title="Permalink to this heading">¶</a></h2>
+<p>This guidance is available for application developers accessing MCAF through <a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a> functions.</p>
+<ol class="arabic simple">
+<li><p>Do not use any of the interfaces defined in <code class="docutils literal notranslate"><span class="pre">mcapi_internal.h</span></code>.</p></li>
+<li><p>Do not use the types <code class="docutils literal notranslate"><span class="pre">MCAPI_MOTOR_DATA</span></code> or <code class="docutils literal notranslate"><span class="pre">MCAPI_FEEDBACK_SIGNALS</span></code> or access their contents.</p></li>
+<li><p>After device startup, call <code class="docutils literal notranslate"><span class="pre">MCAPI_Initialize()</span></code> once before calling any MCAPI functions from the application.</p></li>
+<li><p>All <a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a> functions have certain latency limits. Latency for a setter function or command function is the time delay between the beginning of MCAPI function call and the instant the corresponding MCAF control variable is set (note that because of interaction between main thread and ISR, this change may not take effect until some time after MCAPI function call has completed). Latency for a getter function or feedback function is the time delay between the instant MCAF ISR samples a value from its internal state, and the instant MCAPI returns that value as a result of MCAPI function call.</p></li>
+<li><p>Despite this latency limitation, calling one of the <code class="docutils literal notranslate"><span class="pre">get</span></code> functions immediately after calling its counterpart <code class="docutils literal notranslate"><span class="pre">set</span></code> function will promptly return the set value. In this case, the return value from <code class="docutils literal notranslate"><span class="pre">get</span></code> function represents the request and not necessarily the state of the motor.</p></li>
+<li><p>Latency limits of <a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a> functions are not bounded in MCAF R6, R7. However, latency for both getter and setter functions are typically within 2 ISR cycles.</p></li>
+<li><p>Calling one or more <a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a> functions in quick succession, for instance, less than 1 ms apart, can cause latency to increase. Similarly, calling one of the <a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a> functions within a <code class="docutils literal notranslate"><span class="pre">while()</span></code> loop without any delay will cause <a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a> to lose synchronization with MCAF.</p></li>
+<li><p>Since <a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a> interacts with sections of MCAF that execute from an interrupt, the application cannot assume the motor state to be unchanged in between successive calls to the <a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a>.</p></li>
+</ol>
+<p>See <a class="reference internal" href="main.html#component-main"><span class="std std-ref">Main Application</span></a> for a description of an example application that is included with MCAF.</p>
+</section>
+<section id="implementation-notes">
+<h2><span class="section-number">4.10.4. </span>Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permalink to this heading">¶</a></h2>
+<p>The MCAPI was introduced in MCAF R6 to provide the main application a set of high-level interfaces to MCAF.</p>
+<section id="mcaf-r7">
+<h3><span class="section-number">4.10.4.1. </span>MCAF R7<a class="headerlink" href="#mcaf-r7" title="Permalink to this heading">¶</a></h3>
+<p>The following functions were introduced in MCAF R7:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Set application-level fault code</p></li>
+<li><p>Get application-level fault code</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="mcapi-architecture">
+<h3><span class="section-number">4.10.4.2. </span>MCAPI Architecture<a class="headerlink" href="#mcapi-architecture" title="Permalink to this heading">¶</a></h3>
+<figure class="align-center" id="id3">
+<span id="fig-mcapi-architecture-diagram"></span><img alt="../_images/mcapi-arch-diagram.svg" src="../_images/mcapi-arch-diagram.svg" /><figcaption>
+<p><span class="caption-number">Figure 4.19 </span><span class="caption-text">Block diagram showing MCAPI implementation architecture</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>MCAPI uses a single data buffer approach in MCAPI motor data in order to reliably communicate in between the application, which is asynchronous to the ADC ISR, and MCAF routines that execute from the ADC ISR.</p>
+<ul class="simple">
+<li><p>On the application-facing side of MCAPI: all MCAPI functions that are called by the application write to and read from MCAPI motor data.</p></li>
+<li><p>On the MCAF-facing side of MCAPI: an API service routine that is called from the ADC ISR synchronizes MCAPI motor data with control variables within MCAF motor data.</p></li>
+</ul>
+<section id="mcapi-data-access">
+<h4><span class="section-number">4.10.4.2.1. </span>MCAPI Data Access<a class="headerlink" href="#mcapi-data-access" title="Permalink to this heading">¶</a></h4>
+<p>MCAPI motor data, defined by the type <code class="docutils literal notranslate"><span class="pre">MCAPI_MOTOR_DATA</span></code>, is allocated within the MCAF motor structure of type <code class="docutils literal notranslate"><span class="pre">MCAF_MOTOR_DATA</span></code>.</p>
+<p>MCAF ADC ISR accesses MCAPI motor data structure through MCAPI internal function, <code class="docutils literal notranslate"><span class="pre">MCAF_ApiServiceIsr()</span></code>, from a function call in <code class="docutils literal notranslate"><span class="pre">isr.c</span></code>.</p>
+<p>The application should use one of the public MCAPI functions to indirectly access MCAPI motor data structure using the pointer <code class="docutils literal notranslate"><span class="pre">&amp;motor.apiData</span></code>. This should be treated as an opaque data structure, and the application should not access its contents directly.</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="mcapi-data-pointer-code-snippet">
+<div class="code-block-caption"><span class="caption-number">Listing 4.6 </span><span class="caption-text"> </span><a class="headerlink" href="#mcapi-data-pointer-code-snippet" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">MCAF_MOTOR_DATA</span> <span class="n">motor</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">MCAPI_Initialize</span><span class="p">(</span><span class="o">&amp;</span><span class="n">motor</span><span class="p">.</span><span class="n">apiData</span><span class="p">);</span>
+
+    <span class="p">...</span>
+
+    <span class="n">MCAPI_MOTOR_STATE</span> <span class="n">motorState</span> <span class="o">=</span> <span class="n">MCAPI_OperatingStatusGet</span><span class="p">(</span><span class="o">&amp;</span><span class="n">motor</span><span class="p">.</span><span class="n">apiData</span><span class="p">);</span>
+    <span class="k">switch</span> <span class="p">(</span><span class="n">motorState</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">case</span> <span class="nl">MCAPI_MOTOR_STOPPED</span><span class="p">:</span>
+            <span class="cp"># do something</span>
+
+        <span class="p">...</span>
+
+    <span class="p">}</span>
+
+    <span class="p">...</span>
+
+    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div></blockquote>
+</section>
+<section id="handling-concurrency">
+<span id="mcapi-handling-concurrency"></span><h4><span class="section-number">4.10.4.2.2. </span>Handling Concurrency<a class="headerlink" href="#handling-concurrency" title="Permalink to this heading">¶</a></h4>
+<p>The application may execute at some arbitrary rate, with calls to MCAPI that are asynchronous to the ADC ISR.
+Shared MCAPI motor data that is used in both MCAPI function calls and the ADC ISR must be protected against unsynchronized concurrent memory access,
+known as a <a class="reference external" href="https://en.wikipedia.org/wiki/Race_condition#Data_race">data race</a>.</p>
+<p>For example, the following sequence of events could occur within MCAPI function <code class="docutils literal notranslate"><span class="pre">MCAPI_FaultStatusClear()</span></code>, which sets a series of bit flags in <code class="docutils literal notranslate"><span class="pre">motor.apiData.faultClearFlags</span></code> to request clearing faults:</p>
+<ol class="arabic simple">
+<li><p>The application calls <code class="docutils literal notranslate"><span class="pre">MCAPI_FaultStatusClear(&amp;motor.apiData,</span> <span class="pre">2)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAPI_FaultStatusClear()</span></code> reads a preexisting value of 8 (bit 3 is set) from <code class="docutils literal notranslate"><span class="pre">faultClearFlags</span></code> in MCAPI motor data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAPI_FaultStatusClear()</span></code> is interrupted by the ADC ISR and <code class="docutils literal notranslate"><span class="pre">MCAF_ApiServiceIsr()</span></code> clears bit 3, writing <code class="docutils literal notranslate"><span class="pre">faultClearFlags</span></code> to 0</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAPI_FaultStatusClear()</span></code> calculates a value of 10 from 8 OR 2</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAPI_FaultStatusClear()</span></code> writes the value 10 to <code class="docutils literal notranslate"><span class="pre">faultClearFlags</span></code></p></li>
+</ol>
+<p>In this case, the write made by the ADC ISR was lost.</p>
+<p>To prevent data races, MCAPI functions use the <code class="docutils literal notranslate"><span class="pre">apiBusy</span></code> flag to claim ownership of MCAPI motor data structure while they are executing a critical section of code. The API service routine is designed to skip execution when it sees that the <code class="docutils literal notranslate"><span class="pre">apiBusy</span></code> flag is set.</p>
+</section>
+</section>
+<section id="mcapi-errata">
+<h3><span class="section-number">4.10.4.3. </span>MCAPI errata<a class="headerlink" href="#mcapi-errata" title="Permalink to this heading">¶</a></h3>
+<ul>
+<li><p><strong>MCAPI will not individually clear</strong> <code class="docutils literal notranslate"><span class="pre">MCAPI_FAULT_FLAG_OVERCURRENT</span></code> <strong>fault or</strong> <code class="docutils literal notranslate"><span class="pre">MCAPI_FAULT_FLAG_MOTOR_DRIVE</span></code> <strong>fault if there are other active faults</strong>. (DB_MC-3012; Applicability: MCAF R6, R7)</p>
+<p>For example, if there are three active faults at a given instance of time:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAPI_FAULT_FLAG_OVERCURRENT</span></code> fault</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAPI_FAULT_FLAG_MOTOR_DRIVE</span></code> fault</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAPI_FAULT_FLAG_OVERVOLTAGE</span></code> fault</p></li>
+</ul>
+<p>Then, in this case the following code snippet will not clear <code class="docutils literal notranslate"><span class="pre">MCAPI_FAULT_FLAG_OVERCURRENT</span></code> fault or <code class="docutils literal notranslate"><span class="pre">MCAPI_FAULT_FLAG_MOTOR_DRIVE</span></code> fault.</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="errata1-code-snippet">
+<div class="code-block-caption"><span class="caption-number">Listing 4.7 </span><span class="caption-text"> </span><a class="headerlink" href="#errata1-code-snippet" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">APP_ApplicationStep</span><span class="p">(</span><span class="k">volatile</span> <span class="n">MCAPI_MOTOR_DATA</span> <span class="o">*</span><span class="n">api</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="p">...</span>
+    <span class="n">MCAPI_FaultStatusClear</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">MCAPI_FAULT_FLAG_OVERCURRENT</span><span class="p">);</span>
+    <span class="p">...</span>
+    <span class="n">MCAPI_FaultStatusClear</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">MCAPI_FAULT_FLAG_MOTOR_DRIVE</span><span class="p">);</span>
+    <span class="p">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div></blockquote>
+<p>Application can workaround this issue by clearing all faults in one attempt as shown in the code snippet below.</p>
+<blockquote>
+<div><div class="literal-block-wrapper docutils container" id="errata1-workaround-code-snippet">
+<div class="code-block-caption"><span class="caption-number">Listing 4.8 </span><span class="caption-text"> </span><a class="headerlink" href="#errata1-workaround-code-snippet" title="Permalink to this code">¶</a></div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">APP_ApplicationStep</span><span class="p">(</span><span class="k">volatile</span> <span class="n">MCAPI_MOTOR_DATA</span> <span class="o">*</span><span class="n">api</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="p">...</span>
+  <span class="kt">uint16_t</span> <span class="n">faultFlags</span> <span class="o">=</span> <span class="n">MCAPI_FaultStatusGet</span><span class="p">(</span><span class="n">api</span><span class="p">);</span>
+  <span class="n">MCAPI_FaultStatusClear</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">faultFlags</span><span class="p">);</span>
+  <span class="p">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div></blockquote>
+</li>
+<li><p><strong>MCAPI may drop fault events from MCAF under certain corner-cases.</strong> (DB_MC-2978; Applicability: MCAF R6, R7)</p>
+<p>This issue may occur if these two events occur in the same ADC interrupt:</p>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a> clears a particular fault condition.</p></li>
+<li><p>MCAF raises another instance of the same fault condition.</p></li>
+</ol>
+<p>In the existing implementation of <a class="reference internal" href="../appendix/glossary.html#term-MCAPI"><span class="xref std std-term">MCAPI</span></a>, the application does not have a workaround for this issue.</p>
+</li>
+</ul>
+</section>
+<section id="modules">
+<h3><span class="section-number">4.10.4.4. </span>Modules<a class="headerlink" href="#modules" title="Permalink to this heading">¶</a></h3>
+<span id="index-1"></span><table class="components-table docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Module</p></th>
+<th class="head"><p>Files</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">mcapi</span></code></td>
+<td class="longcolumn-3"><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mcapi.c</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mcapi.h</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mcapi_types.h</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">parameters/mcapi_params.h</span></code></div>
+</div>
+</td>
+<td><p>MCAPI source</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td class="longcolumn-1"><code class="docutils literal notranslate"><span class="pre">mcapi_internal</span></code></td>
+<td class="longcolumn-1"><div class="line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mcapi_internal.h</span></code></div>
+</div>
+</td>
+<td><p>MCAPI routines internal to MCAF</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">4.10. Motion Control API (MCAPI)</a><ul>
+<li><a class="reference internal" href="#overview">4.10.1. Overview</a></li>
+<li><a class="reference internal" href="#api-description">4.10.2. API Description</a></li>
+<li><a class="reference internal" href="#usage-notes">4.10.3. Usage Notes</a></li>
+<li><a class="reference internal" href="#implementation-notes">4.10.4. Implementation Notes</a><ul>
+<li><a class="reference internal" href="#mcaf-r7">4.10.4.1. MCAF R7</a></li>
+<li><a class="reference internal" href="#mcapi-architecture">4.10.4.2. MCAPI Architecture</a><ul>
+<li><a class="reference internal" href="#mcapi-data-access">4.10.4.2.1. MCAPI Data Access</a></li>
+<li><a class="reference internal" href="#handling-concurrency">4.10.4.2.2. Handling Concurrency</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#mcapi-errata">4.10.4.3. MCAPI errata</a></li>
+<li><a class="reference internal" href="#modules">4.10.4.4. Modules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="hal.html"
+                          title="previous chapter"><span class="section-number">4.9. </span>Hardware Abstraction Layer (HAL)</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="miscellaneous.html"
+                          title="next chapter"><span class="section-number">4.11. </span>Miscellaneous</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="miscellaneous.html" title="4.11. Miscellaneous"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="hal.html" title="4.9. Hardware Abstraction Layer (HAL)"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">4. </span>Components</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">4.10. </span>Motion Control API (MCAPI)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

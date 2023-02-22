@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.1.2. Fundamentals of FOC &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../../_static/svgcrop.js"></script>
+    <script src="../../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.1.3. Current measurement" href="current_measure.html" />
+    <link rel="prev" title="5.1.1. Field-oriented control (FOC): an overview" href="overview.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="current_measure.html" title="5.1.3. Current measurement"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="5.1.1. Field-oriented control (FOC): an overview"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U"><span class="section-number">5.1. </span>Field-oriented Current Control</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.1.2. </span>Fundamentals of FOC</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="fundamentals-of-foc">
+<span id="foc-fundamentals"></span><h1><span class="section-number">5.1.2. </span>Fundamentals of FOC<a class="headerlink" href="#fundamentals-of-foc" title="Permalink to this heading">¶</a></h1>
+<p>MCAF utilizes field-oriented control (FOC) of motor current. This section
+describes the theory of FOC in general,
+with some specific notes on MCAF implementation.</p>
+<section id="torque-production-and-reference-frames">
+<span id="foc-refframe"></span><span id="foc-torque"></span><span id="index-0"></span><h2><span class="section-number">5.1.2.1. </span>Torque production and reference frames<a class="headerlink" href="#torque-production-and-reference-frames" title="Permalink to this heading">¶</a></h2>
+<p>The goal of <a class="reference internal" href="../../appendix/glossary.html#term-FOC"><span class="xref std std-term">field-oriented control (FOC)</span></a>
+is to control instantaneous electromagnetic torque
+with high bandwidth.
+This is possible — although not obvious for newcomers to field-oriented control —
+by managing two orthogonal components of current
+in a reference frame at some electrical angle <span class="math notranslate nohighlight">\(\theta_e\)</span>.
+The electrical frequency <span class="math notranslate nohighlight">\(\omega_e = \frac{d\theta_e}{dt}\)</span>
+is the rate at which the electrical angle changes.</p>
+<p>Electrical angles and frequencies are proportional to mechanical angles and frequencies as expressed in Equation <a class="reference internal" href="#equation-eq-foc-polepairs">5.1</a>, where <span class="math notranslate nohighlight">\(N_p\)</span> is the number of pole pairs.
+For example, a six-pole machine, with <span class="math notranslate nohighlight">\(N_p=3\)</span>, undergoes three electrical cycles
+for each mechanical revolution.</p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-polepairs">
+<span class="eqno">(5.1)<a class="headerlink" href="#equation-eq-foc-polepairs" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{aligned}
+\theta_e &amp;= N_p \theta_m \\
+\omega_e &amp;= N_p \omega_m
+\end{aligned}\end{split}\]</div>
+<p>Electromagnetic torque <span class="math notranslate nohighlight">\(T_{em}\)</span> in three-phase rotating machinery is proportional
+to the cross product of
+stator currents and rotor flux linkage, as shown in Equation <a class="reference internal" href="#equation-eq-foc-torque1">5.2</a>.
+Here <span class="math notranslate nohighlight">\(\hat{z}\)</span> is a unit vector along the axis of rotation,
+x and y are components of a two-dimensional plane perpendicular to <span class="math notranslate nohighlight">\(\hat{z}\)</span>,
+and the current vector is an equivalent vector sum of currents based on how the resulting
+fields are aligned with these x and y axes.</p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-torque1">
+<span class="eqno">(5.2)<a class="headerlink" href="#equation-eq-foc-torque1" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{aligned}
+T_{em} &amp;= \tfrac{3}{2}N_p \left(\boldsymbol{\psi} \times \boldsymbol{I}\right) \cdot \hat{z} \\
+&amp;= \tfrac{3}{2}N_p \left(\psi_x I_y - \psi_y I_x\right) \\
+&amp;= \tfrac{3}{2}N_p \psi I \sin \phi
+\end{aligned}\end{split}\]</div>
+<p>The angle <span class="math notranslate nohighlight">\(\phi\)</span> between flux linkage and current vectors,
+illustrated in <a class="reference internal" href="#fig-foc-xytorque"><span class="std std-numref">Figure 5.1</span></a>, plays an important role
+in determining electromagnetic torque. If the two vectors are aligned,
+this angle <span class="math notranslate nohighlight">\(\phi\)</span> is zero, and no torque is produced.
+Maximum torque occurs when the flux linkage and current vectors are perpendicular,
+and the term <span class="math notranslate nohighlight">\(\sin \phi\)</span> in Equation <a class="reference internal" href="#equation-eq-foc-torque1">5.2</a> is ±1.</p>
+<figure class="align-center" id="id9">
+<span id="fig-foc-xytorque"></span><img alt="../../_images/foc_torque1.svg" src="../../_images/foc_torque1.svg" /><figcaption>
+<p><span class="caption-number">Figure 5.1 </span><span class="caption-text">Flux linkage vector, current vector, and the angle <span class="math notranslate nohighlight">\(\phi\)</span> between them,
+in an arbitrary  <span class="math notranslate nohighlight">\(xy\)</span>-coordinate frame.</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>It is important to note that these x and y axes are <em>arbitrary</em> —
+we can pick any unit basis vectors <span class="math notranslate nohighlight">\(\hat{x}\)</span> and <span class="math notranslate nohighlight">\(\hat{y}\)</span>
+that form a mutually perpendicular set
+with the axis of rotation <span class="math notranslate nohighlight">\(\hat{z}\)</span>,
+such that their cross product <span class="math notranslate nohighlight">\(\hat{x} \times \hat{y} = \hat{z}\)</span>.</p>
+<p>There are two common choices for these basis vectors. One is the stationary frame,
+commonly aligned with one of the stator phases. Pictured on the left of <a class="reference internal" href="#fig-foc-clarke"><span class="std std-numref">Figure 5.2</span></a>
+is a three-phase stator with windings positioned 120° apart.
+This is equivalent — at least in terms of magnetic flux linkage —
+to a two-phase stator with orthogonal windings α and β,
+pictured on the right. For any combination of currents <span class="math notranslate nohighlight">\(I_A, I_B, I_C\)</span>
+in the three-phase stator winding, the same magnetic field seen by the rotor
+can be produced by an appropriate combination of currents
+<span class="math notranslate nohighlight">\(I_\alpha\)</span> and <span class="math notranslate nohighlight">\(I_\beta\)</span> through two “virtual” coils used
+to create the horizontal and vertical components of the stator field.
+The mathematical conversion of projecting three-phase quantities
+onto these virtual orthogonal coils is called the Clarke transform,
+after one of its originators, Edith Clarke. <a class="footnote-reference brackets" href="#fn-foc-duesterhoeft1951" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p>
+<figure class="align-center" id="id10">
+<span id="fig-foc-clarke"></span><a class="reference internal image-reference" href="../../_images/foc_current_vector_coils.svg"><img alt="../../_images/foc_current_vector_coils.svg" src="../../_images/foc_current_vector_coils.svg" width="95%" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.2 </span><span class="caption-text">Use of Clarke transform to convert between per-phase quantities and the αβ frame
+The angle reference is commonly aligned with the first motor phase
+(phase A in an ABC-labeled set, or phase U in a UVW-labeled set) and the α winding.
+The rotor’s position is some electrical angle <span class="math notranslate nohighlight">\(\theta_r\)</span>
+relative to these angle references.</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The Clarke transform is a linear transformation, shown in Equation
+<a class="reference internal" href="#equation-eq-foc-clarke">5.3</a>, which can apply to any vector quantity <span class="math notranslate nohighlight">\(X\)</span>,
+although typical examples are voltage <span class="math notranslate nohighlight">\(V\)</span>, current <span class="math notranslate nohighlight">\(I\)</span>, or flux linkage <span class="math notranslate nohighlight">\(\psi\)</span>.</p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-clarke">
+<span class="eqno">(5.3)<a class="headerlink" href="#equation-eq-foc-clarke" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{alignedat}{4}
+X_\alpha &amp;=\tfrac{2}{3}X_A &amp;{}-{}&amp; \;\tfrac{1}{3}&amp;X_B &amp;{}-{} \;\tfrac{1}{3}&amp;X_C \\
+X_\beta &amp;= &amp;&amp; \tfrac{1}{\sqrt{3}}&amp;X_B &amp;- \tfrac{1}{\sqrt{3}}&amp;X_C
+\end{alignedat}\end{split}\]</div>
+<p>This is usually expressed in the equivalent matrix form,
+as in Equation <a class="reference internal" href="#equation-eq-foc-mclarke">5.4</a>, with the transformation matrix <span class="math notranslate nohighlight">\(T_{\alpha\beta}\)</span>:</p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-mclarke">
+<span class="eqno">(5.4)<a class="headerlink" href="#equation-eq-foc-mclarke" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{bmatrix}X_\alpha \\[4pt] X_\beta\end{bmatrix}
+=
+\underbrace{
+\begin{bmatrix}\frac{2}{3} &amp; -\frac{1}{3}  &amp; -\frac{1}{3} \\[4pt]
+0 &amp; \frac{1}{\sqrt{3}}&amp; -\frac{1}{\sqrt{3}}\end{bmatrix}
+}_{T_{\alpha\beta}}
+\begin{bmatrix}X_A \\[4pt] X_B \\[4pt] X_C\end{bmatrix}\end{split}\]</div>
+<p>The inverse Clarke transform, Equation <a class="reference internal" href="#equation-eq-foc-minvclarke">5.5</a>, converts from αβ to ABC, using the transformation matrix <span class="math notranslate nohighlight">\(T_{\alpha\beta}{}^+:\)</span></p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-minvclarke">
+<span class="eqno">(5.5)<a class="headerlink" href="#equation-eq-foc-minvclarke" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{bmatrix}X_A \\[4pt] X_B \\[4pt] X_C\end{bmatrix}
+=
+\underbrace{
+\begin{bmatrix}\phantom{-}1 &amp; \phantom{-}0 \\[4pt]
+-\frac{1}{2}  &amp; \phantom{-}\frac{\sqrt{3}}{2} \\[4pt]
+-\frac{1}{2} &amp; -\frac{\sqrt{3}}{2}\end{bmatrix}
+}_{T_{\alpha\beta}{}^+}
+\begin{bmatrix}X_\alpha \\[4pt] X_\beta\end{bmatrix}\end{split}\]</div>
+<p>We can substitute <span class="math notranslate nohighlight">\((x,y) \Rightarrow (\alpha,\beta)\)</span>
+in Equation <a class="reference internal" href="#equation-eq-foc-torque1">5.2</a> to obtain Equation <a class="reference internal" href="#equation-eq-foc-torque2">5.6</a>,
+describing torque based on stationary-frame quantities:</p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-torque2">
+<span class="eqno">(5.6)<a class="headerlink" href="#equation-eq-foc-torque2" title="Permalink to this equation">¶</a></span>\[T_{em} = \tfrac{3}{2}N_p \left(\psi_\alpha I_\beta - \psi_\beta I_\alpha\right)\]</div>
+<p>In the stationary reference frame, the flux vector <span class="math notranslate nohighlight">\(\psi_{\alpha\beta}\)</span>
+and current vector <span class="math notranslate nohighlight">\(I_{\alpha\beta}\)</span> are not fixed, but rotate along with
+the rotor’s magnetic field.</p>
+<p>The other common choice of basis vectors is the rotating reference frame, aligned with the
+electrical angle of excitation <span class="math notranslate nohighlight">\(\theta_e\)</span>
+as it increases with electrical frequency <span class="math notranslate nohighlight">\(\omega_e\)</span>.
+This reference frame has components denoted <span class="math notranslate nohighlight">\(d\)</span> (“direct”) and <span class="math notranslate nohighlight">\(q\)</span> (“quadrature”).
+The transformation from αβ to dq axes is a rotation by an angle <span class="math notranslate nohighlight">\(-\theta_e\)</span>,
+shown in Equation <a class="reference internal" href="#equation-eq-foc-mpark">5.7</a>.
+This is known as the Park transform, named for Robert Park, who developed it in the late 1920s,
+while working at General Electric to analyze the dynamics of synchronous motors.
+<a class="footnote-reference brackets" href="#fn-foc-park1929" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#fn-foc-orourke2019" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>
+With permanent-magnet synchronous motors, this reference frame is known as
+the synchronous reference frame. Correct alignment for a PMSM occurs when the d-axis
+is aligned with the rotor flux, and the electrical angle <span class="math notranslate nohighlight">\(\theta_e\)</span>
+is identical to the rotor’s electrical angle <span class="math notranslate nohighlight">\(\theta_r\)</span>.</p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-mpark">
+<span class="eqno">(5.7)<a class="headerlink" href="#equation-eq-foc-mpark" title="Permalink to this equation">¶</a></span>\[\begin{bmatrix}X_d \cr X_q\end{bmatrix} =
+\underbrace{
+\begin{bmatrix}\phantom{-}\cos \theta_e &amp; \sin \theta_e \cr -\sin \theta_e &amp; \cos \theta_e\end{bmatrix}
+}_{T(-\theta_e)}
+\begin{bmatrix}X_\alpha \cr X_\beta\end{bmatrix}\]</div>
+<p>The inverse Park transform, Equation <a class="reference internal" href="#equation-eq-foc-minvpark">5.8</a>, rotates in the opposite
+direction to convert from dq to αβ axes.</p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-minvpark">
+<span class="eqno">(5.8)<a class="headerlink" href="#equation-eq-foc-minvpark" title="Permalink to this equation">¶</a></span>\[\begin{bmatrix}X_\alpha \cr X_\beta\end{bmatrix} =
+\underbrace{
+\begin{bmatrix}\cos \theta_e &amp; -\sin \theta_e \cr \sin \theta_e &amp; \phantom{-}\cos \theta_e\end{bmatrix}
+}_{T(\theta_e) = T(-\theta_e)^{-1} = T(-\theta_e)^T}
+\begin{bmatrix}X_d \cr X_q\end{bmatrix}\]</div>
+<p>We can substitute <span class="math notranslate nohighlight">\((x,y) \Rightarrow (d,q)\)</span>
+in Equation <a class="reference internal" href="#equation-eq-foc-torque1">5.2</a> to obtain Equation <a class="reference internal" href="#equation-eq-foc-torque3">5.9</a>, describing
+torque based on synchronous-frame quantities:</p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-torque3">
+<span class="eqno">(5.9)<a class="headerlink" href="#equation-eq-foc-torque3" title="Permalink to this equation">¶</a></span>\[T_{em} = \tfrac{3}{2}N_p \left(\psi_d I_q - \psi_q I_d\right)\]</div>
+<p>The advantage of using the synchronous frame
+is that for steady-state rotation, to produce constant electromagnetic torque
+<span class="math notranslate nohighlight">\(T_{em}\)</span>, the flux linkage vector <span class="math notranslate nohighlight">\(\psi_{dq}\)</span>
+and the current vector <span class="math notranslate nohighlight">\(I_{dq}\)</span> are constants. This allows current controllers
+with an integrator term to operate with zero steady-state error.
+It also allows for independent torque and flux control.</p>
+<p>It is worth noting that for different motor types,
+the angle of the reference frame <span class="math notranslate nohighlight">\(\theta_e\)</span>
+and the electrical angle of the rotor <span class="math notranslate nohighlight">\(\theta_r\)</span> may or may not be identical.
+For permanent-magnet synchronous motors, the reference frame
+should be aligned with the permanent magnet flux of the rotor,
+so that <span class="math notranslate nohighlight">\(\theta_e = \theta_r\)</span>.
+For induction motors <span class="math notranslate nohighlight">\(\theta_e \ne \theta_r\)</span>; the electrical frequency
+<span class="math notranslate nohighlight">\(\omega_e = \omega_r + \omega_s\)</span> where <span class="math notranslate nohighlight">\(\omega_r\)</span>
+is the rotor speed expressed as an alectrical frequency, and <span class="math notranslate nohighlight">\(\omega_s\)</span> is
+the slip frequency needed to produce rotor current.</p>
+</section>
+<section id="stator-voltage-and-flux-equations">
+<h2><span class="section-number">5.1.2.2. </span>Stator voltage and flux equations<a class="headerlink" href="#stator-voltage-and-flux-equations" title="Permalink to this heading">¶</a></h2>
+<section id="general-stator-voltage-equation">
+<h3><span class="section-number">5.1.2.2.1. </span>General stator voltage equation<a class="headerlink" href="#general-stator-voltage-equation" title="Permalink to this heading">¶</a></h3>
+<p>The equations so far in this section on FOC have involved torque, angle,
+and the vector components of flux linkage and current.
+The stator voltage, which is the voltage across the stator coils,
+is a more relevant quantity than flux linkage,
+since we can measure and control voltage more directly.</p>
+<p>Motor control engineers working with FOC often talk about a voltage vector
+<span class="math notranslate nohighlight">\(V_{dq}\)</span> in a rotating reference frame,
+and even though this voltage vector is not directly measurable — there are no
+actual “d” and “q” coils —
+it can be derived mathematically through the Park and Clarke transforms
+from per-phase measurements of the actual motor coils. The stator voltage
+equations relating voltage, flux, and current, in a reference frame
+rotating with electrical frequency <span class="math notranslate nohighlight">\(\omega_e\)</span>, are shown below in equation
+<a class="reference internal" href="#equation-eq-foc-voltage1">5.10</a>. This equation is valid for both induction motors and
+permanent-magnet synchronous motors.</p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-voltage1">
+<span class="eqno">(5.10)<a class="headerlink" href="#equation-eq-foc-voltage1" title="Permalink to this equation">¶</a></span>\[\begin{aligned}
+V_d &amp;= R_s I_d - \omega_e \psi_q + \tfrac{d}{dt}\psi_d
+\cr
+V_q &amp;= R_s I_q + \omega_e \psi_d + \tfrac{d}{dt}\psi_q
+\end{aligned}\]</div>
+<p>Here the <span class="math notranslate nohighlight">\(R_s\)</span> coefficient is the stator resistance.</p>
+<p>The <span class="math notranslate nohighlight">\(\omega_e\psi\)</span> terms are known as <em>speed voltage</em> and
+are artifacts of the rotating reference frame; they have nothing to do with
+the motor construction, and are present even with other loads such as
+a three-phase inductor or transformer when operated in FOC with a
+reference frame rotating at frequency <span class="math notranslate nohighlight">\(\omega_e\)</span>. They also
+represent an interesting cross-coupling behavior between the d- and q-axes.</p>
+</section>
+<section id="pmsm-voltage-equations">
+<h3><span class="section-number">5.1.2.2.2. </span>PMSM voltage equations<a class="headerlink" href="#pmsm-voltage-equations" title="Permalink to this heading">¶</a></h3>
+<p>For the PMSM, the flux equations are listed in Equation <a class="reference internal" href="#equation-eq-foc-flux1">5.11</a>
+and relate the flux linkage vector <span class="math notranslate nohighlight">\(\psi_{dq}\)</span> to the current vector <span class="math notranslate nohighlight">\(I_{dq}\)</span>.</p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-flux1">
+<span class="eqno">(5.11)<a class="headerlink" href="#equation-eq-foc-flux1" title="Permalink to this equation">¶</a></span>\[\begin{aligned}
+\psi_d &amp;= L_d I_d + \psi_m
+\cr
+\psi_q &amp;= L_q I_q
+\end{aligned}\]</div>
+<p>The terms <span class="math notranslate nohighlight">\(L_d\)</span> and <span class="math notranslate nohighlight">\(L_q\)</span> are the d- and q-axis stator inductances,
+which are generally identical for <a class="reference internal" href="../../appendix/glossary.html#term-SPMSM"><span class="xref std std-term">surface permanent magnet motors (SPMSM)</span></a>
+but different for <a class="reference internal" href="../../appendix/glossary.html#term-IPMSM"><span class="xref std std-term">interior permanent-magnet motors (IPMSM)</span></a>,
+where usually <span class="math notranslate nohighlight">\(L_q &gt; L_d\)</span> due to intentional differences in construction.
+For the IPMSM, inductances in the synchronous frame are independent of rotor position,
+but the inductances measured in the stationary frame (either per-phase
+or in the αβ frame) change with rotor position.</p>
+<p>The term <span class="math notranslate nohighlight">\(\psi_m\)</span> is the permanent magnet flux linkage.</p>
+<p>The flux equations can be substituted into the stator voltage equations to
+produce stator voltage equations expressed in terms of circuit voltages and currents,
+shown below in Equation <a class="reference internal" href="#equation-eq-foc-voltage2">5.12</a>:</p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-voltage2">
+<span class="eqno">(5.12)<a class="headerlink" href="#equation-eq-foc-voltage2" title="Permalink to this equation">¶</a></span>\[\begin{aligned}
+V_d &amp;= R_s I_d - \omega_e L_qI_q + L_d\tfrac{d}{dt}I_d
+\cr
+V_q &amp;= R_s I_q + \omega_e L_dI_d + L_q\tfrac{d}{dt}I_q  + \psi_m\omega_e
+\cr
+    &amp;= R_s I_q + \omega_e L_dI_d + L_q\tfrac{d}{dt}I_q  + K_e \omega_m
+\end{aligned}\]</div>
+<p>From left to right, these terms represent the resistive voltage drop <span class="math notranslate nohighlight">\(IR_s\)</span>,
+cross-coupling speed voltage, the voltage <span class="math notranslate nohighlight">\(L\frac{dI}{dt}\)</span> needed to change current,
+and the back-emf <span class="math notranslate nohighlight">\(\psi_m\omega_e = K_e\omega_m\)</span>, where <span class="math notranslate nohighlight">\(K_e = N_p\psi_m\)</span> is
+commonly known as the back-emf constant or voltage constant.</p>
+</section>
+<section id="pmsm-torque-equation">
+<h3><span class="section-number">5.1.2.2.3. </span>PMSM torque equation<a class="headerlink" href="#pmsm-torque-equation" title="Permalink to this heading">¶</a></h3>
+<p>The PMSM flux equation can also be substituted into the torque equation
+(Equation <a class="reference internal" href="#equation-eq-foc-torque3">5.9</a>) to derive Equation <a class="reference internal" href="#equation-eq-foc-torque-pmsm">5.13</a>
+showing the two torque terms found in a PMSM:</p>
+<ul class="simple">
+<li><p><strong>alignment torque</strong> or <strong>permanent magnet torque</strong>, resulting from the alignment
+between the rotor’s permanent magnet and the field caused by the stator current</p></li>
+<li><p><strong>reluctance torque</strong>, resulting from the tendency of the rotor iron to
+rotate towards the field caused by the stator current</p></li>
+</ul>
+<div class="math notranslate nohighlight" id="equation-eq-foc-torque-pmsm">
+<span class="eqno">(5.13)<a class="headerlink" href="#equation-eq-foc-torque-pmsm" title="Permalink to this equation">¶</a></span>\[T_{em} = \underbrace{\tfrac{3}{2}\overbrace{N_p \psi_m}^{K_e} I_q}_{\scriptsize\textsf{\!\!alignment torque\!\!}}
++ \underbrace{\tfrac{3}{2}N_p\left(L_d - L_q\right)I_dI_q}_{\scriptsize\textsf{reluctance torque}}\]</div>
+<p>For a SPMSM, <span class="math notranslate nohighlight">\(L_d = L_q\)</span>, so there is no reluctance torque, and the
+electromagnetic torque is produced only by the q-axis component of current.
+In this case, d-axis current is driven towards zero
+(except in <a class="reference internal" href="../flux_control/flux_weakening.html#algorithm-flux-weakening"><span class="std std-ref">flux weakening</span></a>)
+to reduce <span class="math notranslate nohighlight">\(I^2R\)</span> losses in the stator.</p>
+<p>For an IPMSM, <span class="math notranslate nohighlight">\(L_d &lt; L_q\)</span>, and the reluctance torque can help increase
+efficiency by controlling <span class="math notranslate nohighlight">\(I_d &lt; 0\)</span>. The optimum choice of <span class="math notranslate nohighlight">\(I_d\)</span>
+is the aim of <a class="reference internal" href="../flux_control/mtpa.html#algorithm-mtpa"><span class="std std-ref">Maximum Torque Per Ampere (MTPA)</span></a> algorithms.</p>
+</section>
+<section id="per-phase-equivalent-circuit">
+<h3><span class="section-number">5.1.2.2.4. </span>Per-phase equivalent circuit<a class="headerlink" href="#per-phase-equivalent-circuit" title="Permalink to this heading">¶</a></h3>
+<p>It is important to note that the equations in this section are derived from
+the per-phase equivalent circuit model, shown in <a class="reference internal" href="#fig-foc-perphase"><span class="std std-numref">Figure 5.3</span></a>.
+This model treats each winding of a three-phase wye-connected PMSM
+as a winding resistance <span class="math notranslate nohighlight">\(Rs\)</span>, winding inductance <span class="math notranslate nohighlight">\(L\)</span>,
+and back-emf <span class="math notranslate nohighlight">\(e\)</span> in series, between the neutral
+and one of the three line terminals A, B, or C.</p>
+<figure class="align-center" id="id11">
+<span id="fig-foc-perphase"></span><a class="reference internal image-reference" href="../../_images/foc_perphase.svg"><img alt="../../_images/foc_perphase.svg" src="../../_images/foc_perphase.svg" width="75%" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.3 </span><span class="caption-text">The per-phase equivalent for each of the stator windings
+in a PMSM with wye (star) connection</span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>In this model, the back-emf components are sinusoidal voltages with
+the phase sequence A, B, C, separated by 120°.</p>
+<p>The line-to-line resistance measurable at any pair of the terminals is <span class="math notranslate nohighlight">\(2R_s\)</span>,
+and the line-to-line inductance measurable at any pair of terminals is <span class="math notranslate nohighlight">\(2L\)</span>
+for SPMSM. (For IPMSM, remember that inductance varies with rotor angle.)
+The line-to-line back-emf measurable at any pair of terminals has amplitude
+<span class="math notranslate nohighlight">\(|e| = \sqrt{3} K_e\omega_m\)</span> where <span class="math notranslate nohighlight">\(K_e\)</span> is the line-to-neutral
+back-emf constant in V/(rad/s).</p>
+</section>
+<section id="wye-and-delta-connections">
+<h3><span class="section-number">5.1.2.2.5. </span>Wye and delta connections<a class="headerlink" href="#wye-and-delta-connections" title="Permalink to this heading">¶</a></h3>
+<p>The per-phase model also applies equally to the delta-connected PMSM.
+A delta-connected stator, shown in <a class="reference internal" href="#fig-foc-wyedelta"><span class="std std-numref">Figure 5.4</span></a>
+can be modeled by an equivalent wye-connected stator with
+<span class="math notranslate nohighlight">\(R_{s\sf Y} = \frac{1}{3}R_{s\Delta}\)</span>, <span class="math notranslate nohighlight">\(L_{\sf Y} = \frac{1}{3}L_{\Delta}\)</span>,
+and <span class="math notranslate nohighlight">\(K_{e \sf Y} = \frac{1}{\sqrt{3}}K_{e\Delta}\)</span>. Delta-connected windings
+also involve a phase shift of 30° because of the change in connections.</p>
+<figure class="align-center" id="id12">
+<span id="fig-foc-wyedelta"></span><a class="reference internal image-reference" href="../../_images/foc_wyedelta.svg"><img alt="../../_images/foc_wyedelta.svg" src="../../_images/foc_wyedelta.svg" width="75%" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.4 </span><span class="caption-text">Per-phase equivalence between wye (star) connection, shown at left,
+and delta connection, shown at right.</span><a class="headerlink" href="#id12" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Knowing the wye-to-delta conversion is important for those motors which have
+individual phase windings that can be connected either as a wye or delta configuration,
+which is more common in larger electric machines. These motors have six terminals
+— A1, A2, B1, B2, C1, C2, or more commonly U1, U2, V1, V2, W1, W2 —
+which can be connected appropriately in a terminal box,
+as shown in <a class="reference internal" href="#fig-foc-wyedelta-terminalbox"><span class="std std-numref">Figure 5.5</span></a>,
+in either wye or delta configuration depending on the installation of
+terminal jumpers.</p>
+<figure class="align-center" id="id13">
+<span id="fig-foc-wyedelta-terminalbox"></span><a class="reference internal image-reference" href="../../_images/foc_wyedelta_terminalbox.svg"><img alt="../../_images/foc_wyedelta_terminalbox.svg" src="../../_images/foc_wyedelta_terminalbox.svg" width="75%" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.5 </span><span class="caption-text">Terminal box connections (top) and resulting motor topologies (bottom)
+for wye (star) connection, shown at left, and delta connection, shown at right,
+on an electric machine with three independent windings.
+Terminal jumpers are shown in light gray.</span><a class="headerlink" href="#id13" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Very large motors may have more than six winding terminals that can be reconnected
+in multiple ways; see for example Annex A2 of <a class="reference internal" href="#foc-iec60034-8"><span class="std std-ref">IEC 60034-8</span></a>.</p>
+<p>As long as the motor is supplied as a three-terminal black box from the manufacturer, however,
+the internal construction
+of the motor (wye or delta) doesn’t matter,
+and the theory of three-phase electric machines
+applies equally to either configuration.</p>
+</section>
+<section id="steady-state-and-phasor-analysis">
+<span id="foc-phasor-analysis"></span><h3><span class="section-number">5.1.2.2.6. </span>Steady-state and phasor analysis<a class="headerlink" href="#steady-state-and-phasor-analysis" title="Permalink to this heading">¶</a></h3>
+<p>At steady state, the <span class="math notranslate nohighlight">\(\frac{d}{dt}\)</span> terms of Equation <a class="reference internal" href="#equation-eq-foc-voltage2">5.12</a>
+are zero, and the voltage equations reduce to Equation <a class="reference internal" href="#equation-eq-foc-voltage3">5.14</a></p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-voltage3">
+<span class="eqno">(5.14)<a class="headerlink" href="#equation-eq-foc-voltage3" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{alignedat}{2}
+V_d &amp;=R_s I_d  - \omega_e L_qI_q \\
+V_q &amp;=R_s I_q  + \omega_e L_dI_d &amp;&amp;+\psi_m\omega_e \\
+&amp;=\underbrace{R_s I_q }_{\begin{smallmatrix}\textsf{\!\!\!resistance\!\!\!} \\[2pt] IR\end{smallmatrix}}+\underbrace{\omega_e L_dI_d\vphantom{_q}}_{\begin{smallmatrix}\textsf{\!inductance\!} \\[2pt]j\omega LI \end{smallmatrix}}
+&amp;&amp;+\underbrace{K_e \omega_m\vphantom{_q}}_{\begin{smallmatrix}\textsf{back-emf}\end{smallmatrix}}
+\end{alignedat}\end{split}\]</div>
+<p>These can be pictured graphically in a voltage phasor diagram,
+as shown in <a class="reference internal" href="#fig-foc-phasor1"><span class="std std-numref">Figure 5.6</span></a>.
+The dark green arrows show back-emf, resistive, and inductive components
+of the resulting terminal voltage <span class="math notranslate nohighlight">\(V_{t1}\)</span>, with zero d-axis current.
+This is typical operation for a PMSM in field-oriented control.
+The light blue arrows show additional resistive and inductive components
+caused by controlling d-axis current to <span class="math notranslate nohighlight">\(I_d &lt; 0\)</span>. This is done during
+<a class="reference internal" href="../flux_control/flux_weakening.html#algorithm-flux-weakening"><span class="std std-ref">flux-weakening operation</span></a>,
+to reduce the magnitude of the terminal voltage
+by using the inductive voltage drop <span class="math notranslate nohighlight">\(\omega_eL_dI_d\)</span> to counteract
+part of the back-emf voltage.</p>
+<figure class="align-center" id="id14">
+<span id="fig-foc-phasor1"></span><a class="reference internal image-reference" href="../../_images/foc_phasor1.svg"><img alt="../../_images/foc_phasor1.svg" src="../../_images/foc_phasor1.svg" width="75%" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.6 </span><span class="caption-text">PMSM phasor diagram</span><a class="headerlink" href="#id14" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Phasor analysis is a valuable yet extremely simple approach to determine
+the voltage requirements of a PMSM. Some care is necessary in the units
+used for the different motor parameters, so that Equation <a class="reference internal" href="#equation-eq-foc-voltage3">5.14</a>
+is valid:</p>
+<ul>
+<li><p>The per-phase equivalent model is stated in terms of line-to-neutral voltage.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Resistance and inductances should be line-to-neutral (half of the line-to-line value)</p></li>
+<li><p>Back-emf should be calculated as line-to-neutral voltage
+(<span class="math notranslate nohighlight">\(1/\sqrt{3} \approx\)</span> 0.5774 of the line-to-line voltage)</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Be aware of temperature coefficients, if operating the motor near its rated
+maximum temperature:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The resistance of copper stator windings will increase roughly linearly
+with temperature over normal operating temperature ranges
+(-55 °C to +200 °C). Relative to its value at 20 °C,
+copper’s resistance has a temperature coefficient of ≈0.4%/°C.
+<a class="footnote-reference brackets" href="#fn-foc-cu-tempco" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a></p></li>
+<li><p>Both <a class="reference external" href="https://en.wikipedia.org/wiki/Neodymium_magnet#Physical_and_mechanical_properties">neodymium and samarium-cobalt magnets have a slight negative temperature
+coefficient of remanence</a>,
+which means that the back-emf decreases slightly with increasing temperature.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>The units for computing the product of <span class="math notranslate nohighlight">\(K_e\)</span> and <span class="math notranslate nohighlight">\(\omega_m\)</span>
+(or <span class="math notranslate nohighlight">\(\psi_m\)</span> and <span class="math notranslate nohighlight">\(\omega_e\)</span>) should be consistent,
+so if <span class="math notranslate nohighlight">\(K_e\)</span> is available in V/(rad/s), then velocity <span class="math notranslate nohighlight">\(\omega_m\)</span>
+should be converted to rad/s; if <span class="math notranslate nohighlight">\(K_e\)</span> is available in V/kRPM,
+then velocity <span class="math notranslate nohighlight">\(\omega_m\)</span> should be converted to kRPM.
+(1 RPM = <span class="math notranslate nohighlight">\(\frac{\pi}{30}\)</span> rad/s)</p></li>
+<li><p>Use peak amplitude rather than RMS for all voltages and currents.
+(1V RMS = <span class="math notranslate nohighlight">\(\sqrt{2}\)</span>V amplitude)</p></li>
+<li><p>Motor manufacturers are notorious for specifying back-emf constant <span class="math notranslate nohighlight">\(K_e\)</span>
+inconsistently and ambiguously. It can be stated in terms of RMS or peak amplitude;
+line-to-line or line-to-neutral; and in terms of voltage per rad/s or RPM or kRPM.</p></li>
+<li><p>The resulting components <span class="math notranslate nohighlight">\(V_d\)</span> and <span class="math notranslate nohighlight">\(V_q\)</span> should be added in quadrature,
+as shown in Equation <a class="reference internal" href="#equation-eq-foc-voltage4">5.15</a>, to compute the required amplitude
+of line-to-neutral terminal voltage.</p></li>
+</ul>
+<div class="math notranslate nohighlight" id="equation-eq-foc-voltage4">
+<span class="eqno">(5.15)<a class="headerlink" href="#equation-eq-foc-voltage4" title="Permalink to this equation">¶</a></span>\[|V_{dq}| = \sqrt{V_d{}^2 + V_q{}^2}\]</div>
+<ul class="simple">
+<li><p>Compute required line-to-line terminal voltage
+by multiplying line-to-neutral terminal voltage by <span class="math notranslate nohighlight">\(\sqrt{3}\)</span>.</p></li>
+</ul>
+<p>The motor and drive are well-matched if the maximum required line-to-line voltage
+is below the DC link voltage, but both are the same order of magnitude.
+(Typically, the maximum line-to-line terminal voltage <span class="math notranslate nohighlight">\(|V_{dq}|\)</span> is 70-95%
+of the minimum DC link voltage, to leave enough engineering margin so
+current can still change quickly — <span class="math notranslate nohighlight">\(L\frac{dI}{dt}\)</span> terms require voltage
+— even considering other voltage losses such as
+<a class="reference internal" href="../dead-time-comp.html#dtc-distortion"><span class="std std-ref">dead-time distortion</span></a>
+and on-state voltage across the transistors.)</p>
+</section>
+</section>
+<section id="foc-block-diagram">
+<span id="foc-blkdiag"></span><h2><span class="section-number">5.1.2.3. </span>FOC block diagram<a class="headerlink" href="#foc-block-diagram" title="Permalink to this heading">¶</a></h2>
+<p>The general structure of an FOC controller is an inner vector current loop,
+and an outer velocity loop, as shown in <a class="reference internal" href="#fig-foc-blkdiag-general"><span class="std std-numref">Figure 5.7</span></a>.</p>
+<figure class="align-center" id="id15">
+<span id="fig-foc-blkdiag-general"></span><a class="reference internal image-reference" href="../../_images/foc_blkdiag.svg"><img alt="../../_images/foc_blkdiag.svg" src="../../_images/foc_blkdiag.svg" width="95%" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.7 </span><span class="caption-text">Generalized FOC block diagram structure</span><a class="headerlink" href="#id15" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The inner vector current loop has a current controller that operates in the
+synchronous (dq) frame. Park and Clarke transforms are used in the feedback path
+to convert measured phase currents to the synchronous frame as inputs to the current controller,
+and in the forward path to convert desired synchronous-frame voltages <span class="math notranslate nohighlight">\(V_{dq}\)</span>
+to realizable PWM duty cycles in a three-phase bridge.</p>
+<p>In its linear range, there is nothing particularly special
+about the vector current loop, and it is often
+realized as two PI controllers, one for the d axis and the other for the q axis.
+Saturation and antiwindup should be designed carefully, keeping in mind the overall
+vector controller, rather than as two independent axis controllers.</p>
+</section>
+<section id="implementation-notes">
+<h2><span class="section-number">5.1.2.4. </span>Implementation notes<a class="headerlink" href="#implementation-notes" title="Permalink to this heading">¶</a></h2>
+<p>The Components section has more information on the implementation details of
+<a class="reference internal" href="../../components/foc.html#foc"><span class="std std-ref">field-oriented-control</span></a> in MCAF.</p>
+<p>Voltages in the αβ or dq frames are represented
+as line-to-neutral voltages. Per-phase voltages are relative to
+the negative terminal of the DC link.</p>
+</section>
+<section id="miscellaneous-topics">
+<h2><span class="section-number">5.1.2.5. </span>Miscellaneous topics<a class="headerlink" href="#miscellaneous-topics" title="Permalink to this heading">¶</a></h2>
+<section id="alternate-reference-frame-transforms">
+<span id="foc-alt-ref-frame-transforms"></span><h3><span class="section-number">5.1.2.5.1. </span>Alternate reference frame transforms<a class="headerlink" href="#alternate-reference-frame-transforms" title="Permalink to this heading">¶</a></h3>
+<p>There are two other common forms of reference transforms used,
+in addition to the forms of the Park transform
+(<span class="math notranslate nohighlight">\(\alpha\beta \rightarrow dq\)</span>, Equation <a class="reference internal" href="#equation-eq-foc-mpark">5.7</a>)
+and Clarke transform (<span class="math notranslate nohighlight">\(abc \rightarrow \alpha\beta\)</span>, Equation
+<a class="reference internal" href="#equation-eq-foc-mclarke">5.4</a>) described above.</p>
+<p>One is the full 3×3 Clarke transform (<span class="math notranslate nohighlight">\(abc \rightarrow \alpha\beta0\)</span>)
+in Equation <a class="reference internal" href="#equation-eq-foc-mclarke-3x3">5.16</a>, using the transformation matrix <span class="math notranslate nohighlight">\(T_{\alpha\beta 0}\)</span>:</p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-mclarke-3x3">
+<span class="eqno">(5.16)<a class="headerlink" href="#equation-eq-foc-mclarke-3x3" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{bmatrix}X_\alpha \\[4pt] X_\beta \\[4pt] X_0 \end{bmatrix}
+=
+\underbrace{
+\begin{bmatrix}\frac{2}{3} &amp; -\frac{1}{3}  &amp; -\frac{1}{3} \\[4pt]
+0 &amp; \frac{1}{\sqrt{3}}&amp; -\frac{1}{\sqrt{3}} \\[4pt]
+\frac{1}{3} &amp; \frac{1}{3} &amp; \frac{1}{3}\end{bmatrix}
+}_{T_{\alpha\beta 0}}
+\begin{bmatrix}X_A \\[4pt] X_B \\[4pt] X_C\end{bmatrix}\end{split}\]</div>
+<p>Here, the zero-sequence component <span class="math notranslate nohighlight">\(X_0\)</span> is the common-mode voltage.
+For motors without an accessible neutral connection, this voltage is arbitrary
+and does not affect operation of the motor. (The zero-sequence component
+does matter in some cases, where parasitic capacitance between windings and motor
+housing can cause what are known as <em>bearing currents</em> to flow through the motor bearings,
+gradually damaging them through electrical discharge.
+This is known as electrical fluting, and reduces the operating life of the motor.
+<a class="footnote-reference brackets" href="#fn-foc-busse1997" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#fn-foc-jouanne1998" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a> )</p>
+<p>It is worth noting that the common form of the Clarke transform (Equation
+<a class="reference internal" href="#equation-eq-foc-mclarke">5.4</a>) and the Inverse Clarke transform (Equation
+<a class="reference internal" href="#equation-eq-foc-minvclarke">5.5</a>) are not truly inverses, since their transformation
+matrices are not square, but rather
+<a class="reference external" href="https://mathworld.wolfram.com/Pseudoinverse.html">pseudoinverses</a>.
+It is possible to go make a full round trip from
+<span class="math notranslate nohighlight">\(\alpha\beta \Rightarrow abc \Rightarrow \alpha\beta\)</span>
+since one product of the two matrices is the identity: <span class="math notranslate nohighlight">\(T_{\alpha\beta}T_{\alpha\beta}{}^+ = I\)</span>.
+But in the other direction, <span class="math notranslate nohighlight">\(abc \Rightarrow \alpha\beta \nRightarrow abc\)</span>
+since the matrix product
+<span class="math notranslate nohighlight">\(T_{\alpha\beta}{}^+T_{\alpha\beta}\)</span> does not have full rank.
+In plain terms, the zero-sequence component is lost as soon as the 2×3
+Clarke transform is applied, and cannot be recovered.</p>
+<p>The full 3×3 Clarke transform is invertible, on the other hand;
+the  3×3 Inverse Clarke transform is shown in
+Equation <a class="reference internal" href="#equation-eq-foc-minvclarke-3x3">5.17</a> using the transformation matrix
+<span class="math notranslate nohighlight">\(T_{\alpha\beta 0}{}^{-1}\)</span>.</p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-minvclarke-3x3">
+<span class="eqno">(5.17)<a class="headerlink" href="#equation-eq-foc-minvclarke-3x3" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{bmatrix}X_A \\[4pt] X_B \\[4pt] X_C \end{bmatrix}
+=
+\underbrace{
+\begin{bmatrix}\hphantom{-}1 &amp; 0 &amp; 1 \\[4pt]
+-\frac{1}{2} &amp;\frac{\sqrt{3}}{2}&amp; 1 \\[4pt]
+-\frac{1}{2} &amp;-\frac{\sqrt{3}}{2}&amp; 1\end{bmatrix}
+}_{T_{\alpha\beta 0}{}^{-1}}
+\begin{bmatrix}X_\alpha \\[4pt] X_\beta \\[4pt] X_0\end{bmatrix}\end{split}\]</div>
+<p>The other common reference frame transform
+is the 2×2 Reduced Clarke transform (<span class="math notranslate nohighlight">\(ab \rightarrow \alpha\beta\)</span>),
+shown in Equation <a class="reference internal" href="#equation-eq-foc-mclarke-3x3">5.16</a>,
+which allows conversion of only two currents <span class="math notranslate nohighlight">\(I_A\)</span> and <span class="math notranslate nohighlight">\(I_B\)</span>
+into αβ coordinates through the assumption <span class="math notranslate nohighlight">\(I_A + I_B + I_C = 0\)</span>.</p>
+<div class="math notranslate nohighlight" id="equation-eq-foc-mclarke-2x2">
+<span class="eqno">(5.18)<a class="headerlink" href="#equation-eq-foc-mclarke-2x2" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{bmatrix}I_\alpha \\[4pt] I_\beta \end{bmatrix}
+=
+\underbrace{
+\begin{bmatrix}1 &amp; 0 \cr
+\frac{\sqrt{3}}{3} &amp; \frac{2\sqrt{3}}{3} \cr
+\end{bmatrix}
+}_{T_{AB}}
+\begin{bmatrix}I_A \\[4pt] I_B\end{bmatrix}\end{split}\]</div>
+<p>This is used in MCAF for calculating <span class="math notranslate nohighlight">\(I_{\alpha\beta} = T_{AB}I_{AB}\)</span>
+from phase currents A and B, with C unmeasured.
+It is possible to construct similar matrices <span class="math notranslate nohighlight">\(T_{BC}\)</span> and <span class="math notranslate nohighlight">\(T_{AC}\)</span>
+when the unmeasured phase is A or B.</p>
+</section>
+</section>
+<section id="references">
+<h2><span class="section-number">5.1.2.6. </span>References<a class="headerlink" href="#references" title="Permalink to this heading">¶</a></h2>
+<p>Some of the material in this section was adapted from
+the section “FOC in Fifteen Minutes” from the 2016 MASTERS presentation
+<a class="reference external" href="https://www.youtube.com/watch?v=ipKEqVc2Sk4&amp;ab_channel=MicrochipTechnology">How to Succeed in Motor Control</a>.</p>
+<aside class="footnote brackets" id="fn-foc-park1929" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">1</a><span class="fn-bracket">]</span></span>
+<p>R. H. Park,
+<a class="reference external" href="https://ieeexplore.ieee.org/document/5055275">“Two-reaction theory of synchronous machines generalized method of analysis-part I,”</a>,
+<em>Transactions of the American Institute of Electrical Engineers</em>,
+vol. 48, no. 3, pp. 716-727, July 1929.</p>
+</aside>
+<aside class="footnote brackets" id="fn-foc-duesterhoeft1951" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">2</a><span class="fn-bracket">]</span></span>
+<p>W. C. Duesterhoeft, M. W. Schulz and E. Clarke,
+<a class="reference external" href="https://ieeexplore.ieee.org/document/5060554">“Determination of Instantaneous Currents and Voltages by Means of Alpha, Beta, and Zero Components,”</a>,
+<em>Transactions of the American Institute of Electrical Engineers</em>,
+vol. 70, no. 2, pp. 1248-1255, July 1951.</p>
+</aside>
+<aside class="footnote brackets" id="fn-foc-orourke2019" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p>C. J. O’Rourke, M. M. Qasim, M. R. Overlin and J. L. Kirtley,
+<a class="reference external" href="https://ieeexplore.ieee.org/document/8836094">“A Geometric Interpretation of Reference Frames and Transformations:
+dq0, Clarke, and Park,”</a>,
+<em>IEEE Transactions on Energy Conversion</em>,
+vol. 34, no. 4, pp. 2070-2083, Dec. 2019. Also available via <a class="reference external" href="https://dspace.mit.edu/bitstream/handle/1721.1/123557/Final_Submission__Open_Access.pdf">MIT Open Access</a>.</p>
+</aside>
+<aside class="footnote brackets" id="fn-foc-busse1997" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">4</a><span class="fn-bracket">]</span></span>
+<p>D. Busse, J. Erdman, R. J. Kerkman, D. Schlegel and G. Skibinski,
+<a class="reference external" href="https://ieeexplore.ieee.org/document/558735">“Bearing currents and their relationship to PWM drives,”</a>,
+<em>IEEE Transactions on Power Electronics</em>, vol. 12, no. 2, pp. 243-252, March 1997.</p>
+</aside>
+<aside class="footnote brackets" id="fn-foc-jouanne1998" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">5</a><span class="fn-bracket">]</span></span>
+<p>Annette von Jouanne and Haoran Zhang,
+<a class="reference external" href="https://www.nrel.gov/docs/legosti/fy98/24897.pdf">“Bearing Currents: A Major Source of Mechanical Failure for Motors in
+Adjustable Speed Drive Applications”</a>,
+<em>Turning Point</em> (US Department of Energy), p. 3, Sep 1998.</p>
+</aside>
+<span class="target" id="foc-iec60034-8"></span><aside class="footnote brackets" id="fn-foc-iec60034-8" role="note">
+<span class="label"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://law.resource.org/pub/in/bis/S05/is.iec.60034.8.2002.pdf">IEC 60034-8 Rotating electrical machines, Part 8:
+Terminal markings and direction of rotation</a></p>
+</aside>
+<aside class="footnote brackets" id="fn-foc-cu-tempco" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">7</a><span class="fn-bracket">]</span></span>
+<p>For copper temperature coefficient, see the two sources below.
+The figure 0.00393/°C is bandied about quite a lot, but
+this was decided by convention in 1913, based on data available at the time.
+(See <a class="footnote-reference brackets" href="#fn-foc-nbs100" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a>, page 4.)  The 1979 article by Matula
+<a class="footnote-reference brackets" href="#fn-foc-matula1979" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a> identifies and re-publishes numerous datasets for
+copper resistivity measurements and proposes
+an interpolated table of Recommended Values for the Electrical Resistivity of Copper
+(see table 2) vs. temperature.</p>
+</aside>
+<aside class="footnote brackets" id="fn-foc-nbs100" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">8</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://ntrl.ntis.gov/NTRL/dashboard/searchResults/titleDetail/NBSHB100.xhtml">“Copper Wire Tables”</a>,
+National Bureau of Standards Handbook 100,
+February 1966.</p>
+</aside>
+<aside class="footnote brackets" id="fn-foc-matula1979" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">9</a><span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://srd.nist.gov/JPCRD/jpcrd155.pdf">“Electrical resistivity of copper, gold, palladium, and silver”</a>,
+R. A. Matula, <em>Journal of Physical and Chemical Reference Data</em>,
+vol. 8, no. 4, pp. 1147-1298, Oct 1979.</p>
+</aside>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.1.2. Fundamentals of FOC</a><ul>
+<li><a class="reference internal" href="#torque-production-and-reference-frames">5.1.2.1. Torque production and reference frames</a></li>
+<li><a class="reference internal" href="#stator-voltage-and-flux-equations">5.1.2.2. Stator voltage and flux equations</a><ul>
+<li><a class="reference internal" href="#general-stator-voltage-equation">5.1.2.2.1. General stator voltage equation</a></li>
+<li><a class="reference internal" href="#pmsm-voltage-equations">5.1.2.2.2. PMSM voltage equations</a></li>
+<li><a class="reference internal" href="#pmsm-torque-equation">5.1.2.2.3. PMSM torque equation</a></li>
+<li><a class="reference internal" href="#per-phase-equivalent-circuit">5.1.2.2.4. Per-phase equivalent circuit</a></li>
+<li><a class="reference internal" href="#wye-and-delta-connections">5.1.2.2.5. Wye and delta connections</a></li>
+<li><a class="reference internal" href="#steady-state-and-phasor-analysis">5.1.2.2.6. Steady-state and phasor analysis</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#foc-block-diagram">5.1.2.3. FOC block diagram</a></li>
+<li><a class="reference internal" href="#implementation-notes">5.1.2.4. Implementation notes</a></li>
+<li><a class="reference internal" href="#miscellaneous-topics">5.1.2.5. Miscellaneous topics</a><ul>
+<li><a class="reference internal" href="#alternate-reference-frame-transforms">5.1.2.5.1. Alternate reference frame transforms</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#references">5.1.2.6. References</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="overview.html"
+                          title="previous chapter"><span class="section-number">5.1.1. </span>Field-oriented control (FOC): an overview</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="current_measure.html"
+                          title="next chapter"><span class="section-number">5.1.3. </span>Current measurement</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="current_measure.html" title="5.1.3. Current measurement"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="5.1.1. Field-oriented control (FOC): an overview"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" ><span class="section-number">5.1. </span>Field-oriented Current Control</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.1.2. </span>Fundamentals of FOC</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

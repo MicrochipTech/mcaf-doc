@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.4.5. Zero-Speed / Maximum Torque (ZS/MT) &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.5. Flux control" href="flux_control/index.html" />
+    <link rel="prev" title="5.4.4. Angle-tracking Phase-locked Loop (ATPLL)" href="atpll.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="flux_control/index.html" title="5.5. Flux control"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="atpll.html" title="5.4.4. Angle-tracking Phase-locked Loop (ATPLL)"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="estimators.html" accesskey="U"><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.5. </span>Zero-Speed / Maximum Torque (ZS/MT)</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="zsmtlong-zs-mt">
+<span id="algorithm-zsmt"></span><span id="index-0"></span><h1><span class="section-number">5.4.5. </span>Zero-Speed / Maximum Torque (ZS/MT)<a class="headerlink" href="#zsmtlong-zs-mt" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">5.4.5.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>Zero-Speed / Maximum Torque (ZS/MT) provides high torque capability
+at standstill and at moderate speeds
+for some permanent-magnet synchronous motors with <a class="reference internal" href="../appendix/glossary.html#term-rotor-saliency"><span class="xref std std-term">rotor saliency</span></a>,
+such as interior permanent-magnet synchronous motors (<a class="reference internal" href="../appendix/glossary.html#term-IPMSM"><span class="xref std std-term">IPMSM</span></a>).</p>
+<p>ZS/MT applies a high-frequency excitation signal to estimate position
+from the motor’s inductance characteristics. (This makes it an
+<a class="reference internal" href="estimator-interface.html#algorithm-estimator-terminology"><span class="std std-ref">intrusive</span></a> estimator.)
+<a class="reference internal" href="#fig-zsmt-blkdiag"><span class="std std-numref">Figure 5.74</span></a>
+shows a high-level block diagram containing the excitation, phase detection,
+and phase-locked loop blocks of ZS/MT.</p>
+<figure class="align-center" id="id1">
+<span id="fig-zsmt-blkdiag"></span><img alt="../_images/foc_blkdiag_zsmt_basic.svg" class="no-scaled-link" src="../_images/foc_blkdiag_zsmt_basic.svg" width="100%" /><figcaption>
+<p><span class="caption-number">Figure 5.74 </span><span class="caption-text">ZS/MT block diagram</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="further-information">
+<span id="zsmt-further-information"></span><h2><span class="section-number">5.4.5.2. </span>Further information<a class="headerlink" href="#further-information" title="Permalink to this heading">¶</a></h2>
+<p>This feature is freely available as of MCAF R7,
+but documentation is provided only by request.
+For more information, please <a class="reference internal" href="../faq.html#faq-support"><span class="std std-ref">contact Microchip</span></a>.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.4.5. Zero-Speed / Maximum Torque (ZS/MT)</a><ul>
+<li><a class="reference internal" href="#overview">5.4.5.1. Overview</a></li>
+<li><a class="reference internal" href="#further-information">5.4.5.2. Further information</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="atpll.html"
+                          title="previous chapter"><span class="section-number">5.4.4. </span>Angle-tracking Phase-locked Loop (ATPLL)</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="flux_control/index.html"
+                          title="next chapter"><span class="section-number">5.5. </span>Flux control</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="flux_control/index.html" title="5.5. Flux control"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="atpll.html" title="5.4.4. Angle-tracking Phase-locked Loop (ATPLL)"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="estimators.html" ><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.5. </span>Zero-Speed / Maximum Torque (ZS/MT)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

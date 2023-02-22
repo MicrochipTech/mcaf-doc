@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>7.3. MCLV-2 Sense Resistors &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="7.4. Related Documents" href="otherdocs.html" />
+    <link rel="prev" title="7.2. Error code list" href="error_codes.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="otherdocs.html" title="7.4. Related Documents"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="error_codes.html" title="7.2. Error code list"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">7. </span>Appendix</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">7.3. </span>MCLV-2 Sense Resistors</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="mclv-2-sense-resistors">
+<span id="appendix-mclv2"></span><h1><span class="section-number">7.3. </span>MCLV-2 Sense Resistors<a class="headerlink" href="#mclv-2-sense-resistors" title="Permalink to this heading">¶</a></h1>
+<p>The <a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/dm330021-2">dsPICDEM<sup>®</sup> MCLV‑2 Development Board</a> contains a three-phase bridge
+with low-side 25 mΩ shunt resistors for current sense circuitry on the A and B legs of the
+bridge as well as in the DC current path, as shown in <a class="reference internal" href="#fig-mclv2-1"><span class="std std-numref">Figure 7.1</span></a>. Voltages
+across the sense resistors are used to sense currents <span class="math notranslate nohighlight">\(I_a\)</span>, <span class="math notranslate nohighlight">\(I_b\)</span>, and <span class="math notranslate nohighlight">\(I_{dc} = I_a + I_b + I_c\)</span>.</p>
+<figure class="align-center" id="id1">
+<span id="fig-mclv2-1"></span><img alt="../_images/bridge3a.png" src="../_images/bridge3a.png" />
+<figcaption>
+<p><span class="caption-number">Figure 7.1 </span><span class="caption-text">Three-phase bridge in MCLV-2, ideal circuit</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>In a real circuit board, the current trace at node Ⓛ connecting the A, B, and C
+legs of the bridge is not uniform in voltage, because it contains nonzero voltage drops along parasitic
+resistance of the trace. In the MCLV-2 board, this resistance can be modeled as three series resistors
+<span class="math notranslate nohighlight">\(R_{p1}\)</span>, <span class="math notranslate nohighlight">\(R_{p2}\)</span>, and <span class="math notranslate nohighlight">\(R_{p3}\)</span>,  in <a class="reference internal" href="#fig-mclv2-2"><span class="std std-numref">Figure 7.2</span></a>. Kelvin connections
+are made directly from the sense resistor terminals to a differential amplifier, so that the voltage
+drops along these parasitic resistances do not affect the current measurements.</p>
+<figure class="align-center" id="id2">
+<span id="fig-mclv2-2"></span><img alt="../_images/bridge3b.png" src="../_images/bridge3b.png" />
+<figcaption>
+<p><span class="caption-number">Figure 7.2 </span><span class="caption-text">Three-phase bridge in MCLV-2, real circuit with proper layout</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Unfortunately there were some layout errors in the MCLV-2 board. Kelvin connections were used, but
+were shorted together in signal traces, so the voltage drops along these parasitic resistances <em>do</em> affect the
+current measurements, and can effectively be modeled as shown in <a class="reference internal" href="#fig-mclv2-3"><span class="std std-numref">Figure 7.3</span></a>, where the shorted node ⑦
+is used for the common terminal in all three current sensing circuits.</p>
+<figure class="align-center" id="id3">
+<span id="fig-mclv2-3"></span><img alt="../_images/bridge3c.png" src="../_images/bridge3c.png" />
+<figcaption>
+<p><span class="caption-number">Figure 7.3 </span><span class="caption-text"> </span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The approximate values of these trace resistances at room temperature (measured by connecting a current-limited power supply to
+various pairs of circuit nodes, and measuring current delivered by the power supply and voltages at various points,
+e.g. putting current into node
+① on sense resistor <span class="math notranslate nohighlight">\(R_{sa}\)</span> and out of node ⑥ on sense resistor <span class="math notranslate nohighlight">\(R_{s,dc}\)</span>,
+in order to measure <span class="math notranslate nohighlight">\(R_{p1}\)</span>, <span class="math notranslate nohighlight">\(R_{p2}\)</span>, and <span class="math notranslate nohighlight">\(R_{p3}\)</span>) are</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(R_{p1} \approx 3.3\ \text{m}\Omega\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(R_{p2} \approx 2.9\ \text{m}\Omega\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(R_{p3} \approx 0.3\ \text{m}\Omega\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(R_{p4} \approx 90\  \text{m}\Omega\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(R_{p5} \approx 58\  \text{m}\Omega\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(R_{p6} \approx 63\  \text{m}\Omega\)</span></p></li>
+</ul>
+<p>This effectively means the voltage <span class="math notranslate nohighlight">\(V_{7}\)</span> at node ⑦ is a weighted average of the three voltages
+<span class="math notranslate nohighlight">\(V_a\)</span> at node ②, <span class="math notranslate nohighlight">\(V_b\)</span> at node ③, and <span class="math notranslate nohighlight">\(V_{dc}\)</span> at node ⑤: <span class="math notranslate nohighlight">\(V_7 = K_aV_a + K_bV_b + K_{dc}V_{dc}\)</span>.
+Test currents were also used to measure the approximate weights <span class="math notranslate nohighlight">\(K_a \approx 0.25\)</span>, <span class="math notranslate nohighlight">\(K_b \approx 0.39\)</span>, and <span class="math notranslate nohighlight">\(K_{dc} \approx 0.36\)</span>.</p>
+<p>If we sample currents when all the lower switches are on, and <span class="math notranslate nohighlight">\(I_a + I_b + I_c\)</span> is 0, then the voltage drop across <span class="math notranslate nohighlight">\(R_{p3}\)</span> is 0,
+and the other two voltage drops are <span class="math notranslate nohighlight">\(I_aR_{p1}\)</span> and <span class="math notranslate nohighlight">\((I_a + I_b)R_{p2}\)</span>.
+We can analyze the circuit to determine the impact on current sensing, and if we write the sense resistors as a nominal resistance <span class="math notranslate nohighlight">\(R_s\)</span>
+with a tolerance, <span class="math notranslate nohighlight">\(R_{sa} = R_s(1+\delta_a)\)</span> and <span class="math notranslate nohighlight">\(R_{sb} = R_s(1+\delta_b)\)</span>, we can simplify the result to the following :</p>
+<div class="math notranslate nohighlight" id="equation-appendix-mclv2-0">
+<span class="eqno">(7.1)<a class="headerlink" href="#equation-appendix-mclv2-0" title="Permalink to this equation">¶</a></span>\[\begin{aligned}
+ V_{sa} &amp;= I_a\left(R_{s}(1+\delta_a) + K_bR_{p1} + K_{dc}(R_{p1} + R_{p2})\right) + I_bK_{dc}R_{p2} \cr
+ V_{sb} &amp;= I_b\left(R_{s}(1+\delta_b) + K_{dc}R_{p2}\right) + I_a\left(K_{dc}R_{p2} - K_aR_{p1}\right)
+\end{aligned}\]</div>
+<p>or in matrix form:</p>
+<div class="math notranslate nohighlight" id="equation-appendix-mclv2-1">
+<span class="eqno">(7.2)<a class="headerlink" href="#equation-appendix-mclv2-1" title="Permalink to this equation">¶</a></span>\[\begin{bmatrix}
+ V_{sa} \cr
+ V_{sb}
+\end{bmatrix}
+=
+\mathbf{K}
+\begin{bmatrix}
+ I_a \cr
+ I_b
+\end{bmatrix}
+R_s
+=
+\begin{bmatrix}
+ 1+\epsilon_{aa}+\delta_a &amp; \phantom{1+}\epsilon_{ab}\phantom{+\delta_b} \cr
+ \phantom{1+}\epsilon_{ba}\phantom{+\delta_a} &amp; 1+\epsilon_{bb}+\delta_b
+\end{bmatrix}
+\begin{bmatrix}
+ I_a \cr
+ I_b
+\end{bmatrix}
+R_s\]</div>
+<p>with</p>
+<div class="math notranslate nohighlight" id="equation-appendix-mclv2-2">
+<span class="eqno">(7.3)<a class="headerlink" href="#equation-appendix-mclv2-2" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{aligned}
+ \epsilon_{aa} &amp;= \frac{K_bR_{p1} + K_{dc}R_{p1} + K_{dc}R_{p2}}{R_s} &amp;\approx 0.141 \\[3ex]
+ \epsilon_{ab} &amp;= \frac{K_{dc}R_{p2}}{R_s}                            &amp;\approx 0.042 \\[3ex]
+ \epsilon_{ba} &amp;= \frac{K_{dc}R_{p2} - K_a{R_{p1}}}{R_s}              &amp;\approx 0.009 \\[3ex]
+ \epsilon_{bb} &amp;= \frac{K_{dc}R_{p2}}{R_s}                            &amp;\approx 0.042
+\end{aligned}\end{split}\]</div>
+<p>In other words, if the sense resistors had no tolerance error (<span class="math notranslate nohighlight">\(\delta_a = \delta_b = 0\)</span>) then
+<span class="math notranslate nohighlight">\(\mathbf{K} \approx \begin{bmatrix}1.141 &amp; 0.042 \cr 0.009 &amp; 1.042 \end{bmatrix}\)</span>.</p>
+<p>The compensation gain would be
+<span class="math notranslate nohighlight">\(\mathbf{K}_\text{comp} \, = \, \mathbf{K}^{-1} \, \approx \begin{bmatrix}\phantom{-}0.877 &amp; -0.035 \cr -0.008 &amp; \phantom{-}0.960\end{bmatrix}\)</span>
+for the nominal values.</p>
+<p>This is essentially consistent with lab measurements putting in known currents
+into phase A and B and measuring the digitized <a class="reference internal" href="glossary.html#term-ADC"><span class="xref std std-term">ADC</span></a> values;
+one set of those measurements produced an empirical estimate
+of <span class="math notranslate nohighlight">\(\mathbf{K}_\text{empirical}\, = \begin{bmatrix}1.150 &amp; 0.044\cr 0.012 &amp; 1.048\end{bmatrix}\)</span>.</p>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="error_codes.html"
+                          title="previous chapter"><span class="section-number">7.2. </span>Error code list</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="otherdocs.html"
+                          title="next chapter"><span class="section-number">7.4. </span>Related Documents</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="otherdocs.html" title="7.4. Related Documents"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="error_codes.html" title="7.2. Error code list"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">7. </span>Appendix</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">7.3. </span>MCLV-2 Sense Resistors</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

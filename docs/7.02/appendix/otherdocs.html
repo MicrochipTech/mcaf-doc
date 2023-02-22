@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>7.4. Related Documents &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="7.5. Revision History" href="rev_history.html" />
+    <link rel="prev" title="7.3. MCLV-2 Sense Resistors" href="mclv2.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="rev_history.html" title="7.5. Revision History"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="mclv2.html" title="7.3. MCLV-2 Sense Resistors"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">7. </span>Appendix</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">7.4. </span>Related Documents</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="related-documents">
+<span id="appendix-otherdocs"></span><h1><span class="section-number">7.4. </span>Related Documents<a class="headerlink" href="#related-documents" title="Permalink to this heading">¶</a></h1>
+<p>More information is available in these other documents, available from
+Microchip MCU16 Applications on request.</p>
+<ul class="simple" id="otherdocs-hal">
+<li><p><strong>Hardware Abstraction Layer</strong> — This document provides a detailed
+description of the Hardware Abstraction Layer (HAL), its architecture, components,
+and usage model. The HAL allows decoupling of the hardware-dependent
+firmware from the rest of the Motor Control Application Framework,
+and minimizes the amount of work needed to support additional hardware designs.</p></li>
+</ul>
+<ul class="simple" id="otherdocs-mcc">
+<li><p><strong>MCC Peripheral Settings</strong> — To use MCAF, setup MCC or use the sample projects provided. This document gives detailed instructions on how to setup MCC for use with motorBench<sup>®</sup> Development Suite. It also gives details on what is required of MCC and what is user configurable.</p></li>
+</ul>
+<ul id="otherdocs-monitoring">
+<li><p><strong>Monitoring module design</strong> (fault detection) —
+The complexity needed to achieve a field-oriented <a class="reference internal" href="glossary.html#term-PMSM"><span class="xref std std-term">PMSM</span></a> motor control system
+requires a similar level of complexity in fault monitoring, to be able
+to detect malfunctions in a reliable manner, and determine the underlying cause.</p>
+<p>Mechanical system perturbations are among the most unpredictable, due to
+their total exposure to the environment, and may be associated with
+safety hazards to surrounding people or property. Therefore the more accurate and
+more quickly a mechanical fault can be detected and handled,
+the more reliably the system can be kept in a safe state. In addition,
+usually the electronics and mechanical components of a motor-driven system
+are expensive, so that fault monitoring ultimately has economic advantages.</p>
+<p>This document describes the up-to-date implementation of fault monitoring
+in the motor control system, capable to distinguish between hazardous and benign
+situations encountered by either mechanical or electrical systems related to
+the control of a <a class="reference internal" href="glossary.html#term-PMSM"><span class="xref std std-term">PMSM</span></a>.</p>
+</li>
+</ul>
+<ul id="otherdocs-saturation">
+<li><p><strong>Saturation treatment module design</strong> (saturation and antiwindup) —
+A good design of the motor control system requires prediction and management of
+boundaries of control linearity, in order to achieve performance targets.
+Saturation of control output can cause inefficient, suboptimum, or unstable
+operation, and must be managed carefully in order to avoid these problems.</p>
+<p>Saturation handling covered in this document describes the methods designed
+to detect saturation of the controller outputs, such as current,
+voltage, or speed, and the way in which the controllers must be modified
+or functionally enhanced to counteract unwanted effects.</p>
+</li>
+</ul>
+<ul id="otherdocs-recovery">
+<li><p><strong>Recovery module design</strong> — Fault management
+in a motor control system needs to be designed assuming that faults will
+eventually occur. When this happens, one important decision is how they
+will be handled.</p>
+<p>Unfortunately, malfunctions frequently affect electromechanical
+systems, and in some cases the best response is for the motor to be brought
+to a stop. Fortunately there are system malfunctions that can be
+predicted and sometimes treated depending on the degree of severity, and whether
+sufficient input signals are available.</p>
+<p>There is a strong relationship between the recovery and monitoring system.
+The monitoring system provides the recovery system with information about
+detected faults. The recovery system is meant to bring the motor back
+to its previous operation, in the case of a motor stall or fault.</p>
+</li>
+</ul>
+<ul class="simple" id="otherdocs-an1292-comparison">
+<li><p><strong>Comparison of AN1292 and MC Application Framework</strong>
+— This document
+provides an analysis into differences between AN1292 software and the
+Motor Control Application Framework supplied with motorBench<sup>®</sup> Development Suite. The intention here is
+to retrospectively review the improvements and limitations of the new
+Application Framework source code relative to the reference application note
+software from AN1292.</p></li>
+</ul>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="mclv2.html"
+                          title="previous chapter"><span class="section-number">7.3. </span>MCLV-2 Sense Resistors</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="rev_history.html"
+                          title="next chapter"><span class="section-number">7.5. </span>Revision History</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="rev_history.html" title="7.5. Revision History"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="mclv2.html" title="7.3. MCLV-2 Sense Resistors"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">7. </span>Appendix</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">7.4. </span>Related Documents</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

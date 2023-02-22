@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.5.2. Maximum Torque Per Ampere (MTPA) &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../../_static/svgcrop.js"></script>
+    <script src="../../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.5.3. D-axis current reference generation" href="flux_weakening_mtpa_integration.html" />
+    <link rel="prev" title="5.5.1.3.1. Equation based flux-weakening" href="fw_types/fw_eq_based.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="flux_weakening_mtpa_integration.html" title="5.5.3. D-axis current reference generation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="fw_types/fw_eq_based.html" title="5.5.1.3.1. Equation based flux-weakening"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U"><span class="section-number">5.5. </span>Flux control</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.5.2. </span>Maximum Torque Per Ampere (MTPA)</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="maximum-torque-per-ampere-mtpa">
+<span id="algorithm-mtpa"></span><span id="index-0"></span><h1><span class="section-number">5.5.2. </span>Maximum Torque Per Ampere (MTPA)<a class="headerlink" href="#maximum-torque-per-ampere-mtpa" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">5.5.2.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>For a surface <a class="reference internal" href="../../appendix/glossary.html#term-PMSM"><span class="xref std std-term">PMSM</span></a>, <span class="math notranslate nohighlight">\(I_{d} = 0\)</span>, <span class="math notranslate nohighlight">\(I_{q} &gt; 0\)</span> results in Maximum Torque Per Ampere (MTPA) operation of the motor.
+In a <a class="reference internal" href="../../appendix/glossary.html#term-PMSM"><span class="xref std std-term">PMSM</span></a> with salient pole rotor (e.g. Interior <a class="reference internal" href="../../appendix/glossary.html#term-PMSM"><span class="xref std std-term">PMSM</span></a> or IPMSM), the d and q axis inductance values
+are different and often <span class="math notranslate nohighlight">\(L_{q} &gt; L_{d}\)</span>. For a salient-pole motor, the torque equation is given by
+<a class="reference internal" href="#equation-torque-equation-salient-motor">5.52</a>. The electromagnetic torque produced here is contributed by two terms. The first term is
+the permanent magnet torque and the second term is the reluctance torque. The reluctance torque is produced in the motor as a result
+of saliency.</p>
+<div class="math notranslate nohighlight" id="equation-torque-equation-salient-motor">
+<span class="eqno">(5.52)<a class="headerlink" href="#equation-torque-equation-salient-motor" title="Permalink to this equation">¶</a></span>\[    T_{em} = \frac{3}{2} \frac{P}{2} \Psi_{\mathrm{PM}}I_{q} + \frac{3}{2} \frac{P}{2} (L_{d}-L_{q}) I_{q} I_{d}\]</div>
+<p>Since <span class="math notranslate nohighlight">\(L_{q} &gt; L_{d}\)</span>, the reluctance torque can be made to aid the permanent magnet torque if <span class="math notranslate nohighlight">\(I_{d} &lt; 0\)</span>. With a suitable
+negative <span class="math notranslate nohighlight">\(I_{d}\)</span> value, the motor can be operated at the maximum efficiency yielding Maximum Torque Per Ampere (MTPA) in
+an IPMSM. The aim of the MTPA algorithm is to calculate such a d-axis current reference (<span class="math notranslate nohighlight">\(I_{d\_mtpa}\)</span>) for a given
+operating point of the motor.</p>
+</section>
+<section id="flow-chart-and-description">
+<h2><span class="section-number">5.5.2.2. </span>Flow chart and description<a class="headerlink" href="#flow-chart-and-description" title="Permalink to this heading">¶</a></h2>
+<p>The value of <span class="math notranslate nohighlight">\(I_{d}\)</span> at which the motor operates at maximum efficiency thereby yielding MTPA is derived from the
+torque equation, and is given by <a class="reference internal" href="#equation-id-mtpa-equation">5.53</a>. Here, <span class="math notranslate nohighlight">\(\Psi_{\mathrm{PM}}\)</span> is the back emf constant in volts per
+electrical rad/s units and <span class="math notranslate nohighlight">\(L_{1}\)</span> is the differential inductance given by <span class="math notranslate nohighlight">\(L_{1} = \frac{L_d - L_q}{2}\)</span>.
+In addition to the motor parameters <span class="math notranslate nohighlight">\(\Psi_{\mathrm{PM}}\)</span> and <span class="math notranslate nohighlight">\(L_{1}\)</span>, the d-axis current needed to ensure MTPA
+(<span class="math notranslate nohighlight">\(I_{d\_mtpa}\)</span>) is a function of the q-axis current <span class="math notranslate nohighlight">\(I_{q}\)</span>.</p>
+<div class="math notranslate nohighlight" id="equation-id-mtpa-equation">
+<span class="eqno">(5.53)<a class="headerlink" href="#equation-id-mtpa-equation" title="Permalink to this equation">¶</a></span>\[    I_{d\_mtpa} = \frac{-\Psi_{\mathrm{PM}} + \sqrt{\Psi_{\mathrm{PM}}{}^2 + (4L_1I_q)^2}}{4L_1}\]</div>
+<p><a class="reference internal" href="#fig-mtpa-implementation"><span class="std std-numref">Figure 5.85</span></a> shows the flow chart of the MTPA algorithm.</p>
+<figure class="align-center" id="id1">
+<span id="fig-mtpa-implementation"></span><a class="reference internal image-reference" href="../../_images/mtpa_implementation.png"><img alt="../../_images/mtpa_implementation.png" src="../../_images/mtpa_implementation.png" style="width: 600px;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.85 </span><span class="caption-text">MTPA algorithm flow chart</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p><span class="math notranslate nohighlight">\(I_{d\_mtpa}\)</span> value is calculated using <a class="reference internal" href="#equation-id-mtpa-equation">5.53</a>. This calculated value further goes to
+<a class="reference internal" href="flux_weakening_mtpa_integration.html#algorithm-fw-and-mtpa-integration"><span class="std std-ref">D-axis current reference generation</span></a> and is used to generate <span class="math notranslate nohighlight">\(I_{d\_ref}\)</span>.</p>
+</section>
+<section id="implementation-notes">
+<h2><span class="section-number">5.5.2.3. </span>Implementation notes<a class="headerlink" href="#implementation-notes" title="Permalink to this heading">¶</a></h2>
+<p>Added in R6.</p>
+<ul class="simple">
+<li><p>Low-saliency optimization: In case the motor saliency is low (<span class="math notranslate nohighlight">\(L_d \approx L_q\)</span>), the MTPA calculation is skipped to
+reduce CPU usage, and <span class="math notranslate nohighlight">\(I_{d\_mtpa}\)</span> is set to zero. This is done if the saliency ratio <span class="math notranslate nohighlight">\(\xi = \frac{L_q}{L_d}\)</span>
+is less than a user-defined saliency threshold.</p></li>
+<li><p>Square-root calculation: The present MTPA algorithm uses a full machine-precision square-root calculation. To reduce the CPU
+instruction cycles, the future versions of MCAF may include alternatives to this.</p></li>
+</ul>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.5.2. Maximum Torque Per Ampere (MTPA)</a><ul>
+<li><a class="reference internal" href="#overview">5.5.2.1. Overview</a></li>
+<li><a class="reference internal" href="#flow-chart-and-description">5.5.2.2. Flow chart and description</a></li>
+<li><a class="reference internal" href="#implementation-notes">5.5.2.3. Implementation notes</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="fw_types/fw_eq_based.html"
+                          title="previous chapter"><span class="section-number">5.5.1.3.1. </span>Equation based flux-weakening</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="flux_weakening_mtpa_integration.html"
+                          title="next chapter"><span class="section-number">5.5.3. </span>D-axis current reference generation</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="flux_weakening_mtpa_integration.html" title="5.5.3. D-axis current reference generation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="fw_types/fw_eq_based.html" title="5.5.1.3.1. Equation based flux-weakening"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" ><span class="section-number">5.5. </span>Flux control</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.5.2. </span>Maximum Torque Per Ampere (MTPA)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

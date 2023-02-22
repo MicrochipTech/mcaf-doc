@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.2. Startup &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.3. Stopping" href="stopping.html" />
+    <link rel="prev" title="5.1.7. Comparison between FOC and six-step control" href="foc/comparison-6step.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="stopping.html" title="5.3. Stopping"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="foc/comparison-6step.html" title="5.1.7. Comparison between FOC and six-step control"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.2. </span>Startup</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="startup">
+<span id="algorithm-startup"></span><span id="index-0"></span><h1><span class="section-number">5.2. </span>Startup<a class="headerlink" href="#startup" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">5.2.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>MCAF includes two different startup methods. Both methods are compatible with sensorless estimators
+that have a minimum operating speed. Each will operate in closed-loop current control with a forced
+commutation angle, to bring the motor from a stop to a transition speed where the motor can switch
+to closed-loop commutation. The only difference between the two methods is how they handle this transition.</p>
+<section id="method-1-classic-current-decay">
+<h3><span class="section-number">5.2.1.1. </span>Method 1: Classic (current decay)<a class="headerlink" href="#method-1-classic-current-decay" title="Permalink to this heading">¶</a></h3>
+<p>The classic method was originally introduced in MCAF R1, and has been the only available method
+until MCAF R4. This method transitions by decreasing
+commanded current until the sensorless estimator’s angle estimate approaches the forced commutation angle, or
+until the current has dropped below a threshold. This works by allowing the true d-axis current to decrease;
+as discussed further in the section on <a class="reference internal" href="#startup-phasor-analysis"><span class="std std-ref">phasor analysis</span></a>.</p>
+</section>
+<section id="method-2-weathervane-reference-frame-alignment">
+<h3><span class="section-number">5.2.1.2. </span>Method 2: Weathervane (reference frame alignment)<a class="headerlink" href="#method-2-weathervane-reference-frame-alignment" title="Permalink to this heading">¶</a></h3>
+<p>The “Weathervane” method was introduced in MCAF R4. This method transitions by simultaneously rotating both the current
+vector and the reference frame angle, until the sensorless estimator’s angle estimate approaches the forced
+commutation angle.</p>
+</section>
+<section id="method-3-zs-mt-initial-position-correction">
+<h3><span class="section-number">5.2.1.3. </span>Method 3: ZS/MT + initial position correction<a class="headerlink" href="#method-3-zs-mt-initial-position-correction" title="Permalink to this heading">¶</a></h3>
+<p>If <a class="reference internal" href="zsmt.html#algorithm-zsmt"><span class="std std-ref">Zero-Speed / Maximum Torque (ZS/MT)</span></a> is used as a primary estimator, a specialized startup algorithm
+is required.</p>
+</section>
+<section id="choice-of-startup-method">
+<span id="startup-which-method"></span><h3><span class="section-number">5.2.1.4. </span>Choice of startup method<a class="headerlink" href="#choice-of-startup-method" title="Permalink to this heading">¶</a></h3>
+<p>Startup method can be chosen in the Customize page of motorBench<sup>®</sup> Development Suite. Weathervane provides a faster startup,
+and is more robust to disturbance torques than the classic method, but it may cause larger torque transients
+during the transition.</p>
+<p>ZS/MT + IPC is required when ZS/MT is used as the primary estimator.</p>
+</section>
+</section>
+<section id="startup-sequence-and-common-elements">
+<span id="startup-sequence"></span><h2><span class="section-number">5.2.2. </span>Startup sequence and common elements<a class="headerlink" href="#startup-sequence-and-common-elements" title="Permalink to this heading">¶</a></h2>
+<p>Both Classic and Weathervane methods proceed through the following sequence of startup states, and require the motor to be at rest
+when commencing startup. For most of the startup sequence, velocity control is disabled and
+closed-loop current control using FOC is enabled, but with a forced commutation angle.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Startup state</p></th>
+<th class="head"><p>Current</p></th>
+<th class="head"><p>Commutation</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Current rampup (<code class="docutils literal notranslate"><span class="pre">RAMPUP</span></code>)</p></td>
+<td><p>Linear increase from
+zero to
+<code class="docutils literal notranslate"><span class="pre">MCAF_STARTUP_CURRENT</span></code></p></td>
+<td><p>Fixed,
+<code class="docutils literal notranslate"><span class="pre">STARTUP_RAMPUP_ANGLE</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Align (<code class="docutils literal notranslate"><span class="pre">ALIGN</span></code>)</p></td>
+<td><p>Fixed,
+<code class="docutils literal notranslate"><span class="pre">MCAF_STARTUP_CURRENT</span></code></p></td>
+<td><p>Fixed,
+<code class="docutils literal notranslate"><span class="pre">STARTUP_RAMPUP_ANGLE</span></code> +
+<code class="docutils literal notranslate"><span class="pre">STARTUP_ALIGN_ANGLE_DELTA</span></code></p></td>
+<td><p><a class="reference internal" href="qei.html#qei-sync"><span class="std std-ref">QEI back-emf synchronization</span></a> can
+keep startup in this state, and
+can modify current or commutation angle.</p></td>
+</tr>
+<tr class="row-even"><td><p>Slow acceleration (<code class="docutils literal notranslate"><span class="pre">ACCEL0</span></code>)</p></td>
+<td><p>Fixed,
+<code class="docutils literal notranslate"><span class="pre">MCAF_STARTUP_CURRENT</span></code></p></td>
+<td><p>Quadratic (linear velocity ramp)
+with constant acceleration
+<code class="docutils literal notranslate"><span class="pre">STARTUP_ACCELERATION0</span></code></p></td>
+<td><p>Active damping allowed. Cogging torque
+may be the dominant mechanical load.
+Proceeds when
+<code class="docutils literal notranslate"><span class="pre">STARTUP_ACCEL0_VELOCITY_THRESHOLD</span></code>
+reached. (See <span class="math notranslate nohighlight">\(\omega_0\)</span> in
+<a class="reference internal" href="#fig-startup-sequence"><span class="std std-numref">Figure 5.50</span></a>.)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Fast acceleration (<code class="docutils literal notranslate"><span class="pre">ACCEL1</span></code>)</p></td>
+<td><p>Fixed,
+<code class="docutils literal notranslate"><span class="pre">MCAF_STARTUP_CURRENT</span></code></p></td>
+<td><p>Quadratic (linear velocity ramp)
+with constant acceleration
+<code class="docutils literal notranslate"><span class="pre">STARTUP_ACCELERATION1</span></code></p></td>
+<td><p>Active damping allowed. Cogging torque
+may be the dominant mechanical load.
+Proceeds when
+<code class="docutils literal notranslate"><span class="pre">STARTUP_ACCEL1_VELOCITY_THRESHOLD</span></code>
+reached. (See <span class="math notranslate nohighlight">\(\omega_1\)</span> in
+<a class="reference internal" href="#fig-startup-sequence"><span class="std std-numref">Figure 5.50</span></a>.)</p></td>
+</tr>
+<tr class="row-even"><td><p>Spin (<code class="docutils literal notranslate"><span class="pre">HOLD</span></code>)</p></td>
+<td><p>Fixed,
+<code class="docutils literal notranslate"><span class="pre">MCAF_STARTUP_CURRENT</span></code></p></td>
+<td><p>Linear
+with constant velocity</p></td>
+<td><p>Active damping allowed.
+Can be held in this state for <a class="reference internal" href="qei.html#qei-sync"><span class="std std-ref">QEI back-emf synchronization</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Current rampdown
+(<code class="docutils literal notranslate"><span class="pre">CURRENT_RAMPDOWN</span></code>) —
+<strong>classic method only</strong></p></td>
+<td><p>Exponential decay</p></td>
+<td><p>Linear with constant velocity</p></td>
+<td><p>Proceeds when angle deviation drops
+below a threshold, or current drops
+below a threshold.</p></td>
+</tr>
+<tr class="row-even"><td><p>Transition (<code class="docutils literal notranslate"><span class="pre">TRANSITION</span></code>) —
+<strong>classic method only</strong></p></td>
+<td><p>Output of velocity
+controller</p></td>
+<td><p>Output of estimator plus small
+offset</p></td>
+<td><p>Velocity controller enabled.
+Commutation angle from estimator.
+Offset angle chosen to create smooth
+transition from previous state.
+Startup complete when this reaches zero.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Reference frame alignment
+(<code class="docutils literal notranslate"><span class="pre">REF_FRAME_ALIGN</span></code>) —
+<strong>weathervane method only</strong></p></td>
+<td><p>Fixed,
+<code class="docutils literal notranslate"><span class="pre">MCAF_STARTUP_CURRENT</span></code></p></td>
+<td><p>Linear with constant velocity</p></td>
+<td><p>Current vector rotated toward d-axis
+to reflect its actual value.
+Startup complete when angle deviation
+drops below a threshold.</p></td>
+</tr>
+</tbody>
+</table>
+<p>This sequence can also be seen in <a class="reference internal" href="#fig-startup-sequence"><span class="std std-numref">Figure 5.50</span></a>:</p>
+<figure class="align-center" id="id2">
+<span id="fig-startup-sequence"></span><img alt="../_images/startup-sequence.png" src="../_images/startup-sequence.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.50 </span><span class="caption-text">Graph of current and electrical frequency in startup sequence.
+(The Weathervane startup algorithm is shown.)</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>MCAF R4 and R5 added the ability to adjust various startup
+parameters in the Customize page of motorBench<sup>®</sup> Development Suite. See <a class="reference internal" href="../implementation/ui-customization.html#impl-customization"><span class="std std-ref">Parameter customization</span></a>
+for more information.</p>
+<section id="startup-status-codes">
+<span id="id1"></span><h3><span class="section-number">5.2.2.1. </span>Startup status codes<a class="headerlink" href="#startup-status-codes" title="Permalink to this heading">¶</a></h3>
+<p>To facilitate different startup algorithms which may not share the exact same sequence of states,
+a common set of status codes has been created. The status code can be read using <code class="docutils literal notranslate"><span class="pre">MCAF_StartupGetStatus()</span></code>
+and will be one of the following:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">MSST_ALIGN</span></code> — in an “alignment” phase
+where the motor is being held at constant or slowly-changing electrical angle.
+The state machine can be held in this state by other algorithms,
+for example <a class="reference internal" href="qei.html#qei-sync"><span class="std std-ref">back-emf synchronization</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MSST_ACCEL</span></code> — in an “acceleration” phase where the motor is being accelerated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MSST_SPIN</span></code> — in a “spin” phase where the electrical angle is being updated at constant frequency.
+The state machine can be held in this state by other algorithms.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MSST_COMPLETE</span></code> — startup complete.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MSST_UNSPECIFIED</span></code> — startup in another state besides the above.</p></li>
+</ul>
+</section>
+<section id="phasor-analysis">
+<span id="startup-phasor-analysis"></span><h3><span class="section-number">5.2.2.2. </span>Phasor analysis<a class="headerlink" href="#phasor-analysis" title="Permalink to this heading">¶</a></h3>
+<p><a class="reference internal" href="#fig-startup-phasor"><span class="std std-numref">Figure 5.51</span></a> shows a typical current vector during open-loop commutation. The magnitude of current <span class="math notranslate nohighlight">\(I\)</span>
+is chosen to be significantly higher than the required torque-producing current <span class="math notranslate nohighlight">\(I_q\)</span>, so that the rotor is dragged along
+and synchronization is maintained. (With this behavior, a PMSM behaves roughly like a stepper motor under microstepping operation.)
+As a result, most of the current vector is along the d-axis. In MCAF, for the majority of startup, current is applied along the
+q-axis of the open-loop reference frame, with no d-axis component, and therefore the open-loop reference frame’s q-axis is aligned
+with the current vector. This means that the angle difference <span class="math notranslate nohighlight">\(\varphi\)</span>
+between the actual q-axis and the q-axis in software, is typically in the 60 – 90° range when the mechanical torque load
+on the motor is relatively low.</p>
+<p>The two methods work differently to create a relatively smooth transition to closed-loop operation:</p>
+<ul class="simple">
+<li><p>in the classic method, the magnitude of current is reduced. This has the effect of reducing d-axis current
+while <span class="math notranslate nohighlight">\(I_q\)</span> will remain roughly what is needed to counteract any mechanical torque loads.</p></li>
+<li><p>in the weathervane method, the current vector is rotated so that the open-loop reference frame and actual rotor reference frames converge,
+with most of the applied current along the d-axis and a small portion of it along the q-axis.</p></li>
+</ul>
+<figure class="align-center" id="id3">
+<span id="fig-startup-phasor"></span><img alt="../_images/startup-Idq.png" src="../_images/startup-Idq.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.51 </span><span class="caption-text"><strong>Current vector during forced commutation</strong> — most of the current is along the d-axis.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>To illustrate this more clearly, the Hurst DMB0224C10002 (<a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/PartNO/AC300020">Microchip #AC300020</a>)
+was used with an inertia load. Selected program variables were recorded during startup of both methods, with the AN1292 PLL as the estimator.</p>
+</section>
+</section>
+<section id="classic-startup-current-decay">
+<span id="startup-classic"></span><h2><span class="section-number">5.2.3. </span>Classic startup (current decay)<a class="headerlink" href="#classic-startup-current-decay" title="Permalink to this heading">¶</a></h2>
+<p>In the classic method, current is decreased, as shown in <a class="reference internal" href="#fig-startup-classic"><span class="std std-numref">Figure 5.52</span></a>.
+This causes the forced commutation angle to converge towards the angle derived from the estimator,
+although sometimes this process is slow and requires a very small current.</p>
+<figure class="align-center" id="id4">
+<span id="fig-startup-classic"></span><img alt="../_images/startup-hurst075J1-classic.png" src="../_images/startup-hurst075J1-classic.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.52 </span><span class="caption-text"><strong>Classic startup</strong></span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The different startup states are highlighted:</p>
+<ul class="simple">
+<li><p>Current rampup (1): red</p></li>
+<li><p>Slow acceleration (3): yellow</p></li>
+<li><p>Fast acceleration (4): green</p></li>
+<li><p>Current rampdown (6): purple</p></li>
+<li><p>Transition (7): gray</p></li>
+</ul>
+<p>(Note that the align (2) and spin (5) states are skipped in this example; these states allow
+<a class="reference internal" href="qei.html#qei-sync"><span class="std std-ref">QEI back-emf synchronization</span></a> to occur, but
+if there is no quadrature encoder or the synchronization has already occurred, then the startup sequence proceeds immediately
+to the next state.)</p>
+</section>
+<section id="weathervane-startup">
+<span id="startup-weathervane"></span><span id="index-1"></span><h2><span class="section-number">5.2.4. </span>Weathervane startup<a class="headerlink" href="#weathervane-startup" title="Permalink to this heading">¶</a></h2>
+<p>In the weathervane method, the current vector is rotated, as shown in <a class="reference internal" href="#fig-startup-weathervane"><span class="std std-numref">Figure 5.53</span></a>.</p>
+<p>This method has identical states as in the classic method, except that the reference frame align (state 6, highlighted purple)
+replaces current rampdown, and there is no transition state at the end of startup.</p>
+<p>The reference frame alignment can occur much faster than current rampdown, and does not seem to be affected by
+the mechanical load of the motor.</p>
+<figure class="align-center" id="id5">
+<span id="fig-startup-weathervane"></span><img alt="../_images/startup-hurst075J1-weathervane.png" src="../_images/startup-hurst075J1-weathervane.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.53 </span><span class="caption-text"><strong>Weathervane startup</strong></span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="zs-mt-ipc-startup">
+<span id="startup-zsmt-ipc"></span><span id="index-2"></span><h2><span class="section-number">5.2.5. </span>ZS/MT + IPC startup<a class="headerlink" href="#zs-mt-ipc-startup" title="Permalink to this heading">¶</a></h2>
+<p><a class="reference internal" href="zsmt.html#algorithm-zsmt"><span class="std std-ref">Zero-Speed / Maximum Torque (ZS/MT)</span></a> operation requires a different startup technique.
+This is described as part of <a class="reference internal" href="zsmt.html#zsmt-further-information"><span class="std std-ref">detailed information on ZS/MT</span></a>.</p>
+</section>
+<section id="active-damping">
+<h2><span class="section-number">5.2.6. </span>Active damping<a class="headerlink" href="#active-damping" title="Permalink to this heading">¶</a></h2>
+<p>When a PMSM is driven with constant current at a forced commutation angle at constant frequency,
+its dynamics are roughly a very lightly-damped second-order system. There is a virtual “spring”
+with restoring torque caused by any misalignment between the rotor magnetic field and the applied
+stator field. This acts with the rotor inertia to oscillate. These oscillations can grow
+when the motor is driven at an accelerating frequency, or if the current controller’s error
+causes sufficient phase lag.</p>
+<p>To help control this effect during forced commutation, MCAF contains an “active damping” feature.
+This modulates the current during forced commutation, by applying a change in current that
+is proportional to the difference in speed between the commutation frequency and the velocity obtained by
+the estimator. Active damping is enabled only above a velocity threshold, since for many sensorless
+estimators it is not possible to obtain accurate estimates at low velocities. (The velocity threshold
+to enable active damping can be adjusted in the Customize page of motorBench<sup>®</sup> Development Suite.) This can be seen in <a class="reference internal" href="#fig-startup-classic"><span class="std std-numref">Figure 5.52</span></a>
+and <a class="reference internal" href="#fig-startup-weathervane"><span class="std std-numref">Figure 5.53</span></a> during the fast acceleration state (highlighted green).</p>
+</section>
+<section id="slow-and-fast-acceleration">
+<h2><span class="section-number">5.2.7. </span>Slow and fast acceleration<a class="headerlink" href="#slow-and-fast-acceleration" title="Permalink to this heading">¶</a></h2>
+<p>The acceleration rate during startup is increased once the velocity reaches a certain threshold.
+At low speeds, acceleration is lower to avoid cycle slips that can be caused by cogging torque.
+At higher speeds, the cogging torque occurs at a higher frequency, and this torque ripple has
+less of an effect on rotor dynamics, so that cycle slips are less likely to occur, and it’s possible
+to increase velocity more quickly.
+(Most of cogging torque ripple is absorbed by the rotor and load inertia.)</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.2. Startup</a><ul>
+<li><a class="reference internal" href="#overview">5.2.1. Overview</a><ul>
+<li><a class="reference internal" href="#method-1-classic-current-decay">5.2.1.1. Method 1: Classic (current decay)</a></li>
+<li><a class="reference internal" href="#method-2-weathervane-reference-frame-alignment">5.2.1.2. Method 2: Weathervane (reference frame alignment)</a></li>
+<li><a class="reference internal" href="#method-3-zs-mt-initial-position-correction">5.2.1.3. Method 3: ZS/MT + initial position correction</a></li>
+<li><a class="reference internal" href="#choice-of-startup-method">5.2.1.4. Choice of startup method</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#startup-sequence-and-common-elements">5.2.2. Startup sequence and common elements</a><ul>
+<li><a class="reference internal" href="#startup-status-codes">5.2.2.1. Startup status codes</a></li>
+<li><a class="reference internal" href="#phasor-analysis">5.2.2.2. Phasor analysis</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#classic-startup-current-decay">5.2.3. Classic startup (current decay)</a></li>
+<li><a class="reference internal" href="#weathervane-startup">5.2.4. Weathervane startup</a></li>
+<li><a class="reference internal" href="#zs-mt-ipc-startup">5.2.5. ZS/MT + IPC startup</a></li>
+<li><a class="reference internal" href="#active-damping">5.2.6. Active damping</a></li>
+<li><a class="reference internal" href="#slow-and-fast-acceleration">5.2.7. Slow and fast acceleration</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="foc/comparison-6step.html"
+                          title="previous chapter"><span class="section-number">5.1.7. </span>Comparison between FOC and six-step control</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="stopping.html"
+                          title="next chapter"><span class="section-number">5.3. </span>Stopping</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="stopping.html" title="5.3. Stopping"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="foc/comparison-6step.html" title="5.1.7. Comparison between FOC and six-step control"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.2. </span>Startup</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

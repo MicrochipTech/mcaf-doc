@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.4.4. Angle-tracking Phase-locked Loop (ATPLL) &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.4.5. Zero-Speed / Maximum Torque (ZS/MT)" href="zsmt.html" />
+    <link rel="prev" title="5.4.3.3.4. Pullout torque method" href="qei_sync/pullout.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="zsmt.html" title="5.4.5. Zero-Speed / Maximum Torque (ZS/MT)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="qei_sync/pullout.html" title="5.4.3.3.4. Pullout torque method"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="estimators.html" accesskey="U"><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.4. </span>Angle-tracking Phase-locked Loop (ATPLL)</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="angle-tracking-phase-locked-loop-atpll">
+<span id="algorithm-atpll"></span><span id="index-0"></span><h1><span class="section-number">5.4.4. </span>Angle-tracking Phase-locked Loop (ATPLL)<a class="headerlink" href="#angle-tracking-phase-locked-loop-atpll" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">5.4.4.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>The Angle-tracking Phase-locked Loop (ATPLL) is a velocity and rotor angle estimation algorithm provided for sensorless
+closed-loop velocity control of a <a class="reference internal" href="../appendix/glossary.html#term-PMSM"><span class="xref std std-term">PMSM</span></a>. The algorithm has a <a class="reference internal" href="../appendix/glossary.html#term-PLL"><span class="xref std std-term">PLL</span></a>-like structure, and it estimates the correct rotor
+velocity and angle by making the d-axis component of the back emf equal to zero in steady state. The rotor velocity and angle
+errors are eliminated in steady state due to a PI controller module included in the structure of the ATPLL estimator. The
+ATPLL estimator algorithm can be used for the estimation of rotor velocity and rotor angle for PMSM motors with or without
+rotor saliency.</p>
+</section>
+<section id="implementation-block-diagram-and-description">
+<h2><span class="section-number">5.4.4.2. </span>Implementation Block Diagram and Description<a class="headerlink" href="#implementation-block-diagram-and-description" title="Permalink to this heading">¶</a></h2>
+<p><a class="reference internal" href="#fig-atpll-generic"><span class="std std-numref">Figure 5.70</span></a> shows the basic principle of the ATPLL estimator. Here, The outputs of the
+estimator are estimated rotor velocity <span class="math notranslate nohighlight">\(\hat\omega\)</span> and estimated rotor angle <span class="math notranslate nohighlight">\(\hat\theta\)</span>.
+The d-axis component <span class="math notranslate nohighlight">\(E_d\)</span> of the back-emf is calculated from the motor stator voltages
+<span class="math notranslate nohighlight">\(V_{\alpha}, V_{\beta}\)</span> and stator currents <span class="math notranslate nohighlight">\(I_{\alpha}, I_{\beta}\)</span>.
+The reference value of <span class="math notranslate nohighlight">\(E_d\)</span> is zero, therefore the error becomes equal to <span class="math notranslate nohighlight">\(- E_d\)</span>. This
+error is fed to a PI controller. The output of the PI controller is added with a feedforward velocity term
+<span class="math notranslate nohighlight">\(\omega_{\mathrm{ref}}\)</span>, and this addition is the estimated velocity <span class="math notranslate nohighlight">\(\hat\omega\)</span>. The estimated velocity
+is integrated to obtain the estimated rotor angle <span class="math notranslate nohighlight">\(\hat\theta\)</span>.</p>
+<figure class="align-center" id="id1">
+<span id="fig-atpll-generic"></span><a class="reference internal image-reference" href="../_images/atpll_generic.png"><img alt="../_images/atpll_generic.png" src="../_images/atpll_generic.png" style="width: 500px; height: 212px;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.70 </span><span class="caption-text">ATPLL: Generic Block Diagram</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The MCAF implementation of the ATPLL estimator is shown in <a class="reference internal" href="#fig-atpll-impl"><span class="std std-numref">Figure 5.71</span></a>. A brief description of the
+different blocks used in the ATPLL structure is given below.</p>
+<figure class="align-center" id="id2">
+<span id="fig-atpll-impl"></span><img alt="../_images/atpll.png" src="../_images/atpll.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.71 </span><span class="caption-text">ATPLL implementation</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<ul class="simple">
+<li><p>Inputs: The ATPLL algorithm begins by calculating the back-emf components <span class="math notranslate nohighlight">\(E_{\alpha}\)</span> and <span class="math notranslate nohighlight">\(E_{\beta}\)</span>
+from the stator voltages (<span class="math notranslate nohighlight">\(V_{\alpha}\)</span>, <span class="math notranslate nohighlight">\(V_{\beta}\)</span>) and stator currents (<span class="math notranslate nohighlight">\(I_{\alpha}\)</span>,
+<span class="math notranslate nohighlight">\(I_{\beta}\)</span>) using the motor resistance and inductance values. These back-emf values are then used for further
+calculation of <span class="math notranslate nohighlight">\(- E_d\)</span> as shown in <a class="reference internal" href="#fig-atpll-impl"><span class="std std-numref">Figure 5.71</span></a>. For calculation of <span class="math notranslate nohighlight">\(E_{\alpha}\)</span> and <span class="math notranslate nohighlight">\(E_{\beta}\)</span>,
+equation <a class="reference internal" href="#equation-eq-bemf-nonsalient">5.30</a> is used for motors without significant rotor saliency, and equation <a class="reference internal" href="#equation-eq-bemf-salient">5.31</a> is
+used for motors with rotor saliency. Motors are categorised into those with and without significant rotor saliency based on
+their <a class="reference internal" href="#atpll-saliency"><span class="std std-ref">Saliency Constant</span></a>. In <a class="reference internal" href="#equation-eq-bemf-nonsalient">5.30</a>, <span class="math notranslate nohighlight">\(R_{s}\)</span> and <span class="math notranslate nohighlight">\(L_{s}\)</span> are per-phase
+stator winding resistance and inductance values respectively. In <a class="reference internal" href="#equation-eq-bemf-salient">5.31</a>, <span class="math notranslate nohighlight">\(\theta\)</span> is the rotor angle and
+<span class="math notranslate nohighlight">\(L_0\)</span> and <span class="math notranslate nohighlight">\(L_1\)</span> are given by <a class="reference internal" href="#equation-l0l1">5.32</a>.</p></li>
+</ul>
+<div class="math notranslate nohighlight" id="equation-eq-bemf-nonsalient">
+<span class="eqno">(5.30)<a class="headerlink" href="#equation-eq-bemf-nonsalient" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{bmatrix} E_{\alpha} \\ E_{\beta} \end{bmatrix} = \begin{bmatrix} V_{\alpha} \\ V_{\beta} \end{bmatrix} -
+\begin{bmatrix} R_{s} &amp; 0 \\ 0 &amp; R_{s} \end{bmatrix} \begin{bmatrix} I_{\alpha} \\ I_{\beta} \end{bmatrix} -
+\begin{bmatrix} L_{s} &amp; 0 \\ 0 &amp; L_{s} \end{bmatrix} \frac{d}{dt}\begin{bmatrix} I_{\alpha} \\ I_{\beta} \end{bmatrix}\end{split}\]</div>
+<div class="math notranslate nohighlight" id="equation-eq-bemf-salient">
+<span class="eqno">(5.31)<a class="headerlink" href="#equation-eq-bemf-salient" title="Permalink to this equation">¶</a></span>\[\begin{split}\begin{bmatrix} E_{\alpha} \\ E_{\beta} \end{bmatrix} = \begin{bmatrix} V_{\alpha} \\ V_{\beta} \end{bmatrix} -
+\begin{bmatrix} R_{s} &amp; 0 \\ 0 &amp; R_{s} \end{bmatrix} \begin{bmatrix} I_{\alpha} \\ I_{\beta} \end{bmatrix} -
+\frac{d}{dt}\begin{bmatrix}\begin{bmatrix} L_{0}+L_{1}\cos 2\theta &amp; L_{1}\sin 2\theta \\ L_{1}\sin 2\theta &amp; L_{0}-L_{1}\cos 2\theta \end{bmatrix} \begin{bmatrix} I_{\alpha} \\ I_{\beta} \end{bmatrix} \end{bmatrix}\end{split}\]</div>
+<div class="math notranslate nohighlight" id="equation-l0l1">
+<span class="eqno">(5.32)<a class="headerlink" href="#equation-l0l1" title="Permalink to this equation">¶</a></span>\[L_0 = \frac{L_d + L_q}{2},  L_1 = \frac{L_d - L_q}{2}\]</div>
+<ul class="simple">
+<li><p>Two-point Averaging: As mentioned above, first <span class="math notranslate nohighlight">\(- E_d\)</span> is calculated from <span class="math notranslate nohighlight">\(E_{\alpha}\)</span> and <span class="math notranslate nohighlight">\(E_{\beta}\)</span>
+and is fed to the Two-point Averaging block. This block helps to smooth the input to the Proportional-Integral (PI)
+controller (<span class="math notranslate nohighlight">\(G_{PI}(s)\)</span>).</p></li>
+<li><p><span class="math notranslate nohighlight">\(G_{PI}(s)\)</span> : This block represents a PI controller which is the backbone of the ATPLL estimator. In steady state, the
+input to the PI controller (which is: <span class="math notranslate nohighlight">\(- E_d\)</span>) is reduced to zero, thereby reducing the steady-state error in the estimated
+velocity and angle to zero as well. The s-domain representation of <span class="math notranslate nohighlight">\(G_{PI}(s)\)</span> is as given below:</p></li>
+</ul>
+<div class="math notranslate nohighlight" id="equation-algorithms-atpll-0">
+<span class="eqno">(5.33)<a class="headerlink" href="#equation-algorithms-atpll-0" title="Permalink to this equation">¶</a></span>\[G_{PI}(s) = K_p + \frac{K_i}{s}\]</div>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(G_{Filt1}(s)\)</span> : This is a low-pass filter at the output of the PI controller. After filtering, the output is added to
+the reference velocity (<span class="math notranslate nohighlight">\(\omega_{\mathrm{ref}}\)</span>). The result of this addition is the unfiltered estimated velocity and is
+integrated to calculate the estimated rotor angle (<span class="math notranslate nohighlight">\(\hat\theta\)</span>). The s-domain representation of <span class="math notranslate nohighlight">\(G_{Filt1}(s)\)</span> is
+as given below, where, <span class="math notranslate nohighlight">\(\tau_1\)</span> is the filter time constant.</p></li>
+</ul>
+<div class="math notranslate nohighlight" id="equation-algorithms-atpll-1">
+<span class="eqno">(5.34)<a class="headerlink" href="#equation-algorithms-atpll-1" title="Permalink to this equation">¶</a></span>\[G_{Filt1}(s) = \frac{1}{\tau_1 s + 1}\]</div>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(G_{Filt2}(s)\)</span> : The result of the addition of the PI controller output and the reference velocity is further filtered
+using this low-pass filter. The output of this filter is the estimated rotor velocity (<span class="math notranslate nohighlight">\(\hat\omega\)</span>). The s-domain
+representation of <span class="math notranslate nohighlight">\(G_{Filt2}(s)\)</span> is as given below, where, <span class="math notranslate nohighlight">\(\tau_2\)</span> is the filter time constant.</p></li>
+</ul>
+<div class="math notranslate nohighlight" id="equation-algorithms-atpll-2">
+<span class="eqno">(5.35)<a class="headerlink" href="#equation-algorithms-atpll-2" title="Permalink to this equation">¶</a></span>\[G_{Filt2}(s) = \frac{1}{\tau_2 s + 1}\]</div>
+<p>Following are some important points related to the PI controller and low-pass filter blocks.</p>
+<ul class="simple">
+<li><p>To obtain a stable dynamic performance of the ATPLL estimator over the entire operating velocity range, the
+integral gain <span class="math notranslate nohighlight">\(K_i\)</span> is made dependent on the reference velocity <span class="math notranslate nohighlight">\(\omega_{\mathrm{ref}}\)</span>.
+To support motors with different parameter values, the proportional
+and integral gains <span class="math notranslate nohighlight">\(K_p\)</span> and <span class="math notranslate nohighlight">\(K_i\)</span> are made dependent on the motor’s back-emf constant <span class="math notranslate nohighlight">\(K_e\)</span>.
+Empirical tuning of the PI controller gains simplifies the design significantly.
+The empirical equations for <span class="math notranslate nohighlight">\(K_p\)</span> and <span class="math notranslate nohighlight">\(K_i\)</span> are given in equation <a class="reference internal" href="#equation-eqn-atpll-pi-gains">5.36</a>.</p></li>
+</ul>
+<div class="math notranslate nohighlight" id="equation-eqn-atpll-pi-gains">
+<span class="eqno">(5.36)<a class="headerlink" href="#equation-eqn-atpll-pi-gains" title="Permalink to this equation">¶</a></span>\[\begin{aligned}
+K_{p} &amp;= \frac{1.9}{K_e} \cr
+K_{i} &amp;= \frac{\omega_{\mathrm{ref}}}{30 K_e}
+\end{aligned}\]</div>
+<ul class="simple">
+<li><p>Reversal of velocity is supported by the ATPLL estimator. In order to make this possible, the signs of PI
+controller gains are reversed based on the sign of the reference velocity.</p></li>
+<li><p>Filter constants <span class="math notranslate nohighlight">\(\tau_1\)</span> and <span class="math notranslate nohighlight">\(\tau_2\)</span> are decided based on the performance of the control
+algorithm for a range of motors. The filter constants are fixed in MCAF R5 – R7, but may be made adjustable in
+a future revision.</p></li>
+</ul>
+</section>
+<section id="application-to-pmsms-with-saliency">
+<span id="atpll-saliency"></span><h2><span class="section-number">5.4.4.3. </span>Application to PMSMs with Saliency<a class="headerlink" href="#application-to-pmsms-with-saliency" title="Permalink to this heading">¶</a></h2>
+<p>In case of interior permanent-magnet motors (IPMSMs), the <span class="math notranslate nohighlight">\(d\)</span>- and <span class="math notranslate nohighlight">\(q\)</span>-axis
+inductances are not equal; typically
+<span class="math notranslate nohighlight">\(L_q\)</span> is larger than <span class="math notranslate nohighlight">\(L_d\)</span>. In order to quantify the degree of saliency in the rotor, the
+following saliency constant is defined. Here, <span class="math notranslate nohighlight">\(\xi\)</span> is equal to <span class="math notranslate nohighlight">\(\frac{L_q}{L_d}\)</span>.</p>
+<div class="math notranslate nohighlight" id="equation-algorithms-atpll-3">
+<span class="eqno">(5.37)<a class="headerlink" href="#equation-algorithms-atpll-3" title="Permalink to this equation">¶</a></span>\[\text{Saliency Constant} = 1 - \frac{1}{\xi}\]</div>
+<p>It can be noted that the saliency constant is equal to 0 for motors with no saliency and increases toward 1 as the
+saliency increases. For a correct rotor velocity and angle estimation, it is important that the relevant
+equations are used by the estimator, which are different for motors with salient and non-salient rotors. In
+order to differentiate the salient motors from the non-salient ones, a saliency constant threshold of 0.25 is
+defined. Thus, the motors satisfying the following condition are considered to be salient pole motors.</p>
+<div class="math notranslate nohighlight" id="equation-algorithms-atpll-4">
+<span class="eqno">(5.38)<a class="headerlink" href="#equation-algorithms-atpll-4" title="Permalink to this equation">¶</a></span>\[1 - \frac{1}{\xi} &gt; 0.25\]</div>
+<p>This can further be simplified to</p>
+<div class="math notranslate nohighlight" id="equation-algorithms-atpll-5">
+<span class="eqno">(5.39)<a class="headerlink" href="#equation-algorithms-atpll-5" title="Permalink to this equation">¶</a></span>\[\xi &gt; \frac{4}{3}.\]</div>
+<p>The ATPLL estimator accommodates motors both with salient and non-salient rotors by a suitable choice of equations in its
+algorithm, thus preserving the accuracy of rotor velocity and angle estimation.</p>
+</section>
+<section id="sample-results">
+<h2><span class="section-number">5.4.4.4. </span>Sample Results<a class="headerlink" href="#sample-results" title="Permalink to this heading">¶</a></h2>
+<p>The following results are obtained from numerical simulation for a Leadshine 400 motor. A superimposed
+plot of actual rotor velocity and the estimated rotor velocity by the ATPLL estimator is shown in
+<a class="reference internal" href="#fig-atpll-speed"><span class="std std-numref">Figure 5.72</span></a> along with the plot showing the error in estimated velocity. It can be observed
+that the steady-state velocity error is zero.</p>
+<figure class="align-center" id="id3">
+<span id="fig-atpll-speed"></span><a class="reference internal image-reference" href="../_images/atpll_speed_error.png"><img alt="../_images/atpll_speed_error.png" src="../_images/atpll_speed_error.png" style="width: 560.0px; height: 420.0px;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.72 </span><span class="caption-text">Estimated Rotor Velocity by the ATPLL</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>A superimposed plot of actual rotor angle and the estimated rotor angle by ATPLL estimator along with
+the error in the estimated angle is shown in <a class="reference internal" href="#fig-atpll-angle"><span class="std std-numref">Figure 5.73</span></a>. This plot is for the same velocity
+transient shown in <a class="reference internal" href="#fig-atpll-speed"><span class="std std-numref">Figure 5.72</span></a>. It can be seen that the steady-state angle error is zero.</p>
+<figure class="align-center" id="id4">
+<span id="fig-atpll-angle"></span><a class="reference internal image-reference" href="../_images/atpll_angle_error.png"><img alt="../_images/atpll_angle_error.png" src="../_images/atpll_angle_error.png" style="width: 560.0px; height: 420.0px;" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 5.73 </span><span class="caption-text">Estimated Rotor Angle by the ATPLL</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.4.4. Angle-tracking Phase-locked Loop (ATPLL)</a><ul>
+<li><a class="reference internal" href="#overview">5.4.4.1. Overview</a></li>
+<li><a class="reference internal" href="#implementation-block-diagram-and-description">5.4.4.2. Implementation Block Diagram and Description</a></li>
+<li><a class="reference internal" href="#application-to-pmsms-with-saliency">5.4.4.3. Application to PMSMs with Saliency</a></li>
+<li><a class="reference internal" href="#sample-results">5.4.4.4. Sample Results</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="qei_sync/pullout.html"
+                          title="previous chapter"><span class="section-number">5.4.3.3.4. </span>Pullout torque method</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="zsmt.html"
+                          title="next chapter"><span class="section-number">5.4.5. </span>Zero-Speed / Maximum Torque (ZS/MT)</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="zsmt.html" title="5.4.5. Zero-Speed / Maximum Torque (ZS/MT)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="qei_sync/pullout.html" title="5.4.3.3.4. Pullout torque method"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="estimators.html" ><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.4. </span>Angle-tracking Phase-locked Loop (ATPLL)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

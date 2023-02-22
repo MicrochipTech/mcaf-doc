@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.4.3.3.1. Implementation issues common to all methods &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../../_static/rendermath.js"></script>
+    <script src="../../_static/svgcrop.js"></script>
+    <script src="../../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.4.3.3.2. Align method" href="align.html" />
+    <link rel="prev" title="5.4.3. Quadrature encoder support" href="../qei.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="align.html" title="5.4.3.3.2. Align method"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../qei.html" title="5.4.3. Quadrature encoder support"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../estimators.html" ><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../qei.html" accesskey="U"><span class="section-number">5.4.3. </span>Quadrature encoder support</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.3.3.1. </span>Implementation issues common to all methods</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="qei-sync-common"></span><section id="implementation-issues-common-to-all-methods">
+<span id="index-0"></span><h1><span class="section-number">5.4.3.3.1. </span>Implementation issues common to all methods<a class="headerlink" href="#implementation-issues-common-to-all-methods" title="Permalink to this heading">¶</a></h1>
+<section id="api-of-qei-sync">
+<h2><span class="section-number">5.4.3.3.1.1. </span>API of <code class="docutils literal notranslate"><span class="pre">qei_sync</span></code><a class="headerlink" href="#api-of-qei-sync" title="Permalink to this heading">¶</a></h2>
+<p>Each of the back-emf synchronization methods has been designed to meet the following <a class="reference internal" href="../../appendix/glossary.html#term-API"><span class="xref std std-term">API</span></a> for all methods:</p>
+<ul>
+<li><p>The generated code is located in the <code class="docutils literal notranslate"><span class="pre">qei_sync</span></code> module</p></li>
+<li><p>Dependencies of the <code class="docutils literal notranslate"><span class="pre">qei_sync</span></code> module</p>
+<ul class="simple">
+<li><p>It may depend on the <code class="docutils literal notranslate"><span class="pre">startup</span></code> and <code class="docutils literal notranslate"><span class="pre">qei</span></code> modules</p></li>
+<li><p>There are no dependencies on the <code class="docutils literal notranslate"><span class="pre">system_state</span></code> or <code class="docutils literal notranslate"><span class="pre">commutation</span></code> modules</p></li>
+<li><p>It does not access any HAL functions directly</p></li>
+</ul>
+</li>
+<li><p>State data of the <code class="docutils literal notranslate"><span class="pre">qei_sync</span></code> module</p>
+<ul class="simple">
+<li><p>is located in <code class="docutils literal notranslate"><span class="pre">motor.estimator.qei.sync</span></code></p></li>
+<li><p>has type <code class="docutils literal notranslate"><span class="pre">MCAF_QEI_SYNC_T</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">motor.estimator.qei.sync.complete</span></code> is a flag that denotes whether back-emf synchronization is complete.
+To re-run the synchronization, set this flag to <code class="docutils literal notranslate"><span class="pre">false</span></code> using the real-time diagnostic software.</p></li>
+</ul>
+</li>
+<li><p>Methods</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAF_EstimatorQeiSyncInit()</span></code> — initialization function, runs once</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAF_EstimatorQeiSyncStep()</span></code> — update function, runs in control ISR,
+returns action flags to influence startup behavior in certain states. These
+action flags are only valid in <a class="reference internal" href="../startup.html#startup-status-codes"><span class="std std-ref">startup states with a status code</span></a>
+of <code class="docutils literal notranslate"><span class="pre">MSST_ALIGN</span></code> or <code class="docutils literal notranslate"><span class="pre">MSST_SPIN</span></code>.
+The return value can contain any of the following bit flags:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">MESACT_DELAY</span></code> — startup state machine will be delayed, and remain in its current state</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MESACT_SET_CURRENT</span> <span class="pre">``</span> <span class="pre">---</span> <span class="pre">``MCAF_EstimatorQeiSyncOverrideCurrent()</span></code> will be called</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MESACT_SET_ANGLE</span></code> — <code class="docutils literal notranslate"><span class="pre">MCAF_EstimatorQeiSyncOverrideAngle()</span></code> will be called</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MESACT_SET_FREQUENCY</span></code> — <code class="docutils literal notranslate"><span class="pre">MCAF_EstimatorQeiSyncOverrideFrequency()</span></code> will be called</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAF_EstimatorQeiSyncIsComplete()</span></code> — returns whether synchronization is complete</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAF_EstimatorQeiSyncGetCommutationOffset()</span></code> — returns commutation offset computed by the <code class="docutils literal notranslate"><span class="pre">qei_sync</span></code> module.
+This result is only required to be valid if synchronization is complete (otherwise this function’s
+return value should be considered invalid)</p></li>
+</ul>
+</li>
+<li><p>Override handlers</p>
+<p>The handler functions listed below are special methods that get called during appropriate stages
+of the <a class="reference internal" href="../startup.html#startup-sequence"><span class="std std-ref">startup sequence</span></a>. A pointer to specific data is provided by the caller.
+This facilitates modularity by eliminating coupling between the <code class="docutils literal notranslate"><span class="pre">startup</span></code> and <code class="docutils literal notranslate"><span class="pre">qei_sync</span></code> modules;
+intercommunication is performed in the <code class="docutils literal notranslate"><span class="pre">commutation</span></code> module.</p>
+<p>Each handler has the option to change data or not, and is generally declared <code class="docutils literal notranslate"><span class="pre">inline</span> <span class="pre">static</span></code> so that
+an empty handler function would be optimized out.</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p>Method</p></td>
+<td><p>Applicable state</p></td>
+<td><p>Behavior</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">MCAF_EstimatorQeiSyncOverrideCurrent()</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MSST_SPIN</span></code></p></td>
+<td><p>Can set current</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">MCAF_EstimatorQeiSyncOverrideAngle()</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MSST_ALIGN</span></code></p></td>
+<td><p>Can set the applied electrical angle</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">MCAF_EstimatorQeiSyncOverrideFrequency()</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">MSST_ALIGN</span></code></p></td>
+<td><p>Can set the applied electrical
+frequency</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+</section>
+<section id="important-data-elements">
+<h2><span class="section-number">5.4.3.3.1.2. </span>Important data elements<a class="headerlink" href="#important-data-elements" title="Permalink to this heading">¶</a></h2>
+<p>The following data members are available, regardless of which <code class="docutils literal notranslate"><span class="pre">qei_sync</span></code> method is used:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">motor.estimator.qei.position.commutationOffset</span></code> — controls commutation offset, which is the angle added to the
+raw electrical angle from the encoder before it is used for commutation. This can be modified using
+a real-time diagnostic tool to adjust the commutation offset while the motor is running. Any such changes should be slow:
+maximum recommended step size is 11 electrical degrees (2000 counts). Step changes larger than this may
+cause the control loops in FOC to lose synchronism.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">motor.estimator.qei.position.commutationOffsetFromIndex</span></code> — this is a convenience calculation provided
+at the end of back-emf synchronization, and it measures the commutation offset relative to the index
+position within one electrical cycle. When using a motor with an encoder that has an index pulse,
+the values of <code class="docutils literal notranslate"><span class="pre">commutationOffsetFromIndex</span></code> will be fairly consistent, independent of the starting position
+of the motor when the <a class="reference internal" href="../../appendix/glossary.html#term-QEI"><span class="xref std std-term">QEI</span></a> peripheral is enabled.</p></li>
+</ul>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.4.3.3.1. Implementation issues common to all methods</a><ul>
+<li><a class="reference internal" href="#api-of-qei-sync">5.4.3.3.1.1. API of <code class="docutils literal notranslate"><span class="pre">qei_sync</span></code></a></li>
+<li><a class="reference internal" href="#important-data-elements">5.4.3.3.1.2. Important data elements</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../qei.html"
+                          title="previous chapter"><span class="section-number">5.4.3. </span>Quadrature encoder support</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="align.html"
+                          title="next chapter"><span class="section-number">5.4.3.3.2. </span>Align method</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="align.html" title="5.4.3.3.2. Align method"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../qei.html" title="5.4.3. Quadrature encoder support"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../estimators.html" ><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="../qei.html" ><span class="section-number">5.4.3. </span>Quadrature encoder support</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.3.3.1. </span>Implementation issues common to all methods</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

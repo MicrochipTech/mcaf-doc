@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>3.8. Treatment of Numerical Algorithms &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4. Components" href="../components/index.html" />
+    <link rel="prev" title="3.7. State Machine" href="statemach.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../components/index.html" title="4. Components"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="statemach.html" title="3.7. State Machine"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">3. </span>Architecture</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3.8. </span>Treatment of Numerical Algorithms</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="treatment-of-numerical-algorithms">
+<span id="numerics"></span><h1><span class="section-number">3.8. </span>Treatment of Numerical Algorithms<a class="headerlink" href="#treatment-of-numerical-algorithms" title="Permalink to this heading">¶</a></h1>
+<section id="numerical-representation">
+<h2><span class="section-number">3.8.1. </span>Numerical Representation<a class="headerlink" href="#numerical-representation" title="Permalink to this heading">¶</a></h2>
+<p>The MCAF at present utilizes only fixed-point (and not floating-point)
+computation. The majority of state variables and parameters
+are represented as Q15 fixed-point stored in a signed 16-bit number (<code class="docutils literal notranslate"><span class="pre">int16_t</span></code>),
+with a handful of 32-bit values (usually in integrators or filter state)
+and a few unsigned Q15 16-bit values. Some gains use other scaling factors
+like Q11 or variable shifts, where appropriate.</p>
+<section id="normalization-factors">
+<span id="normfactors"></span><h3><span class="section-number">3.8.1.1. </span>Normalization Factors<a class="headerlink" href="#normalization-factors" title="Permalink to this heading">¶</a></h3>
+<p>The primary normalization factors used since MCAF R3 are shown below.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>quantity</p></th>
+<th class="head"><p>factor (in general)</p></th>
+<th class="head"><p>factor used with MCLV-2</p></th>
+<th class="head"><p>factor used with MCHV (MCHV-2 and MCHV-3)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Voltage</p></td>
+<td><p>Maximum <a class="reference internal" href="../appendix/glossary.html#term-ADC"><span class="xref std std-term">ADC</span></a> input for DC link</p></td>
+<td><p>52.8V</p></td>
+<td><p>453.3V</p></td>
+</tr>
+<tr class="row-odd"><td><p>Current</p></td>
+<td><p>Twice the maximum phase current measurement,
+which allows room for gain calibration and avoids
+overflow in Park and Clarke transforms, at the cost
+of reduced resolution on the low end.</p></td>
+<td><p>8.8A</p></td>
+<td><p>32.8A</p></td>
+</tr>
+<tr class="row-even"><td><p>Velocity</p></td>
+<td colspan="3"><p>1.5 times the maximum motor speed.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="constants-in-code">
+<h2><span class="section-number">3.8.2. </span>Constants in Code<a class="headerlink" href="#constants-in-code" title="Permalink to this heading">¶</a></h2>
+<p id="index-0">Constants found in code are sometimes considered “magic
+numbers” if the reason for choosing their value is unclear. We try to avoid this
+situation in the Motor Control Application Framework.</p>
+<p>Constants used in the Motor Control Application Framework generally fall into one of five categories.</p>
+<ol class="arabic">
+<li><p><strong>Automatically calculated values</strong>: In the <code class="docutils literal notranslate"><span class="pre">parameters/</span></code> directory, in header
+files or in C run-time initialization functions — these are calculated by
+motorBench<sup>®</sup> Development Suite during the autotuning and code generation steps. We do not recommend changing
+these values manually. Where they are fixed-point integer constants, a comment
+generally accompanies them indicating the floating-point equivalent and the
+corresponding engineering value, along with quantization accuracy, for example:</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#define KIP             8696    </span><span class="c1">// Q15(  0.26538) = +414.67629 mV/A     = +414.65940 mV/A    + 0.0041%</span>
+<span class="cp">#define KII              643    </span><span class="c1">// Q15(  0.01962) = +613.24024 V/A/s    = +613.20687 V/A/s   + 0.0054%</span>
+</pre></div>
+</div>
+<p>Among many other tasks, we are working on improving the documentation within
+our code to clarify how these constants are calculated, or at least what
+factors they depend on. In some cases the calculations are proprietary
+formulas within motorBench<sup>®</sup> Development Suite.</p>
+</li>
+<li><p><strong>Part of the Hardware Abstraction Layer</strong>: In the <code class="docutils literal notranslate"><span class="pre">hal/</span></code> directory. These are
+intended to be consistent with, and eventually replaced by,
+automatically-generated output from MCC.</p></li>
+<li><p><strong>“Obvious” values in the C source files</strong> outside the <code class="docutils literal notranslate"><span class="pre">parameters/</span></code>
+directory, including some examples shown below. In these cases, hiding them
+behind an abstracted symbolic constant obscures rather than clarifies their
+usage. If you see an example where they seem inappropriate, please bring them to
+our attention, and we will consider alternatives.</p>
+<ul class="simple">
+<li><p>0</p></li>
+<li><p>+1 or -1 as a sign/direction value</p></li>
+<li><p>maximum representative values like 0xFFFF or 0x7FFF</p></li>
+<li><p>shift counts, e.g. <code class="docutils literal notranslate"><span class="pre">&gt;&gt;</span> <span class="pre">16</span></code> when converting from <code class="docutils literal notranslate"><span class="pre">int32_t</span></code> to <code class="docutils literal notranslate"><span class="pre">int16_t</span></code>,
+or <code class="docutils literal notranslate"><span class="pre">&gt;&gt;</span> <span class="pre">N</span></code> where multiplying a QN fixed-point number, and the value of N is clarified in code comments</p></li>
+<li><p>array indices for unrolled loops</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MCAF_DelayNanoseconds(500);</span></code>   (used to output a “short pulse” as mentioned in an accompanying comment)</p></li>
+</ul>
+</li>
+<li><p><strong>Hand-calculated constants with accompanying comment explaining how they
+were derived</strong> — these are uncommon; if any are unclear, please bring these to
+our attention.</p></li>
+<li><p><strong>Legacy code constants</strong> — if for some reason you notice a constant in
+code that does not fall into one of the above categories, it is probably an
+oversight, in which case please bring it to our attention.</p></li>
+</ol>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">3.8. Treatment of Numerical Algorithms</a><ul>
+<li><a class="reference internal" href="#numerical-representation">3.8.1. Numerical Representation</a><ul>
+<li><a class="reference internal" href="#normalization-factors">3.8.1.1. Normalization Factors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#constants-in-code">3.8.2. Constants in Code</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="statemach.html"
+                          title="previous chapter"><span class="section-number">3.7. </span>State Machine</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../components/index.html"
+                          title="next chapter"><span class="section-number">4. </span>Components</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../components/index.html" title="4. Components"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="statemach.html" title="3.7. State Machine"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">3. </span>Architecture</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3.8. </span>Treatment of Numerical Algorithms</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

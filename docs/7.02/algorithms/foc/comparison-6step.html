@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.1.7. Comparison between FOC and six-step control &#8212; MCAF R7 RC37 documentation (docver 7.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../../_static/svgcrop.js"></script>
+    <script src="../../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.2. Startup" href="../startup.html" />
+    <link rel="prev" title="5.1.6. Current loop tuning" href="tuning.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../startup.html" title="5.2. Startup"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tuning.html" title="5.1.6. Current loop tuning"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U"><span class="section-number">5.1. </span>Field-oriented Current Control</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.1.7. </span>Comparison between FOC and six-step control</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="comparison-between-foc-and-six-step-control">
+<span id="foc-compare-6step"></span><h1><span class="section-number">5.1.7. </span>Comparison between FOC and six-step control<a class="headerlink" href="#comparison-between-foc-and-six-step-control" title="Permalink to this heading">¶</a></h1>
+<p>There are several tradeoffs between FOC and six-step control of
+permanent magnet synchronous motors.
+As mentioned in the <a class="reference internal" href="overview.html#foc-overview"><span class="std std-ref">overview section</span></a>,
+FOC adds several improvements in performance, with minor drawbacks,
+at the cost of some design and implementation complexity:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Performance benefits</dt><dd><ul>
+<li><p><a class="reference internal" href="#foc-6step-angle-error"><span class="std std-ref">full torque independent of angle</span></a></p></li>
+<li><p><a class="reference internal" href="#foc-6step-commutation-transient"><span class="std std-ref">full torque unaffected by commutation dynamics</span></a></p></li>
+<li><p><a class="reference internal" href="#foc-6step-torque-ripple"><span class="std std-ref">lower torque ripple</span></a></p></li>
+<li><p><a class="reference internal" href="#foc-6step-efficiency"><span class="std std-ref">better efficiency, reduced power dissipation</span></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Costs</dt><dd><ul>
+<li><p><a class="reference internal" href="#foc-6step-switching-loss"><span class="std std-ref">higher switching loss</span></a></p></li>
+<li><p><a class="reference internal" href="#foc-6step-current-range"><span class="std std-ref">higher range of phase current required</span></a> (possibly)</p></li>
+<li><p><a class="reference internal" href="#foc-6step-current-sensing"><span class="std std-ref">current sense requirements</span></a></p></li>
+<li><p><a class="reference internal" href="#foc-6step-control"><span class="std std-ref">more complex control</span></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<section id="torque-capability">
+<h2><span class="section-number">5.1.7.1. </span>Torque capability<a class="headerlink" href="#torque-capability" title="Permalink to this heading">¶</a></h2>
+<section id="torque-degradation-from-angle-error">
+<span id="foc-6step-angle-error"></span><h3><span class="section-number">5.1.7.1.1. </span>Torque degradation from angle error<a class="headerlink" href="#torque-degradation-from-angle-error" title="Permalink to this heading">¶</a></h3>
+<p>Perfect FOC maintains the stator field perpendicular to the rotor flux. <a class="footnote-reference brackets" href="#fn-foc6-angle-fine-print" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>
+An estimate of rotor angle is required (along with rotor flux, in the case of an induction motor).
+Torque in FOC is proportional <span class="math notranslate nohighlight">\(I_q \cos\tilde{\theta}\)</span>, where <span class="math notranslate nohighlight">\(\tilde{\theta}\)</span> is the angle error from perfect perpendicularity.</p>
+<ul class="simple">
+<li><p>In FOC, the <span class="math notranslate nohighlight">\(\cos\tilde{\theta}\)</span> term is generally very close to 1.</p></li>
+<li><p>In six-step control, <span class="math notranslate nohighlight">\(\tilde{\theta}\)</span> cannot be guaranteed any better than 30°.
+This is because the current vector in six-step control is fixed at the center
+of each 60° sector, as shown in <a class="reference internal" href="#fig-foc6-six-step"><span class="std std-numref">Figure 5.36</span></a> and <a class="reference internal" href="#fig-foc6-torque-angle-error-simple"><span class="std std-numref">Figure 5.37</span></a>, and the angle error
+of at least one of the edges of each sector is 30° or more.</p></li>
+</ul>
+<figure class="align-center" id="id2">
+<span id="fig-foc6-six-step"></span><img alt="../../_images/foc6-six-step.svg" src="../../_images/foc6-six-step.svg" /><figcaption>
+<p><span class="caption-number">Figure 5.36 </span><span class="caption-text">Six-step sectors</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id3">
+<span id="fig-foc6-torque-angle-error-simple"></span><img alt="../../_images/foc6-torque-angle-error-simple.png" src="../../_images/foc6-torque-angle-error-simple.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.37 </span><span class="caption-text">Torque vs. angle error in six-step control with perfect knowledge of sector edges</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>This torque dropoff near the edges of the six-step sector is significant. At high speeds,
+inertia smooths out high-frequency components of torque, and only the average of
+<span class="math notranslate nohighlight">\(\cos\tilde{\theta}\)</span> affects the system: with perfectly-aligned sectors,
+the average torque of six-step control is 95.5% of perfect FOC torque for the same current limit:
+six-step torque is about 4.5% lower.</p>
+<p>At low speeds, this averaging is not present, and the best case for six-step control
+is that torque at the edges of sectors is 86.6% of FOC torque for the same current limit.
+Errors in angle sensing (misaligned Hall sensors, for instance) can lower this value further,
+and the torque falls off very quickly with higher angle error. When the load torque is high,
+this can cause the motor to become “stuck” at the edge of a sector, unable to overcome load torque.</p>
+<p>FOC is also prone to angle error, but errors are not as significant. It would take about 17.3° angle error to reduce FOC torque by the same 4.5%. <a class="reference internal" href="#fig-foc6-torque-angle-error"><span class="std std-numref">Figure 5.38</span></a> shows the impact of a 4° electrical error in the two cases:</p>
+<ul class="simple">
+<li><p>FOC loses about 0.24% torque</p></li>
+<li><p>Six-step loses about 0.24% torque (in addition to the 4.5% loss with perfect sector alignment)
+on average, but another few percent at one end of the sector.</p></li>
+</ul>
+<figure class="align-center" id="id4">
+<span id="fig-foc6-torque-angle-error"></span><img alt="../../_images/foc6-torque-angle-error.png" src="../../_images/foc6-torque-angle-error.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.38 </span><span class="caption-text">Torque vs. angle error in six-step control with imperfect knowledge of sector edges</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p class="rubric">Notes</p>
+<aside class="footnote brackets" id="fn-foc6-angle-fine-print" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Fine print: some component of the stator field may be parallel to the rotor flux in order to control rotor flux.</p>
+</aside>
+</section>
+<section id="torque-degradation-from-dynamics-of-commutation">
+<span id="foc-6step-commutation-transient"></span><h3><span class="section-number">5.1.7.1.2. </span>Torque degradation from dynamics of commutation<a class="headerlink" href="#torque-degradation-from-dynamics-of-commutation" title="Permalink to this heading">¶</a></h3>
+<p>As the commutation angle changes,
+FOC provides voltages that change continuously with electrical angle,
+and compensates automatically for the phase lag of stator inductance.
+(at steady state, a component of voltage is required to change current
+through the stator windings; see <a class="reference internal" href="fundamentals.html#foc-phasor-analysis"><span class="std std-ref">phasor analysis</span></a>
+for more information)</p>
+<p>Six-step commutation has the drawback that it must move the current vector
+in discrete jumps, by 60° at each transition between commutation sectors.
+At low speeds, this leads to a very short torque transient at each sector transition,
+usually accompanied by a faint “tick” sound.</p>
+<p>At higher speeds, there are two major disadvantages of six-step commutation:</p>
+<ul class="simple">
+<li><p>commutation instants occur more frequently (higher electrical frequency)</p></li>
+<li><p>available voltage for commutation is reduced (back-emf uses up more of the voltage)</p></li>
+</ul>
+<p>Commutation transients are no longer negligible; a significant
+fraction of each sector is spent making the current vector move.
+The total time during each sector is reduced, because the motor is operating
+at an increased electrical frequency. Peak current requirements
+increase slightly, to make up for lost torque at the beginning of each sector,
+which increases torque ripple.
+As back-emf requirements increase, the available voltage headroom is less, meaning
+that current transients take longer.
+At some point, it takes the entire commutation sector to work towards increasing current,
+and six-step control limits the available current.</p>
+<p><a class="reference internal" href="#fig-foc6-sim-200rpm"><span class="std std-numref">Figure 5.39</span></a>, <a class="reference internal" href="#fig-foc6-sim-1000rpm"><span class="std std-numref">Figure 5.40</span></a>,
+<a class="reference internal" href="#fig-foc6-sim-2500rpm"><span class="std std-numref">Figure 5.41</span></a>, and <a class="reference internal" href="#fig-foc6-sim-3100rpm"><span class="std std-numref">Figure 5.42</span></a>
+show this trend in a simulation of the <a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/AC300022">Nidec Hurst DMA0204024B101</a>
+with increasing commutation frequency.</p>
+<figure class="align-center" id="id5">
+<span id="fig-foc6-sim-200rpm"></span><img alt="../../_images/3062-0.png" src="../../_images/3062-0.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.39 </span><span class="caption-text">Simulation at 200 RPM — the commutation transient is very short</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id6">
+<span id="fig-foc6-sim-1000rpm"></span><img alt="../../_images/3062-2.png" src="../../_images/3062-2.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.40 </span><span class="caption-text">Simulation at 1000 RPM — the commutation transient is short but visible</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id7">
+<span id="fig-foc6-sim-2500rpm"></span><img alt="../../_images/3062-4.png" src="../../_images/3062-4.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.41 </span><span class="caption-text">Simulation at 2500 RPM — the commutation transient takes more than one third
+of the total sector time, and steady-state current must be slightly higher
+to make up for the PI control transient</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id8">
+<span id="fig-foc6-sim-3100rpm"></span><img alt="../../_images/3062-6.png" src="../../_images/3062-6.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.42 </span><span class="caption-text">Simulation at 3100 RPM — due to voltage limits, the entire commutation sector
+is needed to increase motor current, and it never quite gets to the commanded current</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p><a class="reference internal" href="#fig-foc6-motor-100rpm"><span class="std std-numref">Figure 5.43</span></a>,
+<a class="reference internal" href="#fig-foc6-motor-1000rpm"><span class="std std-numref">Figure 5.44</span></a>,
+and <a class="reference internal" href="#fig-foc6-motor-2500rpm"><span class="std std-numref">Figure 5.45</span></a>
+show measured current waveforms from a Nidec Hurst DMA0204024B101 operated in six-step
+from the <a class="reference external" href="https://www.microchip.com/en-us/development-tool/DM330031">dsPIC33CK Low Voltage Motor Control (LVMC) Development Board</a> using
+<a class="reference external" href="https://github.com/microchip-pic-avr-solutions/matlab-lvmc-dspic33ck256mp508-sixstep-hallsensor">code from Microchip’s AN957</a>.
+This particular six-step motor controller does not use a current loop,
+and instead wraps a slower PI loop around estimated speed, so commutation transitions
+take longer than their counterparts in the simulations shown above.
+In these tests the mechanical load
+on the motor was approximately constant, so at higher speeds, the required current
+is higher to overcome six-step transient effects and deliver the same mechanical torque.</p>
+<figure class="align-center" id="id9">
+<span id="fig-foc6-motor-100rpm"></span><img alt="../../_images/4295_100_32.png" src="../../_images/4295_100_32.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.43 </span><span class="caption-text">Measured currents at approximately 100 RPM — six-step currents are held fairly steady</span><a class="headerlink" href="#id9" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id10">
+<span id="fig-foc6-motor-1000rpm"></span><img alt="../../_images/4295_1000_32.png" src="../../_images/4295_1000_32.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.44 </span><span class="caption-text">Measured currents at approximately 1000 RPM — a substantial fraction of the sector time
+is required to bring current to its steady-state value</span><a class="headerlink" href="#id10" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id11">
+<span id="fig-foc6-motor-2500rpm"></span><img alt="../../_images/4295_2500_32.png" src="../../_images/4295_2500_32.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.45 </span><span class="caption-text">Measured currents at approximately 2500 RPM — commanded currents rise, and
+the control loop utilizes all the available voltage but cannot reach a steady-state value
+by the end of each sector.</span><a class="headerlink" href="#id11" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>FOC’s continuous commutation can achieve higher current at high speeds,
+making better use of available voltage, and minimizes torque ripple.</p>
+</section>
+</section>
+<section id="torque-ripple">
+<span id="foc-6step-torque-ripple"></span><h2><span class="section-number">5.1.7.2. </span>Torque ripple<a class="headerlink" href="#torque-ripple" title="Permalink to this heading">¶</a></h2>
+<p>At steady state in FOC (constant speed and load torque),
+as long as the current controller can maintain a constant current vector I<sub>dq</sub>,
+motor torque ripple is zero.</p>
+<p>Six-step torque ripple is affected by two factors:</p>
+<ul class="simple">
+<li><p>the <span class="math notranslate nohighlight">\(\cos \theta\)</span> torque dependency for constant current</p></li>
+<li><p>commutation transients that make torque ripple worse at increasing speeds</p></li>
+</ul>
+</section>
+<section id="efficiency">
+<span id="foc-6step-efficiency"></span><h2><span class="section-number">5.1.7.3. </span>Efficiency<a class="headerlink" href="#efficiency" title="Permalink to this heading">¶</a></h2>
+<p>The angle error of six-step causes excess I²R loss in the motor windings.
+Averaged over an electrical cycle — and neglecting the dynamics of commutation transients,
+which will increase the power dissipation further
+— for the same load torque, the I²R power dissipation in the windings
+is about 10% higher in six-step than in FOC:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\left(\frac{\pi}{3}\right)^2 \approx 1.0966\)</span> under assumptions of constant current —
+if the motor speed or inertia is high enough or velocity control is slow enough
+that the commanded current does not change much within each commutation sector,
+then I²R loss in six-step is 9.7% higher than in FOC.
+Currents in this case are shown in <a class="reference internal" href="#fig-foc6-equiv-avg-torque"><span class="std std-numref">Figure 5.46</span></a>.</p></li>
+<li><p><span class="math notranslate nohighlight">\(\frac{2\sqrt{3}}{\pi} \approx 1.1027\)</span> under assumptions of constant torque —
+if the motor speed or inertia is low enough, or velocity control is fast enough,
+that the commanded current varies within each commutation sector to keep torque constant.
+(<span class="math notranslate nohighlight">\(I \propto T/\cos\tilde\theta\)</span> where angle error <span class="math notranslate nohighlight">\(\tilde\theta\)</span>
+varies from -30° to +30°)
+Currents in this case are shown in <a class="reference internal" href="#fig-foc6-equiv-inst-torque"><span class="std std-numref">Figure 5.47</span></a>.</p></li>
+</ul>
+<figure class="align-center" id="id12">
+<span id="fig-foc6-equiv-avg-torque"></span><img alt="../../_images/foc6-equiv-avg-torque.png" src="../../_images/foc6-equiv-avg-torque.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.46 </span><span class="caption-text">Comparison of FOC and six-step currents at equivalent average torque</span><a class="headerlink" href="#id12" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id13">
+<span id="fig-foc6-equiv-inst-torque"></span><img alt="../../_images/foc6-equiv-inst-torque.png" src="../../_images/foc6-equiv-inst-torque.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.47 </span><span class="caption-text">Comparison of FOC and six-step currents at equivalent instantaneous torque</span><a class="headerlink" href="#id13" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>Note: this does <em>not</em> mean that six-step is 10% less efficient;
+the exact decrease in efficiency depends on the
+motor construction and how much of the efficiency losses are resistive,
+meaning proportional to I². An oversized motor operating under some load condition
+in FOC where the mechanical power out is 98 W, and 2 W is dissipated in the windings,
+with negligible losses from other sources, would be 98% efficient;
+operating under the same conditions in six-step would
+raise winding dissipation by about 10%
+to 2.2W, making it 97.8% efficient.</p>
+</section>
+<section id="switching-loss">
+<span id="foc-6step-switching-loss"></span><h2><span class="section-number">5.1.7.4. </span>Switching loss<a class="headerlink" href="#switching-loss" title="Permalink to this heading">¶</a></h2>
+<p>Switching loss under PWM operation can be reduced in six-step compared to FOC,
+by reducing the number of actively-switching transistors.</p>
+<p>Six-step requires either 1, 2, or 4 transistors to be actively switching,
+depending on the switching pattern used, as shown in <a class="reference internal" href="#fig-foc6-6step-switching-patterns"><span class="std std-numref">Figure 5.48</span></a>. One phase in each sector is unused,
+leaving two transistors completely off.</p>
+<figure class="align-center" id="id14">
+<span id="fig-foc6-6step-switching-patterns"></span><img alt="../../_images/3phasebridge_BLDC_switching_styles.png" src="../../_images/3phasebridge_BLDC_switching_styles.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.48 </span><span class="caption-text">Six-step switching patterns, assuming phase C is open-circuited
+during one commutation sector.</span><a class="headerlink" href="#id14" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<ul>
+<li><p>1 or 2 actively-switching transistors: take the lowest-voltage motor terminal,
+turn on the lower transistor on that phase at 100% duty cycle. (See top row in <a class="reference internal" href="#fig-foc6-6step-switching-patterns"><span class="std std-numref">Figure 5.48</span></a>.)</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>1 transistor: take the highest-voltage motor terminal,
+and actively switch the upper transistor.
+(relying on the lower transistor’s diode to carry free-wheeling current)</p></li>
+<li><p>2 transistors: actively switch both transistors of the highest-voltage motor terminal.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>2 or 4 actively-switching transistors: choose complementary PWM duty cycles of the
+upper switches for the two active phases:
+for example, phase A at 15% duty cycle, phase B at 85% duty cycle.
+Two transistors are enough if relying on diodes to carry free-wheeling current.
+(See bottom row in <a class="reference internal" href="#fig-foc6-6step-switching-patterns"><span class="std std-numref">Figure 5.48</span></a>.)</p></li>
+</ul>
+<p>The corresponding situations for FOC are either 2, 3, 4, or 6 actively-switching transistors,
+as shown in <a class="reference internal" href="#fig-foc6-foc-switching-patterns"><span class="std std-numref">Figure 5.49</span></a>.
+(Two transistors can be kept out of active switching by choosing the lowest-voltage motor phase
+and turning on its low-side transistor; the number of actively-switching transistors remaining
+depends on whether synchronous rectification is used in a given half-bridge.)</p>
+<figure class="align-center" id="id15">
+<span id="fig-foc6-foc-switching-patterns"></span><img alt="../../_images/3phasebridge_FOC_switching_styles.png" src="../../_images/3phasebridge_FOC_switching_styles.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.49 </span><span class="caption-text">FOC switching patterns</span><a class="headerlink" href="#id15" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>There are trade-offs in that reducing the number of actively-switching transistors usually
+increases the ripple current in the motor at the switching frequency, or will cause
+more conduction loss in the power stage diodes.</p>
+<p>In low-voltage motor drives where MOSFETs are used in the power stage,
+switching loss is usually small compared to conduction loss, and there’s no reason
+to try to reduce switching losses.</p>
+<p>In motor drives that utilize IGBTs for higher voltage operation
+(powered by AC mains or electric vehicle batteries), switching loss is greater,
+whereas conduction loss in diodes is a much smaller concern.</p>
+<p>Optimization of switching loss is a system-level task: motor control engineers
+should be discussing with their circuit designer counterparts to find the best solution.</p>
+</section>
+<section id="current-management">
+<span id="foc-6step-current-management"></span><h2><span class="section-number">5.1.7.5. </span>Current management<a class="headerlink" href="#current-management" title="Permalink to this heading">¶</a></h2>
+<p>Aside from commutation transients from one sector to the next,
+six-step can be summarized by a single current:</p>
+<ul class="simple">
+<li><p>the highest-voltage motor terminal H has current I flowing into the motor terminal</p></li>
+<li><p>the lowest-voltage motor terminal L has the same current I flowing out of the motor terminal</p></li>
+<li><p>the remaining motor terminal M is open-circuited, conducting zero current</p></li>
+</ul>
+<p>FOC requires knowledge of the current vector, which has two degrees of freedom
+(three phase currents, but they add to zero, so knowing any two can determine the third)</p>
+<section id="current-sensing">
+<span id="foc-6step-current-sensing"></span><h3><span class="section-number">5.1.7.5.1. </span>Current sensing<a class="headerlink" href="#current-sensing" title="Permalink to this heading">¶</a></h3>
+<p>Because six-step control requires sensing one current, a single DC current sensor can be used.</p>
+<p>FOC requires either one, two, or three current sensors, depending on the method:</p>
+<ul class="simple">
+<li><p>three current sensors provides the highest accuracy and least noise</p></li>
+<li><p>two current sensors provides knowledge about all three currents,
+with more noise and worse gain/offset accuracy than three current sensors,
+but otherwise no loss of information</p></li>
+<li><p>a single DC current sensor can be used (<a class="reference internal" href="current_measure.html#algorithm-current-single-channel"><span class="std std-ref">Single-channel current measurement</span></a>)
+with some constraints on signal conditioning and PWM duty cycle,
+and an increase in complexity, by sampling the current at multiple instants within the
+PWM period</p></li>
+</ul>
+<p>Systems with severe cost constraints may require the use of a single DC current sensor.
+(<strong>Note:</strong> please see section on <a class="reference internal" href="#foc-6step-cost-optimization"><span class="std std-ref">cost optimization</span></a>)</p>
+</section>
+<section id="current-range">
+<span id="foc-6step-current-range"></span><h3><span class="section-number">5.1.7.5.2. </span>Current range<a class="headerlink" href="#current-range" title="Permalink to this heading">¶</a></h3>
+<p>For the same instantaneous torque, six-step and FOC require the same range of currents.
+(See <a class="reference internal" href="#fig-foc6-equiv-inst-torque"><span class="std std-numref">Figure 5.47</span></a>.)</p>
+<p>If equivalent instantaneous torque is not required, but we want
+to know how the current ranges compare for the same average torque,
+then the situation changes. (See <a class="reference internal" href="#fig-foc6-equiv-avg-torque"><span class="std std-numref">Figure 5.46</span></a>.)
+For the same average torque, equivalent current amplitudes
+can be written for six-step and FOC.
+In six-step, current I<sub>6</sub> flows
+into one terminal of the motor and out another.
+If the FOC current
+is I<sub>q</sub> in amplitude, then:</p>
+<div class="math notranslate nohighlight" id="equation-algorithms-foc-comparison-6step-0">
+<span class="eqno">(5.21)<a class="headerlink" href="#equation-algorithms-foc-comparison-6step-0" title="Permalink to this equation">¶</a></span>\[\begin{aligned}
+I_6 &amp;= \frac{\pi}{2\sqrt{3}}I_q \cr
+    &amp;\approx 0.907 I_q \cr
+I_q &amp;\approx 1.103 I_6
+\end{aligned}\]</div>
+<p>FOC requires about 10.3% higher peak current sense range than six-step,
+for the same motor. This is true even though six-step is less efficient:
+current I<sub>6</sub> into one terminal and out another has the equivalent
+three-phase vector magnitude of current that is
+<span class="math notranslate nohighlight">\(\frac{2}{\sqrt{3}}I_6 \approx 1.1547 I_6\)</span>, so that six-step current sensing
+sneaks by with a lower peak current requirement.</p>
+<p>With FOC, the worst-case commutation angle with current amplitude I<sub>q</sub> is where
+I<sub>q</sub> flows into (or out of) one motor terminal, and half of this current
+flows out of (or into) each of the other two terminals. The best-case commutation
+angle for this current amplitude is where <span class="math notranslate nohighlight">\(\frac{\sqrt{3}}{2}I_q\)</span> flows into
+one motor terminal and out of another, and the third terminal carries zero current.
+Current sensors have to cover the full range of ±I<sub>q</sub>, however.</p>
+<p>See <a class="reference internal" href="#fig-foc6-equiv-avg-torque"><span class="std std-numref">Figure 5.46</span></a> for a graphical portrayal;
+at the 30/90/150/210/270/330 degree points, the FOC current amplitudes are
+lower by 4.5% (a factor of <span class="math notranslate nohighlight">\(3/\pi\)</span>)
+than the six-step current for equivalent average torque,
+but the FOC waveforms require higher current ranges at the peaks of the sine waves.</p>
+<p>In practical terms, this means that current sense circuitry,
+overcurrent circuitry, and (to a lesser extent) gate drives
+need to be designed to cover the full instantaneous phase current,
+so the requirements are slightly lower for six-step —
+if average torque rather than instantaneous torque is the determining factor.</p>
+<p>System components with ratings that depend more on root-mean-square current
+due to thermal reasons, such as connectors, wires, the power stage, and the motor itself,
+require higher ratings for six-step than for FOC. (See <a class="reference internal" href="#foc-6step-efficiency"><span class="std std-ref">Efficiency</span></a>)</p>
+</section>
+</section>
+<section id="cost-optimization">
+<span id="foc-6step-cost-optimization"></span><h2><span class="section-number">5.1.7.6. </span>Cost optimization<a class="headerlink" href="#cost-optimization" title="Permalink to this heading">¶</a></h2>
+<p>Cost optimization is a system-level task. Increased performance in current sensing
+can increase the utilization of the motor and power stage, and actually reduce the overall
+system cost.</p>
+<p>For example, imagine a digitally-controlled system that contains
+a $50 motor and $5 of power electronics, capable of carrying 10A
+continuous current, and $2 current-sensing components
+that are accurate within ±2%, which require derating the motor to use only 9.6A
+of its capability in the worst-case. (Digital control limited to 9.8A in firmware,
+so that if the sensors are underestimating current by 2%,
+it ensures the real motor current is no more than 10A — but if the sensors
+overestimate current by 2%, then only 9.6A might be used.)</p>
+<p>If better current-sensing components are used, that cost $2.50 but are accurate within
+±0.5%, a slightly smaller motor capable of carrying 9.7A continuous current could
+be used to ensure that worst-case capability is at least 9.6A.
+(Digital control limited to 9.65A in firmware, corresponding to between 9.6A and 9.7A
+of real-world current.)
+If this 3% reduction in maximum current and torque saves more than $0.50
+in the cost of the motor and power stage,
+then it is worth choosing more expensive current-sensing components.</p>
+<p>Techniques that “save money” because they allow less expensive current sensing
+(higher tolerance, reduced number of sensors)
+under nominal operation may actually cost more, because the overall system design
+sees lower worst-case utilization of motor and power electronics that will need
+to be oversized as a result.</p>
+</section>
+<section id="control-complexity">
+<span id="foc-6step-control"></span><h2><span class="section-number">5.1.7.7. </span>Control complexity<a class="headerlink" href="#control-complexity" title="Permalink to this heading">¶</a></h2>
+<p>Six-step controllers can be simpler than FOC,
+requiring only these components:</p>
+<ul class="simple">
+<li><p>sector determination</p></li>
+<li><p>a scalar current loop, or no current control loop</p></li>
+<li><p>sector application (determining how to apply the current loop output to different PWM phases)</p></li>
+</ul>
+<p>FOC requires a vector current loop and coordinate transforms — these are roughly 2 – 3 times
+the computational equivalent of the components listed above for six-step.
+The lower CPU usage for six-step can allow the system designer to work with
+a higher PWM switching frequency and electrical frequency for certain types of motors.
+(Higher switching frequency reduces current ripple in low-inductance motors;
+electrical frequency is proportional to motor velocity,
+so higher electrical frequency is required for high-speed motors.)</p>
+<p>In addition, if a sensorless position/velocity estimator is required,
+the complexity is higher for FOC than for sensorless six-step estimators.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.1.7. Comparison between FOC and six-step control</a><ul>
+<li><a class="reference internal" href="#torque-capability">5.1.7.1. Torque capability</a><ul>
+<li><a class="reference internal" href="#torque-degradation-from-angle-error">5.1.7.1.1. Torque degradation from angle error</a></li>
+<li><a class="reference internal" href="#torque-degradation-from-dynamics-of-commutation">5.1.7.1.2. Torque degradation from dynamics of commutation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#torque-ripple">5.1.7.2. Torque ripple</a></li>
+<li><a class="reference internal" href="#efficiency">5.1.7.3. Efficiency</a></li>
+<li><a class="reference internal" href="#switching-loss">5.1.7.4. Switching loss</a></li>
+<li><a class="reference internal" href="#current-management">5.1.7.5. Current management</a><ul>
+<li><a class="reference internal" href="#current-sensing">5.1.7.5.1. Current sensing</a></li>
+<li><a class="reference internal" href="#current-range">5.1.7.5.2. Current range</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cost-optimization">5.1.7.6. Cost optimization</a></li>
+<li><a class="reference internal" href="#control-complexity">5.1.7.7. Control complexity</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="tuning.html"
+                          title="previous chapter"><span class="section-number">5.1.6. </span>Current loop tuning</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../startup.html"
+                          title="next chapter"><span class="section-number">5.2. </span>Startup</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../startup.html" title="5.2. Startup"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tuning.html" title="5.1.6. Current loop tuning"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R7 RC37 (docver 7.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" ><span class="section-number">5.1. </span>Field-oriented Current Control</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.1.7. </span>Comparison between FOC and six-step control</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2023, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>
