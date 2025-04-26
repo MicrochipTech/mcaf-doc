@@ -1,0 +1,145 @@
+@import url(classic.css);
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800);
+
+/* Color/typeface based on http://www.microchip.com/about-us/contact-us */
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+    font-family: 'Open Sans', sans-serif;
+    color: #404040;
+}
+
+div.document {
+    background-color: #fff;
+}
+
+div.related {
+    background-color: #000;
+}
+
+div.sphinxsidebar h3,
+div.sphinxsidebar h3 a,
+div.sphinxsidebar h4,
+div.body h1,
+div.body h2,
+div.body h3,
+div.body h4,
+div.body h5,
+div.body h6,
+div.body h1 code,
+div.body h2 code,
+div.body h3 code,
+div.body h4 code,
+div.body h5 code,
+div.body h6 code
+{
+  font-family: inherit;
+  color: inherit;
+  background-color: inherit;
+}
+
+div.body h1, div.body h2,
+div.body h3, div.body h4,
+div.body h5, div.body h6
+{
+    border-bottom: 2px solid #ed2924;
+    margin: 0;
+    padding: 0;
+    font-weight: 300;
+}
+
+div.sphinxsidebar
+{
+   font-size: 80%;
+}
+
+div.sphinxsidebar a,
+a:visited
+{
+    color: #ee2a24;
+}
+
+a.headerlink:hover
+{
+    color: #000;
+    background-color: inherit;
+}
+
+div.sphinxsidebar p
+{
+    color: #383739;
+}
+
+div.sphinxsidebar h3,
+div.sphinxsidebar h4
+{
+  font-weight: bold;
+}
+
+code.literal, .pre, div.highlight pre
+{
+  font-family: Consolas,Menlo,"Liberation Mono",Courier,monospace;
+}
+
+span.caption-text span.pre
+{
+  background: inherit;
+}
+
+span.caption-text
+{
+  font-style: normal;
+}
+
+code.literal
+{
+  background: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 1px 3px;
+}
+
+pre
+{
+  background: #f5f5f5;
+  border: 1px solid #b75552;
+  border-left: none;
+  border-right: none;
+}
+
+div.code-block-caption {
+    background-color: #ed2924;
+}
+
+p, ul, ol
+{
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+table.docutils
+{
+  border: 1px solid black;
+}
+
+table.docutils td, table.docutils th
+{
+  border: 1px solid black;
+}
+
+table.docutils th
+{
+  background-color: #fabfbd;
+}
+
+div.sphinxsidebar ul
+{
+  color: inherit;
+}
+
+img.nav-logo {
+    vertical-align: middle;
+    margin: 2px;
+}
