@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>6.6.8. Verification and board bring-up &#8212; MCAF R9 RC31 documentation (docver 9.0.1)</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../../_static/svgcrop.js"></script>
+    <script src="../../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="6.6.9. Custom board definition format" href="custom_board_definitions.html" />
+    <link rel="prev" title="6.6.5. Creating a custom board configuration" href="configuration.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="custom_board_definitions.html" title="6.6.9. Custom board definition format"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="6.6.5. Creating a custom board configuration"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R9 RC31 (docver 9.0.1)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U"><span class="section-number">6.6. </span>Custom Board Support</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.6.8. </span>Verification and board bring-up</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="verification-and-board-bring-up">
+<span id="custom-board-verification"></span><h1><span class="section-number">6.6.8. </span>Verification and board bring-up<a class="headerlink" href="#verification-and-board-bring-up" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">6.6.8.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>This section provides guidance on bringing up a custom board for the first time with MCAF,
+after creating and importing a new board definition.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Use a current-limited power supply to power the custom board until you gain sufficient
+confidence in the board definition in motorBench and the board design/build.</p>
+</div>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p><strong>Do not try to connect or start the motor</strong> after programming the code generated from
+MCC for the first time. Follow the procedure described below to reduce the risk of hardware damage.</p>
+</div>
+<section id="recommended-equipment">
+<h3><span class="section-number">6.6.8.1.1. </span>Recommended equipment<a class="headerlink" href="#recommended-equipment" title="Permalink to this heading">¶</a></h3>
+<p>In addition to the desired motor and custom board, we recommend:</p>
+<ul class="simple">
+<li><p>Non-contact current probe (such as Chauvin Arnoux E3N or AEMC SL261) for measuring phase currents.</p></li>
+<li><p>Three-phase alternator stator for low-voltage systems, as an alternative to a motor load; for
+example, <a class="reference external" href="https://www.delcoremy.com/find-a-part/product-details/10470688/part-21si-stator-24-volt-50-amp">Delco Remy 10470688 21SI (24V 50A)</a>.</p></li>
+</ul>
+</section>
+<section id="general-procedure">
+<span id="custom-board-verify-execution"></span><h3><span class="section-number">6.6.8.1.2. </span>General procedure<a class="headerlink" href="#general-procedure" title="Permalink to this heading">¶</a></h3>
+<p>At a high level, we recommend the following steps when working with a new board:</p>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#custom-board-verify-execution"><span class="std std-ref">Firmware execution</span></a>: is the board executing properly?
+(heartbeat LEDs, PWM channels, real-time diagnostic connection)</p></li>
+<li><p><a class="reference internal" href="#custom-board-verify-open-loop-operation"><span class="std std-ref">Verify open-loop voltage operation</span></a></p></li>
+</ol>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><a class="reference internal" href="#custom-board-verify-configure-open-loop"><span class="std std-ref">Configure system for open-loop voltage operation</span></a></p></li>
+<li><p><a class="reference internal" href="#custom-board-verify-pwm"><span class="std std-ref">Verify PWM</span></a> operation: ensure PWM outputs are switching.</p></li>
+<li><p><a class="reference internal" href="#custom-board-verify-dc-link"><span class="std std-ref">Verify DC link</span></a> voltage measurement within expected range.</p></li>
+<li><p><a class="reference internal" href="#custom-board-verify-overcurrent-fault"><span class="std std-ref">Test overcurrent fault</span></a> functionality.</p></li>
+<li><p><a class="reference internal" href="#custom-board-verify-current-measure"><span class="std std-ref">Verify current measurement</span></a>.</p></li>
+</ol>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><p><a class="reference internal" href="#custom-board-verify-closed-loop-current"><span class="std std-ref">Verify closed-loop current</span></a> control.</p></li>
+</ol>
+</section>
+</section>
+<section id="general-firmware-execution">
+<h2><span class="section-number">6.6.8.2. </span>General firmware execution<a class="headerlink" href="#general-firmware-execution" title="Permalink to this heading">¶</a></h2>
+<p>Look for signs of correct CPU execution and timing:</p>
+<ul class="simple">
+<li><p>“Heartbeat LEDs” — if present on the board, these will either be flashing at a 1Hz rate under
+normal operation, or flashing an error code if there is a fault condition (see <a class="reference internal" href="../../components/ext-interface.html#ext-interface-leds"><span class="std std-ref">External Interface</span></a>)</p></li>
+<li><p>PWM Channels — if the board is not in a fault condition, the PWM low-side channels (PWMxL)
+will be switching in a <a class="reference internal" href="../../components/hal.html#hardware-pwm-minimal-impact"><span class="std std-ref">“minimal impact” state</span></a> at the
+specified PWM frequency.</p></li>
+<li><p>Test point <code class="docutils literal notranslate"><span class="pre">MCAF_TESTPOINT1</span></code>, if available — should have a pulse at PWM switching
+frequency, representing the time interval when the MCAF ADC ISR is executing.</p></li>
+<li><p><a class="reference internal" href="../../components/diagnostics.html#diag-kernel"><span class="std std-ref">Real-time diagnostic</span></a> connection (X2Cscope) — the board should be able to
+communicate with the real-time diagnostic software.</p></li>
+</ul>
+<p>If these are not working properly, there may be an issue with the CPU running at the correct frequency.</p>
+</section>
+<section id="open-loop-voltage-operation">
+<span id="custom-board-verify-open-loop-operation"></span><h2><span class="section-number">6.6.8.3. </span>Open-loop voltage operation<a class="headerlink" href="#open-loop-voltage-operation" title="Permalink to this heading">¶</a></h2>
+<p>The <a class="reference internal" href="../../components/testharness.html#test-harness"><span class="std std-ref">test harness</span></a> can be used to run the controller in an <a class="reference internal" href="../../components/testharness.html#test-mode-vdq"><span class="std std-ref">open-loop voltage mode</span></a>
+where PWM outputs are driven at a forced commutation frequency and the outputs drive the PWM with
+a sinusoidally-varying line-to-line duty cycle. Each phase has an individual duty cycle that follows
+the characteristic double-humped waveforms of space-vector PWM / zero-sequence modulation as shown in <a class="reference internal" href="#fig-zsm-waveforms"><span class="std std-numref">Figure 6.11</span></a>.</p>
+<figure class="align-center" id="id1">
+<span id="fig-zsm-waveforms"></span><img alt="../../_images/zsm_waveforms.png" src="../../_images/zsm_waveforms.png" />
+<figcaption>
+<p><span class="caption-number">Figure 6.11 </span><span class="caption-text">Zero sequence modulation waveforms as a function of commutation angle. The dark-colored curves are line-to-negative-link voltages,
+and the light-colored curves are line-to-neutral voltages. The gray curve <span class="math notranslate nohighlight">\(z_0\)</span> is the zero sequence voltage
+(average of the three line voltages, effectively neutral-to-negative-link voltage) which moves up and down
+during the commutation cycle to keep the range of line voltages centered within the available DC link voltage.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<ul class="simple">
+<li><p>Make sure that the motor terminals of the board are open-circuited (not connected to any motor or load)</p></li>
+<li><p>Follow the steps in <a class="reference internal" href="#table-open-loop-voltage-operation"><span class="std std-numref">Table 6.2</span></a> to prepare the controller for
+verification using open-loop voltage control.</p></li>
+</ul>
+<span id="custom-board-verify-configure-open-loop"></span><table class="docutils align-center" id="table-open-loop-voltage-operation">
+<caption><span class="caption-number">Table 6.2 </span><span class="caption-text">Enabling open-loop voltage control</span><a class="headerlink" href="#table-open-loop-voltage-operation" title="Permalink to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Step</p></th>
+<th class="head"><p>Program variable</p></th>
+<th class="head"><p>Value</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>Define the macro <code class="docutils literal notranslate"><span class="pre">MCAF_TEST_HARNESS</span></code> in options.h.</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>Build and program the project to the test hardware.</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">systemData.testing.guard.key</span></code></p></td>
+<td><p>0xD1A6 (53670)</p></td>
+<td><p>Needed to enable automatic shutdown of test modes — see
+<a class="reference internal" href="../../components/testharness.html#test-guard-impl"><span class="std std-ref">Implementation of Test Guarding</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">motor.testing.operatingMode</span></code></p></td>
+<td><p>0</p></td>
+<td><p>Set the test harness mode to normal operation prior to
+configuring the desired test cases. — see
+<a class="reference internal" href="../../components/testharness.html#test-modes"><span class="std std-ref">Test harness modes</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">motor.vdqCmd.d</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">motor.vdqCmd.q</span></code></p>
+</td>
+<td><p>0</p></td>
+<td><p>Set both d- and q-axis components of <code class="docutils literal notranslate"><span class="pre">vdqCmd</span></code> to 0.</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">motor.testing.overrides</span></code></p></td>
+<td><p>2</p></td>
+<td><p>Override commutation angle — see
+<a class="reference internal" href="../../components/testharness.html#test-overrides-commutation"><span class="std std-ref">Commutation Override</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">motor.testing.overrideOmegaElectrical</span></code></p></td>
+<td><p>as needed</p></td>
+<td><p>Small values allow for slow changes in electrical angle;
+for example, <code class="docutils literal notranslate"><span class="pre">overrideOmegaElectrical</span></code> set to 1 count
+causes <code class="docutils literal notranslate"><span class="pre">motor.thetaElectrical</span></code> to
+completes a full electrical cycle in 65536 current
+loop updates, or 3.2768 seconds for a 20 kHz control ISR.
+Values from 0 to 50 counts (15.25 Hz electrical for a 20
+kHz control ISR) are typical during these kinds of tests.</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">motor.testing.operatingMode</span></code></p></td>
+<td><p>1</p></td>
+<td><p>Set the test harness mode to force dq-axis voltage — see
+<a class="reference internal" href="../../components/testharness.html#test-mode-vdq"><span class="std std-ref">Test harness modes</span></a></p></td>
+</tr>
+</tbody>
+</table>
+<section id="verify-pwm-operation">
+<span id="custom-board-verify-pwm"></span><h3><span class="section-number">6.6.8.3.1. </span>Verify PWM operation<a class="headerlink" href="#verify-pwm-operation" title="Permalink to this heading">¶</a></h3>
+<p>With the motor disconnected from any load, slowly increase the inverter’s dq-axis reference voltage
+<code class="docutils literal notranslate"><span class="pre">motor.vdqCmd.d</span></code> from zero during testing. At each step, observe the following:</p>
+<ul class="simple">
+<li><p>Check that the duty cycles of the PWM outputs are changing at the expected electrical frequency <code class="docutils literal notranslate"><span class="pre">motor.testing.overrideOmegaElectrical</span></code>.</p></li>
+<li><p>Verify <a class="reference internal" href="../../algorithms/dead-time-comp.html#dtc-definition"><span class="std std-ref">dead time</span></a> of the digital gate drive signals is occurring as expected.</p></li>
+<li><p>Make sure transistor turn-on transients look ok.</p></li>
+<li><p>Check each half-bridge output to ensure it swings between 0V and the DC link voltage as expected.</p></li>
+</ul>
+</section>
+<section id="verify-dc-link-voltage-measurement">
+<span id="custom-board-verify-dc-link"></span><h3><span class="section-number">6.6.8.3.2. </span>Verify DC link voltage measurement<a class="headerlink" href="#verify-dc-link-voltage-measurement" title="Permalink to this heading">¶</a></h3>
+<p>If you can operate the board from an adjustable power supply, adjust it up or down through the
+intended range to check that the voltage read by the ADC falls within the expected tolerance range
+for a given DC link voltage.</p>
+</section>
+<section id="verify-hardware-overcurrent-fault">
+<span id="custom-board-verify-overcurrent-fault"></span><h3><span class="section-number">6.6.8.3.3. </span>Verify hardware overcurrent fault<a class="headerlink" href="#verify-hardware-overcurrent-fault" title="Permalink to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Trigger the overcurrent input manually by connecting the microcontroller’s overcurrent sense input to the appropriate power rail,
+depending on the value of <code class="docutils literal notranslate"><span class="pre">peripherals.pwm.fault.polarity</span></code> (see <a class="reference internal" href="custom_board_definitions.html#custom-board-pwm-fault"><span class="std std-ref">custom board schema</span></a>):</p>
+<ul class="simple">
+<li><p>to Vss (<code class="docutils literal notranslate"><span class="pre">polarity</span></code> = <code class="docutils literal notranslate"><span class="pre">active-low</span></code>)</p></li>
+<li><p>to Vdd (<code class="docutils literal notranslate"><span class="pre">polarity</span></code> = <code class="docutils literal notranslate"><span class="pre">active-high</span></code>)</p></li>
+</ul>
+</li>
+<li><p>Verify that the PWM outputs stop switching.</p></li>
+<li><p>Reset the overcurrent input (if using the <a class="reference internal" href="../../components/main.html#sample-application"><span class="std std-ref">Sample Application</span></a>, press the primary pushbutton).</p></li>
+<li><p>Verify that the PWM outputs start switching again.</p></li>
+</ol>
+</section>
+<section id="verify-scaling-and-polarity-of-current-measurement">
+<span id="custom-board-verify-current-measure"></span><h3><span class="section-number">6.6.8.3.4. </span>Verify scaling and polarity of current measurement<a class="headerlink" href="#verify-scaling-and-polarity-of-current-measurement" title="Permalink to this heading">¶</a></h3>
+<ol class="arabic">
+<li><p>Ensure the test harness is configured in open-loop voltage mode as
+described in <a class="reference internal" href="#table-open-loop-voltage-operation"><span class="std std-numref">Table 6.2</span></a></p></li>
+<li><p>Connect a three-phase inductive load (alternator stator or test motor).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If using a motor, to prevent back-emf from affecting
+measurements, take either of the following approaches:</p>
+<ul class="simple">
+<li><p>Lock the rotor so it does not move</p></li>
+<li><p>Set the electrical frequency <code class="docutils literal notranslate"><span class="pre">motor.testing.overrideOmegaElectrical</span></code> to zero</p></li>
+</ul>
+</div>
+</li>
+<li><p>Increase d-axis voltage <code class="docutils literal notranslate"><span class="pre">motor.vdqCmd.d</span></code> in small steps
+until a modest amount of current (10-20% of maximum continuous current)
+flows through the motor phases. The required voltage should be approximately
+<span class="math notranslate nohighlight">\(\delta_1V_{dc}+IR\)</span> where <span class="math notranslate nohighlight">\(\delta_1\)</span> is the <a class="reference internal" href="../../algorithms/dead-time-comp.html#dtc-definition"><span class="std std-ref">dead time</span></a>, expressed as a
+duty cycle, and IR is the line-to-neutral voltage drop across the motor winding.
+Small increases of 5 – 20 counts at a time should be sufficient.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Depending on the electrical angle <code class="docutils literal notranslate"><span class="pre">motor.thetaElectrical</span></code>, the current in one motor phase
+may be near zero even though current flows in the other two phases. Make sure to measure current
+on at least two of the motor phases, to ensure that the motor phase current is not excessive.
+Alternatively, use a value of <code class="docutils literal notranslate"><span class="pre">motor.testing.overrideOmegaElectrical</span></code> that is large enough to ensure
+at least 5 Hz electrical, while adjusting d-axis voltage,
+so that the electrical angle is changing smoothly and current is visible on all phases.</p>
+</div>
+</li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">motor.testing.overrideOmegaElectrical</span></code> to zero, so that the voltages and currents are at DC.</p></li>
+<li><p>Measure actual phase currents with a current probe, and compare with digitized current in
+firmware located in the <code class="docutils literal notranslate"><span class="pre">motor.iabc</span></code> structure; the measured and digitized currents
+should be within a reasonable range of each other.</p></li>
+<li><p>Verify that positive digitized current corresponds with the <a class="reference internal" href="../../algorithms/foc/current_measure.html#foc-current-sense-polarity"><span class="std std-ref">expected direction of current</span></a>.</p></li>
+</ol>
+</section>
+</section>
+<section id="closed-loop-current-control">
+<span id="custom-board-verify-closed-loop-current"></span><h2><span class="section-number">6.6.8.4. </span>Closed-loop current control<a class="headerlink" href="#closed-loop-current-control" title="Permalink to this heading">¶</a></h2>
+<p>In this step, the inductive load (motor or stator) will be used to operate MCAF in closed-loop current control,
+with commanded current set to a small desired value and a superimposed square wave perturbation. (For an example of what this looks
+like, see <a class="reference internal" href="../../algorithms/foc/tuning.html#fig-ituning-2-1200"><span class="std std-numref">Figure 5.27</span></a> in <a class="reference internal" href="../../algorithms/foc/tuning.html#ituning-examples"><span class="std std-ref">Examples of poorly-tuned and well-tuned current loops</span></a>)</p>
+<p>As shown in the  <a class="reference external" href="../../dataflow-diagram/dataflow-diagrams.html">data flow diagram</a>,
+there are three important sets of dq-axis currents:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Program variable</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">motor.idqCmdRaw.d</span></code> <br /> <code class="docutils literal notranslate"><span class="pre">motor.idqCmdRaw.q</span></code></p></td>
+<td><p>Desired dq-axis currents, prior to perturbation</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">motor.idqCmd.d</span></code> <br /> <code class="docutils literal notranslate"><span class="pre">motor.idqCmd.q</span></code></p></td>
+<td><p>Desired dq-axis currents, including perturbation <br />
+(commanded input to current controller)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">motor.idq.d</span></code> <br /> <code class="docutils literal notranslate"><span class="pre">motor.idq.q</span></code></p></td>
+<td><p>Measured dq-axis currents</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>The goal of this step is to ensure that the measured currents <code class="docutils literal notranslate"><span class="pre">motor.idq</span></code> follow the commanded currents <code class="docutils literal notranslate"><span class="pre">motor.idqCmd</span></code>;
+both d- and q-axis components of these currents should be examined using real-time diagnostics software.</p>
+<p>Using the <a class="reference internal" href="../../components/testharness.html#test-harness"><span class="std std-ref">test harness</span></a>:</p>
+<ol class="arabic simple">
+<li><p>Make sure MCAF is initialized for forced commutation:</p>
+<ol class="loweralpha simple">
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">systemData.testing.guardKey</span> <span class="pre">=</span> <span class="pre">0xD1A6</span></code> (53670)</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">motor.testing.operatingMode</span> <span class="pre">=</span> <span class="pre">0</span></code> <br />
+(<a class="reference internal" href="../../components/testharness.html#test-mode-disabled"><span class="std std-ref">OM_DISABLED</span></a> to keep output transistors in a minimal impact state)</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">motor.testing.overrides</span> <span class="pre">=</span> <span class="pre">2</span></code> <br />
+(<a class="reference internal" href="../../components/testharness.html#test-overrides-commutation"><span class="std std-ref">Commutation Override</span></a> to force commutation)</p></li>
+</ol>
+</li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">motor.testing.overrideOmegaElectrical</span> <span class="pre">=</span> <span class="pre">0</span></code> to force a fixed commutation angle</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">motor.idqCmdRaw.d</span></code> and <code class="docutils literal notranslate"><span class="pre">motor.idqCmdRaw.q</span></code> to zero</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">motor.testing.operatingMode</span> <span class="pre">=</span> <span class="pre">2</span></code> <br />
+(<a class="reference internal" href="../../components/testharness.html#test-mode-current"><span class="std std-ref">OM_FORCE_CURRENT</span></a> to run the controller in closed-loop current control, but disable the outer loop)</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">motor.idqCmdRaw.d</span></code> to a modest value (for example
+10-25% of rated continuous current; see <code class="docutils literal notranslate"><span class="pre">CURRENT_MAXIMUM_COMMAND</span></code> in sat_PI_params.h)</p></li>
+</ol>
+<p>Verify that the measured d- and q- axis currents (<code class="docutils literal notranslate"><span class="pre">motor.idq.d</span></code> and <code class="docutils literal notranslate"><span class="pre">motor.idq.q</span></code>) follow their respective commanded
+currents (<code class="docutils literal notranslate"><span class="pre">motor.idqCmd.d</span></code> and <code class="docutils literal notranslate"><span class="pre">motor.idqCmd.q</span></code>).</p>
+<p>Add a perturbation square wave signal, as described in the <a class="reference internal" href="../../components/testharness.html#test-perturbation-symmetric"><span class="std std-ref">test harness</span></a>,
+to the d-axis current command:</p>
+<ol class="arabic simple" start="6">
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.idq.q</span></code> to zero</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.idq.d</span></code> to a small value (half of the value used in <code class="docutils literal notranslate"><span class="pre">motor.idqCmdRaw.d</span></code> is suggested)</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.halfPeriod</span></code> to a mid-range frequency (10Hz – 100Hz suggested)</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">motor.testing.sqwave.value</span></code> to 1, to enable perturbation</p></li>
+</ol>
+<p>Verify that the measured d- and q- axis currents (<code class="docutils literal notranslate"><span class="pre">motor.idq.d</span></code> and <code class="docutils literal notranslate"><span class="pre">motor.idq.q</span></code>) follow their respective commanded
+currents (<code class="docutils literal notranslate"><span class="pre">motor.idqCmd.d</span></code> and <code class="docutils literal notranslate"><span class="pre">motor.idqCmd.q</span></code>).</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">6.6.8. Verification and board bring-up</a><ul>
+<li><a class="reference internal" href="#overview">6.6.8.1. Overview</a><ul>
+<li><a class="reference internal" href="#recommended-equipment">6.6.8.1.1. Recommended equipment</a></li>
+<li><a class="reference internal" href="#general-procedure">6.6.8.1.2. General procedure</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#general-firmware-execution">6.6.8.2. General firmware execution</a></li>
+<li><a class="reference internal" href="#open-loop-voltage-operation">6.6.8.3. Open-loop voltage operation</a><ul>
+<li><a class="reference internal" href="#verify-pwm-operation">6.6.8.3.1. Verify PWM operation</a></li>
+<li><a class="reference internal" href="#verify-dc-link-voltage-measurement">6.6.8.3.2. Verify DC link voltage measurement</a></li>
+<li><a class="reference internal" href="#verify-hardware-overcurrent-fault">6.6.8.3.3. Verify hardware overcurrent fault</a></li>
+<li><a class="reference internal" href="#verify-scaling-and-polarity-of-current-measurement">6.6.8.3.4. Verify scaling and polarity of current measurement</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#closed-loop-current-control">6.6.8.4. Closed-loop current control</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="configuration.html"
+                          title="previous chapter"><span class="section-number">6.6.5. </span>Creating a custom board configuration</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="custom_board_definitions.html"
+                          title="next chapter"><span class="section-number">6.6.9. </span>Custom board definition format</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="custom_board_definitions.html" title="6.6.9. Custom board definition format"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="6.6.5. Creating a custom board configuration"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R9 RC31 (docver 9.0.1)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" ><span class="section-number">6.6. </span>Custom Board Support</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.6.8. </span>Verification and board bring-up</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2026, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

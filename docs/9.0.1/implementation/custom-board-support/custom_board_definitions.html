@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>6.6.9. Custom board definition format &#8212; MCAF R9 RC31 documentation (docver 9.0.1)</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../../_static/svgcrop.js"></script>
+    <script src="../../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="6.7. Resource Usage" href="../resource-usage.html" />
+    <link rel="prev" title="6.6.8. Verification and board bring-up" href="verification.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../resource-usage.html" title="6.7. Resource Usage"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="verification.html" title="6.6.8. Verification and board bring-up"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R9 RC31 (docver 9.0.1)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U"><span class="section-number">6.6. </span>Custom Board Support</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.6.9. </span>Custom board definition format</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="custom-board-definition-format">
+<span id="custom-board-definitions"></span><h1><span class="section-number">6.6.9. </span>Custom board definition format<a class="headerlink" href="#custom-board-definition-format" title="Permalink to this heading">¶</a></h1>
+<p>Custom board definition files follow a prescribed format in motorBench<sup>®</sup> Development Suite.
+They are human-readable and hand-editable, but they are based on a defined data structure, organized as a data model.</p>
+<ul class="simple">
+<li><p>The data model must conform to the <a class="reference internal" href="#custom-board-schema"><span class="std std-ref">board definition schema</span></a></p></li>
+<li><p>The data model is <a class="reference internal" href="#custom-board-data-models"><span class="std std-ref">serialized as a text format</span></a> (YAML in motorBench 2.50)</p></li>
+</ul>
+<p>The following sections describe these constraints.</p>
+<section id="working-with-serialized-data-models">
+<span id="custom-board-data-models"></span><h2><span class="section-number">6.6.9.1. </span>Working with Serialized Data Models<a class="headerlink" href="#working-with-serialized-data-models" title="Permalink to this heading">¶</a></h2>
+<section id="introduction">
+<h3><span class="section-number">6.6.9.1.1. </span>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h3>
+<p>The term data model refers to any hierarchical tree structure
+used to model a system. In motorBench<sup>®</sup> Development Suite we use several data models,
+for processes such as <a class="reference internal" href="../../architecture/codegen.html#codegen-operation"><span class="std std-ref">code generation</span></a>,
+<a class="reference internal" href="../ui-customization.html#impl-customization"><span class="std std-ref">parameter customization</span></a> and
+<a class="reference internal" href="index.html#custom-board"><span class="std std-ref">custom board support</span></a>.</p>
+<p>Some data models can be serialized into text formats such as
+<a class="reference external" href="https://www.json.org/json-en.html">JSON</a>,
+<a class="reference external" href="https://en.wikipedia.org/wiki/YAML">YAML</a>, and
+<a class="reference external" href="https://toml.io/en/">TOML</a>,
+which facilitates use of version control and hand-editing where
+appropriate. The custom board feature in motorBench<sup>®</sup> Development Suite 2.50 supports
+importing files in YAML format.</p>
+<p>The data model for board definitions in motorBench is</p>
+<ul>
+<li><p>serializable to JSON and deserializable from JSON,
+including support for the following types of values</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>numbers</p></li>
+<li><p>strings</p></li>
+<li><p>booleans (<code class="docutils literal notranslate"><span class="pre">true</span></code> and <code class="docutils literal notranslate"><span class="pre">false</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></li>
+<li><p>lists of values (= arrays / ordered sequences)</p></li>
+<li><p>maps of values (= dictionaries / unordered sets of key-value pairs)</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>generally described in YAML format (easier to read/write than JSON)</p></li>
+<li><p>referenced by a path separated by dots, for example <code class="docutils literal notranslate"><span class="pre">characteristics.current.phase.fullscale</span></code></p></li>
+</ul>
+</section>
+<section id="example-in-yaml">
+<span id="data-models-yaml-example"></span><h3><span class="section-number">6.6.9.1.2. </span>Example in YAML<a class="headerlink" href="#example-in-yaml" title="Permalink to this heading">¶</a></h3>
+<p>Here is an excerpt containing a partial board definition in YAML.
+Its hierarchical structure is expressed through levels of indentation.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When editing, we suggest using an editor that supports YAML,
+such as VSCode or Notepad++, with syntax highlighting and ability to expand/collapse
+sections of the hierarchy.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>To avoid misalignment and incompatibility, use spaces for indentation, not tabs.</p>
+</div>
+<div class="literal-block-wrapper docutils container" id="code-data-model1">
+<div class="code-block-caption"><span class="caption-number">Listing 6.3 </span><span class="caption-text"> </span><a class="headerlink" href="#code-data-model1" title="Permalink to this code">¶</a></div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w"> </span><span class="nt">identification</span><span class="p">:</span>
+<span class="w">   </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">custom_board</span>
+<span class="w">   </span><span class="nt">displayName</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Custom</span><span class="nv"> </span><span class="s">Board&quot;</span>
+<span class="w">   </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Custom</span><span class="nv"> </span><span class="s">Board&quot;</span>
+<span class="w"> </span><span class="nt">characteristics</span><span class="p">:</span>
+<span class="w">   </span><span class="nt">device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dsPIC33CK256MP508</span>
+<span class="w">   </span><span class="c1"># This is a comment</span>
+<span class="w">   </span><span class="nt">current</span><span class="p">:</span>
+<span class="w">     </span><span class="nt">phase</span><span class="p">:</span>
+<span class="w">       </span><span class="nt">fullscale</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">21.8</span>
+<span class="w">       </span><span class="nt">maximum</span><span class="p">:</span>
+<span class="w">         </span><span class="c1"># WOO HOO HOO</span>
+<span class="w">         </span><span class="nt">continuous</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">14.1</span>
+<span class="w">       </span><span class="nt">timeConstant</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">184.0e-9</span>
+<span class="w">     </span><span class="nt">dcLink</span><span class="p">:</span>
+<span class="w">       </span><span class="nt">fullscale</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">21.8</span>
+<span class="w">       </span><span class="nt">timeConstant</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">184.0e-9</span>
+<span class="w"> </span><span class="nt">peripherals</span><span class="p">:</span>
+<span class="w">   </span><span class="nt">adc</span><span class="p">:</span>
+<span class="w">     </span><span class="nt">current</span><span class="p">:</span>
+<span class="w">       </span><span class="nt">a</span><span class="p">:</span>
+<span class="w">         </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AN0</span>
+<span class="w">         </span><span class="nt">inverted</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">         </span><span class="nt">signed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">       </span><span class="nt">b</span><span class="p">:</span>
+<span class="w">         </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AN1</span>
+<span class="w">         </span><span class="nt">inverted</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">         </span><span class="nt">signed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">   </span><span class="nt">opamp</span><span class="p">:</span>
+<span class="w">     </span><span class="nt">enabled</span><span class="p">:</span>
+<span class="w">     </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">     </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">     </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</pre></div>
+</div>
+</div>
+<ul>
+<li><p><strong>Comments</strong> are expressed as a <code class="docutils literal notranslate"><span class="pre">#</span></code> followed by arbitrary text that will be ignored
+until the end of the line</p>
+</li>
+<li id="data-model-number"><span id="data-model-types"></span><p><strong>Numbers</strong> are expressed as integers, floating-point values, or scientific notation</p>
+<blockquote>
+<div></div></blockquote>
+<ul id="data-model-float">
+<li><p><strong>Floating-point values</strong> may be expressed as decimals (examples: <code class="docutils literal notranslate"><span class="pre">0.38</span></code>, <code class="docutils literal notranslate"><span class="pre">8702.1</span></code>)
+or as scientific notation (examples: <code class="docutils literal notranslate"><span class="pre">-3.02e-5</span></code>, <code class="docutils literal notranslate"><span class="pre">4.73e3</span></code>).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When using scientific notation, make sure to use a decimal before the exponent,
+for example <code class="docutils literal notranslate"><span class="pre">3.0e-5</span></code> rather than <code class="docutils literal notranslate"><span class="pre">3e-5</span></code>. This avoids issues in some software libraries.</p>
+</div>
+</li>
+</ul>
+</li>
+<li id="data-model-bool"><p><strong>Booleans</strong> are expressed as the fixed text <code class="docutils literal notranslate"><span class="pre">true</span></code> and <code class="docutils literal notranslate"><span class="pre">false</span></code>
+(note: content is case-sensitive)</p></li>
+<li><p><strong>Null</strong> values are expressed as the fixed text <code class="docutils literal notranslate"><span class="pre">null</span></code></p>
+</li>
+<li id="data-model-string"><p><strong>Strings</strong> are expressed as text that is not a number or a boolean or null.</p>
+<ul class="simple">
+<li><p>To be safe in YAML, use quotes to delimit the string;
+YAML includes other confusing and quirky representations like <code class="docutils literal notranslate"><span class="pre">on</span></code> and <code class="docutils literal notranslate"><span class="pre">off</span></code>
+(for booleans) or <code class="docutils literal notranslate"><span class="pre">12:00</span></code> which  is a time.</p></li>
+<li><p>There are several other ways to express multiline strings in YAML;
+you won’t need them for board definition files and should not use them.</p></li>
+</ul>
+</li>
+<li id="data-model-list"><p><strong>Lists</strong> are ordered sequences of indented values,
+each of which is preceded by a hyphen character
+(the 1,2,3 at the end under <code class="docutils literal notranslate"><span class="pre">opamp.enabled</span></code>)</p>
+<ul class="simple">
+<li><p>Lists may also be represented by an alternate compact syntax
+<code class="docutils literal notranslate"><span class="pre">[value1,</span> <span class="pre">value2,</span> <span class="pre">value3]</span></code>  as in Javascript and Python,
+but we generally don’t use this in our examples.</p></li>
+</ul>
+</li>
+<li id="data-model-map"><p><strong>Maps</strong> are unordered sequences of indented key/value pairs,
+where the key is a string, followed by a colon,
+followed by a value that is separated from the colon by a space or newline.</p>
+<ul>
+<li><p>The example document above is a map with three keys,
+<code class="docutils literal notranslate"><span class="pre">identification</span></code>, <code class="docutils literal notranslate"><span class="pre">characteristics</span></code>, and <code class="docutils literal notranslate"><span class="pre">peripherals</span></code>.</p></li>
+<li><p>The value associated with the <code class="docutils literal notranslate"><span class="pre">identification</span></code> key
+is itself a map containing three keys:
+<code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">displayName</span></code>, and <code class="docutils literal notranslate"><span class="pre">description</span></code>.
+These keys each refer to a string value that immediately follows the key,
+after a space.</p></li>
+<li><p>Maps may also be represented by an alternate compact syntax as in Javascript,
+but we generally don’t use this in our examples:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">{</span><span class="nt">key1</span><span class="p">:</span><span class="w"> </span><span class="nv">value1</span><span class="p p-Indicator">,</span><span class="nt"> key2</span><span class="p">:</span><span class="w"> </span><span class="nv">value2</span><span class="p p-Indicator">,</span><span class="nt"> key3</span><span class="p">:</span><span class="w"> </span><span class="nv">value3</span><span class="p p-Indicator">}</span>
+</pre></div>
+</div>
+</li>
+<li><p>The ordering of elements in a map is not important,
+and may be permuted without changing the value,
+even though the resulting serialized YAML file is different.</p></li>
+</ul>
+</li>
+<li><p>Values within a data model may be referenced by a <strong>path</strong>, which is a string
+that uses a period/dot <code class="docutils literal notranslate"><span class="pre">.</span></code> to denote indexing a map by key,
+and brackets <code class="docutils literal notranslate"><span class="pre">[]</span></code> to denote indexing a list by an integer value.
+In the example data model above:</p>
+<ul>
+<li><p>the path <code class="docutils literal notranslate"><span class="pre">identification.id</span></code>  refers to the string <code class="docutils literal notranslate"><span class="pre">custom_board</span></code></p></li>
+<li><p>the path <code class="docutils literal notranslate"><span class="pre">peripherals.opamp.enabled[1]</span></code> refers to the number <code class="docutils literal notranslate"><span class="pre">2</span></code></p></li>
+<li><p>the path <code class="docutils literal notranslate"><span class="pre">peripherals.adc.current.a</span></code> refers to the following map:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AN0</span>
+<span class="nt">inverted</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">signed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+</ul>
+<p>For a more detailed introduction on YAML, there are various public sources;
+these appear to be among the more readable tutorials:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.cloudbees.com/blog/yaml-tutorial-everything-you-need-get-started">CloudBees YAML Tutorial: Everything You Need to Get Started in Minutes</a></p></li>
+<li><p><a class="reference external" href="https://dojofive.com/blog/yaml-tutorial-how-tos-best-practices-getting-started/">Dojo Five YAML Tutorial: How To’s, Best Practices &amp; Getting Started</a></p></li>
+<li><p><a class="reference external" href="https://learnxinyminutes.com/yaml/">Learn X in Y minutes, Where X = YAML</a></p></li>
+</ul>
+</section>
+</section>
+<section id="custom-board-schema">
+<span id="id1"></span><h2><span class="section-number">6.6.9.2. </span>Custom board schema<a class="headerlink" href="#custom-board-schema" title="Permalink to this heading">¶</a></h2>
+<p>The data models in custom board definitions are hierarchical tree structures that conform to the schema listed in the table below,
+organized under three top-level sections:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">identification</span></code> — covers data associated with the name and description of a board</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">characteristics</span></code> — covers parameters associated with a board, such as maximum PWM frequency, full-scale DC link voltage, maximum continuous phase current, etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">peripherals</span></code> — covers peripheral configuration choices, such as UART pin assignment, ADC channel mapping, PWM fault source and polarity, etc.</p></li>
+</ul>
+<p>Each row of the table describes an entry in the tree, which has several properties:</p>
+<ul>
+<li><p>a type, which is either one of the <a class="reference internal" href="#data-model-types"><span class="std std-ref">standard data model types</span></a> or one of the following:</p>
+<ul class="simple">
+<li><p>a named type, such as <a class="reference internal" href="#board-schema-digitalpolarity"><span class="std std-ref">[digitalPolarity]</span></a>, that has a constrained structure. These types
+are listed at the end of the table.</p></li>
+<li><p>an <code class="docutils literal notranslate"><span class="pre">enum</span></code>, which is a choice from among several fixed options (these are listed in the description)</p></li>
+<li><p>a constrained numeric range, shown here as an inequality in either <span class="math notranslate nohighlight">\(n\)</span> or <span class="math notranslate nohighlight">\(x\)</span>:</p>
+<ul>
+<li><p><span class="math notranslate nohighlight">\(n\)</span>: integer range, for example <span class="math notranslate nohighlight">\(1 \le n \le 3\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(x\)</span>: floating-point range, for example <span class="math notranslate nohighlight">\(0.0 \le x \le 1.0\)</span> or <span class="math notranslate nohighlight">\(x \ge 0.0\)</span></p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>units, if applicable — for example V (volts) or A (amperes) or s (seconds)</p></li>
+<li><p>whether the entry is required (Req’d, denoted by a green checkmark <a class="reference internal" href="../../_images/icon-green-check.svg"><img alt="greencheck" src="../../_images/icon-green-check.svg" width="20px" /></a>) or optional</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Entries are required or optional in the context of their parent entries. For example, <code class="docutils literal notranslate"><span class="pre">peripherals.qei</span></code>
+is optional, but if it is present, then <code class="docutils literal notranslate"><span class="pre">peripherals.qei.pins</span></code> is required.</p>
+</div>
+</li>
+<li><p>further descriptive notes under “Description”</p></li>
+</ul>
+<table class="board-schema docutils align-default" id="table-board-schema">
+<thead>
+<tr class="row-odd"><th class="head"><p>Path</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Units</p></th>
+<th class="head"><p>Req’d</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate"><span class="pre">identification</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Board identification
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.id</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Unique ID for a given instance of a board. This parameter is restricted to printable ASCII characters (codes 32-126, including space but excluding DELETE (127)).
+</p>
+<p>regex:descriptor = <code class="docutils literal notranslate"><span class="pre">^[</span> <span class="pre">-~]+$</span></code></p>
+</td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.displayName</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Board name that will appear in motorBench when the board configuration file is loaded. This parameter is restricted to printable ASCII characters (codes 32-126, including space but excluding DELETE (127)).
+</p>
+<p>regex:descriptor = <code class="docutils literal notranslate"><span class="pre">^[</span> <span class="pre">-~]+$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.description</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Description of the board configuration
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate"><span class="pre">characteristics</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Board characteristics
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.device</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Microcontroller part number. Restricted to dsPIC33CK and dsPIC33AK discrete devices and dsPIC33CDV, dsPIC33CDVC, and dsPIC33CDVL SiP devices.
+<p>Use the device name as in MPLAB X, without any part suffixes to indicate
+packaging or temperature range. For example, <code class="docutils literal notranslate"><span class="pre">dsPIC33CK256MP508</span></code>
+rather than <code class="docutils literal notranslate"><span class="pre">dsPIC33CK256MP508T-I/PT</span></code>.</p>
+</p>
+<p>regex:deviceName = <code class="docutils literal notranslate"><span class="pre">^(dsPIC33)([A-Za-z]+)([0-9]+)([A-Za-z]+)([0-9]+)$</span></code></p>
+</td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.gateDriver</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>PWM gate driver configuration for boards with MCP802(1/2/7) gate drivers or SiP-based boards
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.device</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Gate driver device name. Restricted to <a class="reference external" href="https://www.microchip.com/en-us/product/mcp8021"><code class="docutils literal notranslate"><span class="pre">MCP8021</span></code></a>, <a class="reference external" href="https://www.microchip.com/en-us/product/mcp8022"><code class="docutils literal notranslate"><span class="pre">MCP8022</span></code></a>, <a class="reference external" href="https://www.microchip.com/en-us/product/mcp8027"><code class="docutils literal notranslate"><span class="pre">MCP8027</span></code></a>.
+</p>
+<p>regex:identifier = <code class="docutils literal notranslate"><span class="pre">^[A-Za-z_][A-Za-z0-9_]*$</span></code></p>
+</td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.configuration</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Gate driver configuration. See device datasheet for more information on each parameter.
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.sleepMode</span></code></td>
+<td class="board-schema-type"><p>enum</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Device mode when disabled (SLEEP)
+</p>
+<p>Options:<ul class="simple">
+</ul>
+<li><code class="docutils literal notranslate"><span class="pre">'sleep'</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">'standby'</span></code></li>
+</p>
+</td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.shortCircuitDetect</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Enable external MOSFET short circuit detection (EXTSC)
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.underVoltageLockout</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Enable external MOSFET under-voltage lockout (EXTUVLO)
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.opampEnabledDuringDeviceStandby</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Enable op amps during device standby mode (OPAMP). Only required if using MCP8022.
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.linPullUpsEnabled</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Enable LIN pull-up resistors (PU30K). Only required if using MCP8027.
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.dacReference</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>V</p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Sets the DAC current reference value (DACREF). Only required if using MCP8027.
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.pins</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Pin assignment for the MCP802x gate driver RX, TX, fault, and device enable pins. If using a SiP device, refer to the internal connections block diagram of the device datasheet.
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.RX</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>GPIO pin name. See device datasheet for which pins are available on the selected device. 
+</p>
+<p>regex:pin = <code class="docutils literal notranslate"><span class="pre">^R([A-HJK])([0-9]|1[0-5])$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.TX</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>GPIO pin name. See device datasheet for which pins are available on the selected device. 
+</p>
+<p>regex:pin = <code class="docutils literal notranslate"><span class="pre">^R([A-HJK])([0-9]|1[0-5])$</span></code></p>
+</td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.fault</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>GPIO pin name. See device datasheet for which pins are available on the selected device. 
+</p>
+<p>regex:pin = <code class="docutils literal notranslate"><span class="pre">^R([A-HJK])([0-9]|1[0-5])$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.outputEnable</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>GPIO pin name. See device datasheet for which pins are available on the selected device. 
+</p>
+<p>regex:pin = <code class="docutils literal notranslate"><span class="pre">^R([A-HJK])([0-9]|1[0-5])$</span></code></p>
+</td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.voltage</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Board voltage measurement characteristics
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.phase</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Phase voltage measurement characteristics
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.timeConstant</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>s</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Time constant of phase voltage measurement circuit
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.fullscale</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>V</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Full scale value of phase voltage measurement
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.dcLink</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>DC link voltage measurement characteristics
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.timeConstant</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>s</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Time constant of DC link voltage measurement circuit
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.fullscale</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>V</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Full scale value of DC link voltage measurement. 0V-to-3.3V range at ADC corresponds to 0V-to-fullscale range.
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.minimum</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>V</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Minimum allowable value of DC link voltage
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.maximum</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>V</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Maximum allowable value of DC link voltage
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.default</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>V</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Default value of DC link voltage. Used to initialize the system parameter for “Nominal DC link voltage” when motorBench starts a new project.
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.current</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Board <a class="reference internal" href="../../algorithms/foc/current_measure.html#algorithm-current-measure"><span class="std std-ref">current measurement</span></a> characteristics
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.dcLink</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>DC link current measurement characteristics
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.fullscale</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>A</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Full scale value of DC link current measurement
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.timeConstant</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>s</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Time constant of DC link current measurement circuit
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.phase</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Phase current measurement characteristics
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.fullscale</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>A</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Full scale value of phase current measurement
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.timeConstant</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>s</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Time constant of phase current measurement circuit
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.maximum</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Maximum phase current characteristics
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.continuous</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>A</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Maximum continuous phase current. This value must be well below the full scale phase current measurement range to account for current ripple and hardware tolerances while leaving enough margin for current controller overshoot.
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.peak</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>A</p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Maximum peak phase current. This value must be well below the full scale phase current measurement range to account for current ripple and hardware tolerances while leaving enough margin for current controller overshoot.
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.gainCorrectionFactors</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Phase current measurement gain correction factors. These five parameters form a 3x3 matrix (Kac, Kbc, Kca, and Kcb are set to zero) used for current measurement compensation. Optional; if not present, the 3x3 identity matrix is used.
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.Kaa</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(0.5 \le x \le 1.5\)</span></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p></p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.Kab</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(-0.5 \le x \le 0.5\)</span></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p></p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.Kba</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(-0.5 \le x \le 0.5\)</span></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p></p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.Kbb</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(0.5 \le x \le 1.5\)</span></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p></p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.Kcc</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(0.5 \le x \le 1.5\)</span></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Optional; supports boards that measure phase C current and need gain correction
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.pwm</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>3-phase PWM characteristics
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.frequency</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-rangewithdefault"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[rangeWithDefault]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Switching frequency of 3-phase PWM signals
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.minimum</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(x \ge 0.0\)</span></td>
+<td class="board-schema-unit"><p>Hz</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Minimum allowable value
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.maximum</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(x \ge 0.0\)</span></td>
+<td class="board-schema-unit"><p>Hz</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Maximum allowable value
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.default</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(x \ge 0.0\)</span></td>
+<td class="board-schema-unit"><p>Hz</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Default value
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.deadTime</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-rangewithdefault"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[rangeWithDefault]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p><a class="reference internal" href="../../algorithms/dead-time-comp.html#dtc-definition"><span class="std std-ref">Dead time</span></a> of 3-phase PWM signals. Brief period of time when the high and low PWM signals in a phase are off, preventing conduction and short circuits between the DC link voltage and ground. 
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.minimum</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(x \ge 0.0\)</span></td>
+<td class="board-schema-unit"><p>s</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Minimum allowable value
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.maximum</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(x \ge 0.0\)</span></td>
+<td class="board-schema-unit"><p>s</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Maximum allowable value
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.default</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(x \ge 0.0\)</span></td>
+<td class="board-schema-unit"><p>s</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Default value
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.dutyCycle</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>PWM duty cycle characteristics
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.minimum</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Minimum duty cycle supported by the board, taking into consideration the minimum pulse width limitations of the inverter stage.
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.maximum</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Maximum duty cycle supported by the board, taking into consideration the minimum pulse width limitations of the inverter stage, bootstrap limitations of the gate driver (if present) and current measurement limitations of  low-side shunt-based current amplifier circuits (if present).
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.powerOn</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Power-on characteristics
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.delay</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Power-on delay characteristics
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.maximum</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(x \ge 0.0\)</span></td>
+<td class="board-schema-unit"><p>s</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Worst-case power-on delay before circuitry stabilizes  and is ready for use
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate"><span class="pre">peripherals</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p></p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.debugger</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Programming/Debugging configuration
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.channel</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(1 \le n \le 3\)</span></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>PGDx/PGCx channel for Programming/Debugging. Refer to device datasheet for which Programming/Debugging channels are available.
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.oscillator</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Oscillator configuration
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path" id="custom-board-clocksource"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.clockSource</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Clock source selection. Possible options are <code class="docutils literal notranslate"><span class="pre">crystal</span> <span class="pre">oscillator</span></code>, <code class="docutils literal notranslate"><span class="pre">internal</span> <span class="pre">FRC</span></code>, or <code class="docutils literal notranslate"><span class="pre">external</span> <span class="pre">clock</span></code>.
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">crystal</span> <span class="pre">oscillator</span></code></dt><dd><p>Primary Oscillator with PLL</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">internal</span> <span class="pre">FRC</span></code></dt><dd><p>FRC Oscillator with PLL</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">external</span> <span class="pre">clock</span></code></dt><dd><p>External Oscillator with PLL</p>
+</dd>
+</dl>
+</p>
+<p>regex:clockSource = <code class="docutils literal notranslate"><span class="pre">^[</span> <span class="pre">-~]+$</span></code></p>
+</td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.inputClockFrequency</span></code></td>
+<td class="board-schema-type"><p>integer</p></td>
+<td class="board-schema-unit"><p>Hz</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Frequency of input clock used to generate system clock frequency
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.adc</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Configuration of ADC peripheral and ADC channels. See device datasheet for which ADC channels are available on the selected device.
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.samplingTime</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-rangewithdefault"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[rangeWithDefault]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Sampling time of ADC channels
+<p>For all devices there is a limited valid range of ADC sampling time. Refer to the
+device datasheet and ensure the corresponding register (ADCON2H.SHRSAMC for 33C
+devices, ADxCHyCON.SAMC for 33A devices) in the generated code results in a sampling
+time that is appropriate for the end application.</p>
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.minimum</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(x \ge 0.0\)</span></td>
+<td class="board-schema-unit"><p>s</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Minimum allowable value
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.maximum</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(x \ge 0.0\)</span></td>
+<td class="board-schema-unit"><p>s</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Maximum allowable value
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.default</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(x \ge 0.0\)</span></td>
+<td class="board-schema-unit"><p>s</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Default value
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.current</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Configures <a class="reference internal" href="configuration.html#custom-board-current-sense"><span class="std std-ref">ADC channels for current measurement</span></a>.  This determines which <a class="reference internal" href="../../algorithms/foc/current_measure.html#algorithm-current-measure"><span class="std std-ref">current measurement</span></a> methods are available.
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.dcLink</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-adcchannelcurrent"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[adcChannelCurrent]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Current measurement ADC channel configuration
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.channel</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>ADC channel to sample
+</p>
+<p>regex:adcChannel = <code class="docutils literal notranslate"><span class="pre">^((ANA?)|(AD[0-5]ANN?))([0-9]|([1-3][0-9]))$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.inverted</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC channel measurement is inverted. <code class="docutils literal notranslate"><span class="pre">true</span></code> = inverted, <code class="docutils literal notranslate"><span class="pre">false</span></code> = not inverted
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.signed</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC measurement is treated as a signed value relative to mid-scale (AVdd/2) or an unsigned value relative to AVss. <code class="docutils literal notranslate"><span class="pre">true</span></code> = signed, <code class="docutils literal notranslate"><span class="pre">false</span></code> = unsigned
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.a</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-adcchannelcurrent"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[adcChannelCurrent]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Current measurement ADC channel configuration
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.channel</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>ADC channel to sample
+</p>
+<p>regex:adcChannel = <code class="docutils literal notranslate"><span class="pre">^((ANA?)|(AD[0-5]ANN?))([0-9]|([1-3][0-9]))$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.inverted</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC channel measurement is inverted. <code class="docutils literal notranslate"><span class="pre">true</span></code> = inverted, <code class="docutils literal notranslate"><span class="pre">false</span></code> = not inverted
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.signed</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC measurement is treated as a signed value relative to mid-scale (AVdd/2) or an unsigned value relative to AVss. <code class="docutils literal notranslate"><span class="pre">true</span></code> = signed, <code class="docutils literal notranslate"><span class="pre">false</span></code> = unsigned
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.b</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-adcchannelcurrent"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[adcChannelCurrent]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Current measurement ADC channel configuration
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.channel</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>ADC channel to sample
+</p>
+<p>regex:adcChannel = <code class="docutils literal notranslate"><span class="pre">^((ANA?)|(AD[0-5]ANN?))([0-9]|([1-3][0-9]))$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.inverted</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC channel measurement is inverted. <code class="docutils literal notranslate"><span class="pre">true</span></code> = inverted, <code class="docutils literal notranslate"><span class="pre">false</span></code> = not inverted
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.signed</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC measurement is treated as a signed value relative to mid-scale (AVdd/2) or an unsigned value relative to AVss. <code class="docutils literal notranslate"><span class="pre">true</span></code> = signed, <code class="docutils literal notranslate"><span class="pre">false</span></code> = unsigned
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.c</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-adcchannelcurrent"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[adcChannelCurrent]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Current measurement ADC channel configuration
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.channel</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>ADC channel to sample
+</p>
+<p>regex:adcChannel = <code class="docutils literal notranslate"><span class="pre">^((ANA?)|(AD[0-5]ANN?))([0-9]|([1-3][0-9]))$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.inverted</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC channel measurement is inverted. <code class="docutils literal notranslate"><span class="pre">true</span></code> = inverted, <code class="docutils literal notranslate"><span class="pre">false</span></code> = not inverted
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.signed</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC measurement is treated as a signed value relative to mid-scale (AVdd/2) or an unsigned value relative to AVss. <code class="docutils literal notranslate"><span class="pre">true</span></code> = signed, <code class="docutils literal notranslate"><span class="pre">false</span></code> = unsigned
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.voltage</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Configuration of ADC channels for voltage measurement. DC link voltage measurement is required, all other voltage measurements are optional. 
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.dcLink</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-adcchannelvoltage"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[adcChannelVoltage]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>DC link voltage measurement channel configuration
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.channel</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>ADC channel to sample
+</p>
+<p>regex:adcChannel = <code class="docutils literal notranslate"><span class="pre">^((ANA?)|(AD[0-5]ANN?))([0-9]|([1-3][0-9]))$</span></code></p>
+</td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.signed</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC measurement is treated as a signed value relative to mid-scale (AVdd/2) or an unsigned value relative to AVss. <code class="docutils literal notranslate"><span class="pre">true</span></code> = signed, <code class="docutils literal notranslate"><span class="pre">false</span></code> = unsigned
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.a</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-adcchannelvoltage"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[adcChannelVoltage]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Phase A voltage measurement channel configuration
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.channel</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>ADC channel to sample
+</p>
+<p>regex:adcChannel = <code class="docutils literal notranslate"><span class="pre">^((ANA?)|(AD[0-5]ANN?))([0-9]|([1-3][0-9]))$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.signed</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC measurement is treated as a signed value relative to mid-scale (AVdd/2) or an unsigned value relative to AVss. <code class="docutils literal notranslate"><span class="pre">true</span></code> = signed, <code class="docutils literal notranslate"><span class="pre">false</span></code> = unsigned
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.b</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-adcchannelvoltage"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[adcChannelVoltage]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Phase B voltage measurement channel configuration
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.channel</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>ADC channel to sample
+</p>
+<p>regex:adcChannel = <code class="docutils literal notranslate"><span class="pre">^((ANA?)|(AD[0-5]ANN?))([0-9]|([1-3][0-9]))$</span></code></p>
+</td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.signed</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC measurement is treated as a signed value relative to mid-scale (AVdd/2) or an unsigned value relative to AVss. <code class="docutils literal notranslate"><span class="pre">true</span></code> = signed, <code class="docutils literal notranslate"><span class="pre">false</span></code> = unsigned
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.c</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-adcchannelvoltage"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[adcChannelVoltage]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Phase C voltage measurement channel configuration
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.channel</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>ADC channel to sample
+</p>
+<p>regex:adcChannel = <code class="docutils literal notranslate"><span class="pre">^((ANA?)|(AD[0-5]ANN?))([0-9]|([1-3][0-9]))$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.signed</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC measurement is treated as a signed value relative to mid-scale (AVdd/2) or an unsigned value relative to AVss. <code class="docutils literal notranslate"><span class="pre">true</span></code> = signed, <code class="docutils literal notranslate"><span class="pre">false</span></code> = unsigned
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.absoluteReference</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Absolute voltage reference channel configuration
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.nominal</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>V</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Nominal analog voltage (AVdd)
+<p>Unused parameter</p>
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.channel</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>ADC channel to sample
+</p>
+<p>regex:adcChannel = <code class="docutils literal notranslate"><span class="pre">^((ANA?)|(AD[0-5]ANN?))([0-9]|([1-3][0-9]))$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.signed</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC measurement is treated as a signed value relative to mid-scale (AVdd/2) or an unsigned value relative to AVss. <code class="docutils literal notranslate"><span class="pre">true</span></code> = signed, <code class="docutils literal notranslate"><span class="pre">false</span></code> = unsigned
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.other</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>ADC measurements supported by MCAF that don’t fit into the current or voltage categories. The ADC measurements in this category are optional.
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.bridgeTemperature</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Bridge temperature measurement channel configuration
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.offset</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p>V</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Offset of bridge temperature measurement
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.gain</span></code></td>
+<td class="board-schema-type"><p>float</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Gain of bridge temperature measurement
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.channel</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>ADC channel to sample
+</p>
+<p>regex:adcChannel = <code class="docutils literal notranslate"><span class="pre">^((ANA?)|(AD[0-5]ANN?))([0-9]|([1-3][0-9]))$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.signed</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC measurement is treated as a signed value relative to mid-scale (AVdd/2) or an unsigned value relative to AVss. <code class="docutils literal notranslate"><span class="pre">true</span></code> = signed, <code class="docutils literal notranslate"><span class="pre">false</span></code> = unsigned
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.potentiometer</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Potentiometer measurement channel configuration
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.inverted</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Polarity of measurement. <code class="docutils literal notranslate"><span class="pre">true</span></code> = inverted, <code class="docutils literal notranslate"><span class="pre">false</span></code> = not inverted
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.minimum</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(0.0 \le x \le 1.0\)</span></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Minimum measured voltage as a fraction of AVdd. Defaults to 0.0.
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.maximum</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(0.0 \le x \le 1.0\)</span></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Maximum measured voltage as a fraction of AVdd. Defaults to 1.0.
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.channel</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>ADC channel to sample
+</p>
+<p>regex:adcChannel = <code class="docutils literal notranslate"><span class="pre">^((ANA?)|(AD[0-5]ANN?))([0-9]|([1-3][0-9]))$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">.signed</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC measurement is treated as a signed value relative to mid-scale (AVdd/2) or an unsigned value relative to AVss. <code class="docutils literal notranslate"><span class="pre">true</span></code> = signed, <code class="docutils literal notranslate"><span class="pre">false</span></code> = unsigned
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.custom</span></code></td>
+<td class="board-schema-type"><p></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Custom ADC channel configuration. These ADC channels are not used by MCAF, and may be managed by the application. They are sampled at the same frequency (PWM frequency) as other MCAF ADC channels. The custom name of the channel must be a valid C identifier.
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.*</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-adcchannelcustom"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[adcChannelCustom]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>key = regex:cStandardName = <code class="docutils literal notranslate"><span class="pre">^[A-Za-z_][A-Za-z0-9_]*$</span></code></p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.pwm</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>3-phase PWM configuration
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.polarity</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Polarity of the upper (PWMxH) and lower (PWMxL) PWM signals
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.upper</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-digitalpolarity"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[digitalPolarity]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Digital polarity
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.lower</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-digitalpolarity"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[digitalPolarity]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Digital polarity
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.generators</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>PWM generator to motor phase mapping. See device datasheet for which PWM generators are available on the selected device.
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.a</span></code></td>
+<td class="board-schema-type"><p>integer</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>PWM generator number. See device datasheet for which PWM generators are available on the  selected device.
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.b</span></code></td>
+<td class="board-schema-type"><p>integer</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>PWM generator number. See device datasheet for which PWM generators are available on the  selected device.
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.c</span></code></td>
+<td class="board-schema-type"><p>integer</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>PWM generator number. See device datasheet for which PWM generators are available on the  selected device.
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.outputSwap</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Swap the outputs of the upper (PWMxH) and lower (PWMxL) signals for each generator
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.a</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Determines if the PWMxH and PWMxL signals are swapped
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.b</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Determines if the PWMxH and PWMxL signals are swapped
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.c</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Determines if the PWMxH and PWMxL signals are swapped
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path" id="custom-board-pwm-fault"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.fault</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>PWM fault configuration. This signal will cause the PWM generators to shut down when the digital signal transitions (low or high, depending on the polarity configuration).
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.polarity</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-digitalpolarity"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[digitalPolarity]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Digital polarity
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path" id="custom-board-pwm-fault-source"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.source</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Fault source selection
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">none</span></code></dt><dd><p>Fault source tied to 0V</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">CMP1</span></code></dt><dd><p>Comparator 1 Output</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">CMP2</span></code></dt><dd><p>Comparator 2 Output</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">CMP3</span></code></dt><dd><p>Comparator 3 Output</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PCI19</span></code></dt><dd><p>Device pin, PCI19</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PCI20</span></code></dt><dd><p>Device pin, PCI20</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PCI21</span></code></dt><dd><p>Device pin, PCI21</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PCI22</span></code></dt><dd><p>Device pin, PCI22</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">CLC1</span></code></dt><dd><p>Configurable logic cell 1</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PCI18R</span></code></dt><dd><p>Remappable peripheral function input, PCI18R</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PCI17R</span></code></dt><dd><p>Remappable peripheral function input, PCI17R</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PCI16R</span></code></dt><dd><p>Remappable peripheral function input, PCI16R</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PCI15R</span></code></dt><dd><p>Remappable peripheral function input, PCI15R</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PCI14R</span></code></dt><dd><p>Remappable peripheral function input, PCI14R</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PCI13R</span></code></dt><dd><p>Remappable peripheral function input, PCI13R</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PCI12R</span></code></dt><dd><p>Remappable peripheral function input, PCI12R</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PCI11R</span></code></dt><dd><p>Remappable peripheral function input, PCI11R</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PCI10R</span></code></dt><dd><p>Remappable peripheral function input, PCI10R</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PCI9R</span></code></dt><dd><p>Remappable peripheral function input, PCI9R</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">PCI8R</span></code></dt><dd><p>Remappable peripheral function input, PCI8R</p>
+</dd>
+</dl>
+</p>
+<p>regex:faultSource = <code class="docutils literal notranslate"><span class="pre">^[</span> <span class="pre">-~]+$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.pin</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>GPIO pin name. See device datasheet for which pins are available on the selected device. 
+</p>
+<p>regex:pin = <code class="docutils literal notranslate"><span class="pre">^R([A-HJK])([0-9]|1[0-5])$</span></code></p>
+</td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.opamp</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Internal op amp configuration
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.enabled</span></code></td>
+<td class="board-schema-type"><p>list</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>A list of which op amps are enabled
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.*</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(1 \le n \le 3\)</span></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p></p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.comparator</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Internal comparator/DAC configuration. The comparator/DAC can be configured for the PWM fault source.
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.source</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Source that triggers the comparator output
+</p>
+<p>regex:cmpTrigSource = <code class="docutils literal notranslate"><span class="pre">^CMP[1-3][A-D]$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.inverted</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Polarity of the comparator output. <code class="docutils literal notranslate"><span class="pre">true</span></code> = inverted, <code class="docutils literal notranslate"><span class="pre">false</span></code> = non inverted
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.threshold</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(0.0 \le x \le 1.0\)</span></td>
+<td class="board-schema-unit"><p>Fraction of AVDD</p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Trigger threshold as a fraction of AVdd
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.gpio</span></code></td>
+<td class="board-schema-type"><p></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>GPIO configuration
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.*</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-gpio"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[gpio]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>key = regex:cStandardName = <code class="docutils literal notranslate"><span class="pre">^[A-Za-z_][A-Za-z0-9_]*$</span></code></p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.qei</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>QEI configuration. Must be configured to use the QEI estimator. See device datasheet for which pins are available on the selected device.
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.pins</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>QEI pin configuration
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.A</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>GPIO pin name. See device datasheet for which pins are available on the selected device. 
+</p>
+<p>regex:pin = <code class="docutils literal notranslate"><span class="pre">^R([A-HJK])([0-9]|1[0-5])$</span></code></p>
+</td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.B</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>GPIO pin name. See device datasheet for which pins are available on the selected device. 
+</p>
+<p>regex:pin = <code class="docutils literal notranslate"><span class="pre">^R([A-HJK])([0-9]|1[0-5])$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.Z</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>GPIO pin name. See device datasheet for which pins are available on the selected device. 
+</p>
+<p>regex:pin = <code class="docutils literal notranslate"><span class="pre">^R([A-HJK])([0-9]|1[0-5])$</span></code></p>
+</td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.uart</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>UART configuration. Must be configured if real-time debugging is desired. See device  datasheet for which pins are available on the selected device. 
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160; <span class="pre">.pins</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>UART pin configuration
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.RX</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>GPIO pin name. See device datasheet for which pins are available on the selected device. 
+</p>
+<p>regex:pin = <code class="docutils literal notranslate"><span class="pre">^R([A-HJK])([0-9]|1[0-5])$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160;&#160;&#160;&#160;&#160; <span class="pre">.TX</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>GPIO pin name. See device datasheet for which pins are available on the selected device. 
+</p>
+<p>regex:pin = <code class="docutils literal notranslate"><span class="pre">^R([A-HJK])([0-9]|1[0-5])$</span></code></p>
+</td>
+</tr>
+<tr class="row-even"><td colspan="7"><strong>Referenced types</strong></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate" id="board-schema-generator"><span id="board-schema-generator"></span><span class="pre">[generator]</span></code></td>
+<td class="board-schema-type"><p>integer</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>PWM generator number. See device datasheet for which PWM generators are available on the  selected device.
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate" id="board-schema-pin"><span id="board-schema-pin"></span><span class="pre">[pin]</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>GPIO pin name. See device datasheet for which pins are available on the selected device. 
+</p>
+<p>regex:pin = <code class="docutils literal notranslate"><span class="pre">^R([A-HJK])([0-9]|1[0-5])$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate" id="board-schema-adcchannelcustom"><span id="board-schema-adcchannelcustom"></span><span class="pre">[adcChannelCustom]</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p></p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.channel</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>ADC channel to sample
+</p>
+<p>regex:adcChannel = <code class="docutils literal notranslate"><span class="pre">^((ANA?)|(AD[0-5]ANN?))([0-9]|([1-3][0-9]))$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.signed</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC measurement is treated as a signed value relative to mid-scale (AVdd/2) or an unsigned value relative to AVss. <code class="docutils literal notranslate"><span class="pre">true</span></code> = signed, <code class="docutils literal notranslate"><span class="pre">false</span></code> = unsigned
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate" id="board-schema-adcchannelvoltage"><span id="board-schema-adcchannelvoltage"></span><span class="pre">[adcChannelVoltage]</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p></p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.channel</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>ADC channel to sample
+</p>
+<p>regex:adcChannel = <code class="docutils literal notranslate"><span class="pre">^((ANA?)|(AD[0-5]ANN?))([0-9]|([1-3][0-9]))$</span></code></p>
+</td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.signed</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC measurement is treated as a signed value relative to mid-scale (AVdd/2) or an unsigned value relative to AVss. <code class="docutils literal notranslate"><span class="pre">true</span></code> = signed, <code class="docutils literal notranslate"><span class="pre">false</span></code> = unsigned
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate" id="board-schema-digitalpolarity"><span id="board-schema-digitalpolarity"></span><span class="pre">[digitalPolarity]</span></code></td>
+<td class="board-schema-type"><p>enum</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Digital polarity
+</p>
+<p>Options:<ul class="simple">
+</ul>
+<li><code class="docutils literal notranslate"><span class="pre">'active-high'</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">'active-low'</span></code></li>
+</p>
+</td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate" id="board-schema-gpio"><span id="board-schema-gpio"></span><span class="pre">[gpio]</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p></p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.pin</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>GPIO pin name. See device datasheet for which pins are available on the selected device. 
+</p>
+<p>regex:pin = <code class="docutils literal notranslate"><span class="pre">^R([A-HJK])([0-9]|1[0-5])$</span></code></p>
+</td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.direction</span></code></td>
+<td class="board-schema-type"><p>enum</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Direction of GPIO
+</p>
+<p>Options:<ul class="simple">
+</ul>
+<li><code class="docutils literal notranslate"><span class="pre">'input'</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">'output'</span></code></li>
+</p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.polarity</span></code></td>
+<td class="board-schema-type"><p><a class="reference internal" href="#board-schema-digitalpolarity"><code class="xref std std-ref docutils literal notranslate"><span class="pre">[digitalPolarity]</span></code></a></p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Digital polarity
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.openDrain</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Open drain pin configuration
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.weakPullUp</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Enable internal weak pull-up resistor
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.weakPullDown</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Enable internal weak pull-down resistor
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.startHigh</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Start condition of pin (LATx)
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate" id="board-schema-generatoroutputsswap"><span id="board-schema-generatoroutputsswap"></span><span class="pre">[generatorOutputsSwap]</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Determines if the PWMxH and PWMxL signals are swapped
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate" id="board-schema-rangewithdefault"><span id="board-schema-rangewithdefault"></span><span class="pre">[rangeWithDefault]</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p></p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.minimum</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(x \ge 0.0\)</span></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Minimum allowable value
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.maximum</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(x \ge 0.0\)</span></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Maximum allowable value
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.default</span></code></td>
+<td class="board-schema-type"><span class="math notranslate nohighlight">\(x \ge 0.0\)</span></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Default value
+</p></td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate" id="board-schema-adcchannelcurrent"><span id="board-schema-adcchannelcurrent"></span><span class="pre">[adcChannelCurrent]</span></code></td>
+<td class="board-schema-type"><p>map</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"></td>
+<td class="board-schema-description"><p>Current measurement ADC channel configuration
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.channel</span></code></td>
+<td class="board-schema-type"><p>string</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>ADC channel to sample
+</p>
+<p>regex:adcChannel = <code class="docutils literal notranslate"><span class="pre">^((ANA?)|(AD[0-5]ANN?))([0-9]|([1-3][0-9]))$</span></code></p>
+</td>
+</tr>
+<tr class="row-odd"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.inverted</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC channel measurement is inverted. <code class="docutils literal notranslate"><span class="pre">true</span></code> = inverted, <code class="docutils literal notranslate"><span class="pre">false</span></code> = not inverted
+</p></td>
+</tr>
+<tr class="row-even"><td class="board-schema-path"><code class="docutils literal notranslate">&#160; <span class="pre">.signed</span></code></td>
+<td class="board-schema-type"><p>boolean</p></td>
+<td class="board-schema-unit"><p></p></td>
+<td class="board-schema-required"><a class="align-center reference internal image-reference" href="../../_images/icon-green-check.svg"><img alt="../../_images/icon-green-check.svg" class="align-center" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></a>
+</td>
+<td class="board-schema-description"><p>Determines if the ADC measurement is treated as a signed value relative to mid-scale (AVdd/2) or an unsigned value relative to AVss. <code class="docutils literal notranslate"><span class="pre">true</span></code> = signed, <code class="docutils literal notranslate"><span class="pre">false</span></code> = unsigned
+</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">6.6.9. Custom board definition format</a><ul>
+<li><a class="reference internal" href="#working-with-serialized-data-models">6.6.9.1. Working with Serialized Data Models</a><ul>
+<li><a class="reference internal" href="#introduction">6.6.9.1.1. Introduction</a></li>
+<li><a class="reference internal" href="#example-in-yaml">6.6.9.1.2. Example in YAML</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#custom-board-schema">6.6.9.2. Custom board schema</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="verification.html"
+                          title="previous chapter"><span class="section-number">6.6.8. </span>Verification and board bring-up</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../resource-usage.html"
+                          title="next chapter"><span class="section-number">6.7. </span>Resource Usage</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../resource-usage.html" title="6.7. Resource Usage"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="verification.html" title="6.6.8. Verification and board bring-up"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R9 RC31 (docver 9.0.1)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" ><span class="section-number">6.6. </span>Custom Board Support</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.6.9. </span>Custom board definition format</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2026, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>
