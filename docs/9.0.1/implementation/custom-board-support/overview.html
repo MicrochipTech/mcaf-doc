@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>6.6.1. Overview of board support in motorBench® Development Suite &#8212; MCAF R9 RC31 documentation (docver 9.0.1)</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../../_static/svgcrop.js"></script>
+    <script src="../../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="6.6.5. Creating a custom board configuration" href="configuration.html" />
+    <link rel="prev" title="6.6. Custom Board Support" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="configuration.html" title="6.6.5. Creating a custom board configuration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="6.6. Custom Board Support"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R9 RC31 (docver 9.0.1)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U"><span class="section-number">6.6. </span>Custom Board Support</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.6.1. </span>Overview of board support in motorBench<sup>®</sup> Development Suite</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="overview-of-board-support-in-mb">
+<span id="custom-board-overview"></span><h1><span class="section-number">6.6.1. </span>Overview of board support in motorBench<sup>®</sup> Development Suite<a class="headerlink" href="#overview-of-board-support-in-mb" title="Permalink to this heading">¶</a></h1>
+<p>MCAF supports custom boards as of MCAF R8. Users may now configure motorBench<sup>®</sup> Development Suite for use with a wide range of
+motor control boards with a variety of features. To configure a custom board, users can define a board
+configuration in the form of a board definition file. From there, motorBench can automatically configure MCC
+peripherals and then generate code based on the board configuration and other parameters set in the motorBench
+Configure, Tuning, and Customize pages.</p>
+<p>See the <a class="reference external" href="https://github.com/microchip-pic-avr-solutions/motorbench-release-collateral">motorBench User’s Guide</a>
+for more information.</p>
+</section>
+<section id="scope-of-hardware-support">
+<span id="index-0"></span><h1><span class="section-number">6.6.2. </span>Scope of hardware support<a class="headerlink" href="#scope-of-hardware-support" title="Permalink to this heading">¶</a></h1>
+<p><a class="reference internal" href="#fig-hardware-support-scope"><span class="std std-numref">Figure 6.7</span></a> illustrates the typical components of a motor drive hardware design that
+are within the scope of MCAF’s board support functionality.</p>
+<figure class="align-center" id="id5">
+<span id="fig-hardware-support-scope"></span><a class="reference internal image-reference" href="../../_images/hw-blockdiag.svg"><img alt="../../_images/hw-blockdiag.svg" src="../../_images/hw-blockdiag.svg" width="1000px" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 6.7 </span><span class="caption-text">Hardware components supported by MCAF</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Motor terminals are shown above as A, B, and C. MCAF firmware reflects this naming choice.
+Some drive designs or motors may have terminals named U, V, and W; if this is the case,
+use A, B, and C, to substitute for U, V, and W, respectively.</p>
+</div>
+<section id="board-configuration-features">
+<span id="custom-board-configuration-features"></span><h2><span class="section-number">6.6.2.1. </span>Board configuration features<a class="headerlink" href="#board-configuration-features" title="Permalink to this heading">¶</a></h2>
+<p>The following table details the features that can be configured for a custom board.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Note that at least one of the <a class="reference internal" href="../../algorithms/foc/current_measure.html#algorithm-current-measure-channels"><span class="std std-ref">three current measurement methods</span></a>
+(single-, dual- or triple-channel) is required in order for a board to be compatible with motorBench.</p>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Category</p></th>
+<th class="head"><p>Supported board feature</p></th>
+<th class="head"><p>Required</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td rowspan="2"><p>Device</p></td>
+<td><p>dsPIC<sup>®</sup> Digital Signal Controller</p></td>
+<td class="centered vcentered"><p><img alt="yes" class="no-scaled-link" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></p></td>
+<td><p>Devices from the following device families:</p>
+<ul class="simple">
+<li><p>dsPIC33CK</p></li>
+<li><p>dsPIC33CDV, dsPIC33CDVC and dsPIC33CDVL</p></li>
+<li><p>dsPIC33E (custom board feature is not supported, peripherals must be
+configured manually in MCC)</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>MCP802x gate driver</p></td>
+<td></td>
+<td><p>MCP8021/MCP8022/MCP8027 supported by the MCC library</p></td>
+</tr>
+<tr class="row-even"><td rowspan="10"><p>Analog</p></td>
+<td><p>DC link voltage measurement</p></td>
+<td class="centered vcentered"><p><img alt="yes" class="no-scaled-link" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></p></td>
+<td><p>Needed for DC link compensation in MCAF</p></td>
+</tr>
+<tr class="row-odd"><td><p>Phase current — two phases</p></td>
+<td></td>
+<td rowspan="3"><p>Phases A and B are required for dual-channel and triple-channel
+measurement (which also needs phase C).</p>
+<p>DC link measurement is  required for single-channel measurement.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p>Phase current — three phases</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>DC link current</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>Phase voltage — three phases</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Op amps for current measurement</p></td>
+<td></td>
+<td><p>Op amps that are internal to the dsPIC, or external/discrete devices</p></td>
+</tr>
+<tr class="row-even"><td><p>Potentiometer</p></td>
+<td></td>
+<td><p>Used by MCAF sample application to control motor speed</p></td>
+</tr>
+<tr class="row-odd"><td><p>Inverter bridge temperature sensor</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>Absolute voltage reference</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Custom analog channels</p></td>
+<td></td>
+<td><p>These channels will be queued for sequential sampling in every MCAF
+ADC interrupt cycle.</p></td>
+</tr>
+<tr class="row-even"><td rowspan="10"><p>Digital</p></td>
+<td><p>PWM fault</p></td>
+<td></td>
+<td><p>Overcurrent fault, for example. This can be set to <code class="docutils literal notranslate"><span class="pre">none</span></code> if not available.</p></td>
+</tr>
+<tr class="row-odd"><td><p>UART</p></td>
+<td></td>
+<td><p>Required for real-time diagnostic kernel support. High baud rate UART
+support circuitry is suggested (at least 115.2Kbaud, but 921.6K or higher
+recommended).</p></td>
+</tr>
+<tr class="row-even"><td><p>Programmer/debugger</p></td>
+<td class="centered vcentered"><p><img alt="yes" class="no-scaled-link" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></p></td>
+<td><p>Need to specify the programming pin pair (PGD/PGCx)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Oscillator</p></td>
+<td class="centered vcentered"><p><img alt="yes" class="no-scaled-link" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></p></td>
+<td><p>Internal FRC / external clock / crystal</p></td>
+</tr>
+<tr class="row-even"><td><p>Internal comparator</p></td>
+<td></td>
+<td><p>Only one instance is supported in this release of motorBench</p></td>
+</tr>
+<tr class="row-odd"><td><p>Pushbuttons</p></td>
+<td></td>
+<td><p>Up to two pushbuttons are supported for use with MCAF. Application may
+define additional pushbuttons using custom GPIOs. The GPIO names
+<code class="docutils literal notranslate"><span class="pre">MCAF_BUTTON1</span></code> and <code class="docutils literal notranslate"><span class="pre">MCAF_BUTTON2</span></code> are reserved for the MCAF pushbuttons.</p></td>
+</tr>
+<tr class="row-even"><td><p>LEDs</p></td>
+<td></td>
+<td><p>Up to two LEDs are supported for use with MCAF. Application may defined
+additional LEDs using custom GPIOs. The GPIO names <code class="docutils literal notranslate"><span class="pre">MCAF_LED1</span></code> and
+<code class="docutils literal notranslate"><span class="pre">MCAF_LED2</span></code> are reserved for the MCAF LEDs.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Test point</p></td>
+<td></td>
+<td><p>One test point is supported for use with MCAF. Probing the test point will show
+a pulse at PWM switching frequency, representing the time interval when the
+MCAF ADC ISR is executing. The GPIO name <code class="docutils literal notranslate"><span class="pre">MCAF_TESTPOINT1</span></code> is reserved for
+the MCAF test point.</p></td>
+</tr>
+<tr class="row-even"><td><p>QEI</p></td>
+<td></td>
+<td><p>Only one instance is supported in this release of motorBench for use with MCAF.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Custom GPIOs</p></td>
+<td></td>
+<td><p>Application-specific digital inputs and outputs</p></td>
+</tr>
+</tbody>
+</table>
+<p>Guidance for adding MCAF features to a custom board is provided in <a class="reference internal" href="configuration.html#custom-board-modifying"><span class="std std-ref">Modifying the starter board definition</span></a>.
+See the <a class="reference internal" href="custom_board_definitions.html#custom-board-schema"><span class="std std-ref">Custom board schema</span></a> for a full breakdown of the features that can be added
+to a custom board.</p>
+</section>
+<section id="assumptions">
+<h2><span class="section-number">6.6.2.2. </span>Assumptions<a class="headerlink" href="#assumptions" title="Permalink to this heading">¶</a></h2>
+<section id="current-measurement">
+<h3><span class="section-number">6.6.2.2.1. </span>Current measurement<a class="headerlink" href="#current-measurement" title="Permalink to this heading">¶</a></h3>
+<p>MCAF requires the phase and DC link current measurement circuits to provide analog input to the ADC with a DC
+bias of <span class="math notranslate nohighlight">\(AV_\text{dd}/2\)</span> in order to be able to measure current across a range from negative full-scale
+(<span class="math notranslate nohighlight">\(-I_\text{fs}\)</span>) to positive full-scale (<span class="math notranslate nohighlight">\(I_\text{fs}\)</span>) as shown in <a class="reference internal" href="#fig-custom-board-current"><span class="std std-numref">Figure 6.8</span></a>.</p>
+<figure class="align-center" id="id6">
+<span id="fig-custom-board-current"></span><a class="reference internal image-reference" href="../../_images/custom-board-current-spec.svg"><img alt="../../_images/custom-board-current-spec.svg" src="../../_images/custom-board-current-spec.svg" width="360px" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 6.8 </span><span class="caption-text">ADC input to measured phase / DC link current specification</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Depending on the circuit design, the sign of some of the current channels may need to be inverted.
+(See <a class="reference internal" href="../../algorithms/foc/current_measure.html#foc-current-sense-polarity"><span class="std std-ref">Current polarity conventions</span></a> for more information.)</p>
+<p>MCAF will automatically handle this sign inversion as long as it is configured in
+the appropriate <a class="reference internal" href="configuration.html#custom-board-current-sense"><span class="std std-ref">current sense channels</span></a> of the
+board definition file.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>MCAF determines the current scaling of the board based on the full-scale phase current given in the board
+definition file. The full-scale DC link current in the board definition file has no impact on any part
+of the code generation process.</p>
+</div>
+</section>
+<section id="voltage-measurement">
+<h3><span class="section-number">6.6.2.2.2. </span>Voltage measurement<a class="headerlink" href="#voltage-measurement" title="Permalink to this heading">¶</a></h3>
+<p>MCAF requires the DC link voltage measurement circuit to provide analog input to the ADC with zero DC bias
+to be able to measure voltage from 0V to positive full-scale (<span class="math notranslate nohighlight">\(V_\text{fs}\)</span>) as shown in <a class="reference internal" href="#fig-custom-board-voltage"><span class="std std-numref">Figure 6.9</span></a>.</p>
+<figure class="align-center" id="id7">
+<span id="fig-custom-board-voltage"></span><a class="reference internal image-reference" href="../../_images/custom-board-voltage-spec.svg"><img alt="../../_images/custom-board-voltage-spec.svg" src="../../_images/custom-board-voltage-spec.svg" width="360px" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 6.9 </span><span class="caption-text">ADC input to measured phase / DC link voltage specification</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>The same specification applies for phase voltage measurement, which is optionally supported by MCAF.</p>
+</section>
+</section>
+</section>
+<section id="board-definition-file-structure">
+<h1><span class="section-number">6.6.3. </span>Board definition file structure<a class="headerlink" href="#board-definition-file-structure" title="Permalink to this heading">¶</a></h1>
+<p>The board definition file is a hierarchical data model that describes various configuration settings. The
+serialization format used in motorBench is YAML; we may expand this to include support for JSON and/or TOML in
+future revisions of motorBench<sup>®</sup> Development Suite.</p>
+<p>For more information, see <a class="reference internal" href="custom_board_definitions.html#custom-board-definitions"><span class="std std-ref">Custom board definition format</span></a>.</p>
+</section>
+<section id="system-parameters">
+<span id="custom-board-system-parameters"></span><h1><span class="section-number">6.6.4. </span>System parameters<a class="headerlink" href="#system-parameters" title="Permalink to this heading">¶</a></h1>
+<p>System parameters are application-specific properties that can be viewed and edited in the Configure page of motorBench<sup>®</sup> Development Suite.
+They include parameters such as PWM frequency and dead time, which are application choices, rather than
+inherent, fixed properties of a board. For this reason they are not part of a board definition —
+but they do need to meet the constraints of the board, for example maximum PWM frequency or minimum dead time.</p>
+<p>The overall concept is analogous to getting some food in a buffet.</p>
+<ul class="simple">
+<li><p>Meal = project at hand</p></li>
+<li><p>Food = project properties / system parameters</p></li>
+<li><p>Plate = board</p></li>
+</ul>
+<p>The system parameters are “on top of” the board and need to fit within the constraints of the board.</p>
+<figure class="align-center">
+<a class="reference internal image-reference" href="../../_images/bento-tray-1400814356.jpg"><img alt="../../_images/bento-tray-1400814356.jpg" src="../../_images/bento-tray-1400814356.jpg" style="width: 480px;" /></a>
+</figure>
+<p>System parameters configurable in motorBench are:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>System parameter</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Unit</p></th>
+<th class="head"><p>Editable</p></th>
+<th class="head"><p>Comments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Use maximum supported system clock frequency (Fosc)</p></td>
+<td><p>Boolean</p></td>
+<td></td>
+<td class="centered vcentered"><p><img alt="yes" class="no-scaled-link" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>System clock frequency (Fosc)</p></td>
+<td><p>Integer</p></td>
+<td><p>MHz</p></td>
+<td class="centered vcentered"><p><img alt="yes" class="no-scaled-link" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></p></td>
+<td><p>Editable only if the maximum supported system clock frequency
+is not being used.</p></td>
+</tr>
+<tr class="row-even"><td><p>PWM frequency</p></td>
+<td><p>Float</p></td>
+<td><p>kHz</p></td>
+<td class="centered vcentered"><p><img alt="yes" class="no-scaled-link" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></p></td>
+<td><p>Initialized to default <a class="footnote-reference brackets" href="#custom-board-defaults" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>PWM dead time</p></td>
+<td><p>Float</p></td>
+<td><p>ns</p></td>
+<td class="centered vcentered"><p><img alt="yes" class="no-scaled-link" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></p></td>
+<td><p>Initialized to default <a class="footnote-reference brackets" href="#custom-board-defaults" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>Current control loop sampling time factor</p></td>
+<td><p>Integer</p></td>
+<td><p>Tpwm</p></td>
+<td></td>
+<td><p>Sampling time of current control loop as a multiple of PWM periods.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Velocity control loop sampling time factor</p></td>
+<td><p>Integer</p></td>
+<td><p>Tpwm</p></td>
+<td class="centered vcentered"><p><img alt="yes" class="no-scaled-link" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></p></td>
+<td><p>Sampling time of voltage control loop as a multiple of PWM periods.</p></td>
+</tr>
+<tr class="row-even"><td><p>ADC sampling time</p></td>
+<td><p>Float</p></td>
+<td><p>ns</p></td>
+<td class="centered vcentered"><p><img alt="yes" class="no-scaled-link" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></p></td>
+<td><p>Initialized to default <a class="footnote-reference brackets" href="#custom-board-defaults" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Nominal DC link voltage</p></td>
+<td><p>Float</p></td>
+<td><p>V</p></td>
+<td class="centered vcentered"><p><img alt="yes" class="no-scaled-link" height="20px" src="../../_images/icon-green-check.svg" width="20px" /></p></td>
+<td><p>Initialized to default <a class="footnote-reference brackets" href="#custom-board-defaults" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></td>
+</tr>
+</tbody>
+</table>
+<p>System parameters should be configured to meet application requirements after a board configuration file is
+imported.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>MCAF reserves two hardware timers, which are configured by MCC and not part of the custom board definition file:</p>
+<ul class="simple">
+<li><p><strong>Tick timer</strong>: used for the internal <a class="reference internal" href="../../components/hal.html#board-service-module"><span class="std std-ref">board service</span></a> timer ISR; the timer period is set via the
+<a class="reference internal" href="../ui-customization.html#customize-board-service-uiservicetiming"><span class="std std-ref">UI service period</span></a> parameter on the Customize page of motorBench<sup>®</sup> Development Suite.</p></li>
+<li><p><strong>Profiling timer</strong>: used for <a class="reference internal" href="../../components/testharness.html#test-timestamps"><span class="std std-ref">profiling timestamps</span></a>.</p></li>
+</ul>
+<p>Avoid using these hardware timers for any purpose outside of MCAF.</p>
+</div>
+<aside class="footnote brackets" id="custom-board-defaults" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id2">2</a>,<a role="doc-backlink" href="#id3">3</a>,<a role="doc-backlink" href="#id4">4</a>)</span>
+<p>Some of the system parameters are initialized to the default values given in the board configuration file.</p>
+</aside>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">6.6.1. Overview of board support in motorBench<sup>®</sup> Development Suite</a></li>
+<li><a class="reference internal" href="#scope-of-hardware-support">6.6.2. Scope of hardware support</a><ul>
+<li><a class="reference internal" href="#board-configuration-features">6.6.2.1. Board configuration features</a></li>
+<li><a class="reference internal" href="#assumptions">6.6.2.2. Assumptions</a><ul>
+<li><a class="reference internal" href="#current-measurement">6.6.2.2.1. Current measurement</a></li>
+<li><a class="reference internal" href="#voltage-measurement">6.6.2.2.2. Voltage measurement</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#board-definition-file-structure">6.6.3. Board definition file structure</a></li>
+<li><a class="reference internal" href="#system-parameters">6.6.4. System parameters</a></li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter"><span class="section-number">6.6. </span>Custom Board Support</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="configuration.html"
+                          title="next chapter"><span class="section-number">6.6.5. </span>Creating a custom board configuration</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="configuration.html" title="6.6.5. Creating a custom board configuration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="6.6. Custom Board Support"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R9 RC31 (docver 9.0.1)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" ><span class="section-number">6.6. </span>Custom Board Support</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.6.1. </span>Overview of board support in motorBench<sup>®</sup> Development Suite</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2026, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

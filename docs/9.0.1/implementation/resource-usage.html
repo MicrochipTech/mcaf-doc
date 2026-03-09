@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>6.7. Resource Usage &#8212; MCAF R9 RC31 documentation (docver 9.0.1)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="7. Appendix" href="../appendix/index.html" />
+    <link rel="prev" title="6.6.9. Custom board definition format" href="custom-board-support/custom_board_definitions.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../appendix/index.html" title="7. Appendix"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="custom-board-support/custom_board_definitions.html" title="6.6.9. Custom board definition format"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R9 RC31 (docver 9.0.1)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.7. </span>Resource Usage</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="resource-usage">
+<span id="id1"></span><h1><span class="section-number">6.7. </span>Resource Usage<a class="headerlink" href="#resource-usage" title="Permalink to this heading">¶</a></h1>
+<p>This section provides reference data for resource usage, covering program and data memory and CPU usage.</p>
+<p><strong>Please note</strong>: Resource usage is dependent on a number of factors, and may be different than the
+data shown below. These factors include:</p>
+<ul class="simple">
+<li><p>Compiler version</p></li>
+<li><p>Compiler optimization levels</p></li>
+<li><p>Compiler flags</p></li>
+<li><p>Settings in motorBench<sup>®</sup> Development Suite</p></li>
+<li><p>Settings in MCC</p></li>
+<li><p>MCAF parameter values</p></li>
+</ul>
+<section id="test-case">
+<h2><span class="section-number">6.7.1. </span>Test case<a class="headerlink" href="#test-case" title="Permalink to this heading">¶</a></h2>
+<p>In each case described below, MCAF firmware packages were used with default settings and the AN1292
+PLL estimator selected, using the <a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/AC300022">Nidec Hurst DMA0204024B101</a> motor and the <a class="reference external" href="https://www.microchip.com/DevelopmentTools/ProductDetails/dm330021-2">dsPICDEM<sup>®</sup> MCLV‑2 Development Board</a>. The source code was built using
+both XC16 and XC-DSC with <code class="docutils literal notranslate"><span class="pre">-O1</span></code> and <code class="docutils literal notranslate"><span class="pre">-O2</span></code> compilation levels for the devices dsPIC33EP256MC506,
+dsPIC33CK256MP508, and dsPIC33CK64MC105. The macros <code class="docutils literal notranslate"><span class="pre">MCAF_TEST_PROFILING</span></code> and <code class="docutils literal notranslate"><span class="pre">MCAF_TEST_HARNESS</span></code>
+were enabled in options.h (see <a class="reference internal" href="../components/testharness.html#test-timestamps"><span class="std std-ref">Profiling timestamps</span></a>).</p>
+<section id="program-and-data-memory">
+<h3><span class="section-number">6.7.1.1. </span>Program and data memory<a class="headerlink" href="#program-and-data-memory" title="Permalink to this heading">¶</a></h3>
+<p>Resource usage statistics for program and data memory were derived from the map file.</p>
+</section>
+<section id="cpu-usage">
+<h3><span class="section-number">6.7.1.2. </span>CPU usage<a class="headerlink" href="#cpu-usage" title="Permalink to this heading">¶</a></h3>
+<p>CPU usage was determined with variants of MCAF modified to transmit CPU cycle count data via the UART, at
+various points in the motor control ISR, for a 20 kHz PWM ISR, using dsPIC33CK256MP508 and dsPIC33CK64MC105
+running at 100 MIPS, and dsPIC33EP256MC506 running at 70 MIPS.</p>
+<p>CPU cycle count was measured over approximately 4 seconds, with the motor starting up, running, and slowing
+to a stop. The resulting time inside the motor control ISR was sorted from low to high, with the worst-case
+and 99.9% percentile computed. For example, 4 seconds of data at 20 kHz represents 80,000 data points, so the
+99.9% percentile represents the 80th-highest sample of CPU usage. This represents conservative estimates of
+CPU usage for estimating remaining CPU capacity in aggregate over time, and exclude timing spikes which may
+occur when long execution paths coincide in the same ISR cycle. The worst-case CPU usage should be used to
+determine that the ISR does not exceed available CPU time. Variation in CPU time is due to a number of
+factors, including:</p>
+<ul class="simple">
+<li><p>Branches (<code class="docutils literal notranslate"><span class="pre">if</span></code> statements) may take alternate and unequal execution paths</p></li>
+<li><p>Some algorithms run at submultiples of the ISR, so for example the PLL position estimator has a portion of
+code that runs once every 8 ISR cycles</p></li>
+<li><p>During different states of the <a class="reference internal" href="../components/statemach.html#component-statemachine"><span class="std std-ref">state machine</span></a>, different parts of the code
+are enabled or disabled</p></li>
+</ul>
+<p>Main loop CPU usage was not profiled but is minimal (estimated at &lt; 0.1 MIPS); not much code runs in the main loop.</p>
+</section>
+</section>
+<section id="usage-statistics-for-mcaf-r3">
+<h2><span class="section-number">6.7.2. </span>Usage statistics for MCAF R3<a class="headerlink" href="#usage-statistics-for-mcaf-r3" title="Permalink to this heading">¶</a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Statistic</p></th>
+<th class="head"><p>MCAF R3, XC16 1.35 <code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p>MCAF R3, XC16 1.35 <code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td colspan="3"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Excluding X2Cscope</p></td>
+<td><p>20367</p></td>
+<td><p>21744</p></td>
+</tr>
+<tr class="row-even"><td><p>X2Cscope module</p></td>
+<td><p>12831</p></td>
+<td><p>12831</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total</p></td>
+<td><p>33198</p></td>
+<td><p>34575</p></td>
+</tr>
+<tr class="row-even"><td colspan="3"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Excluding X2Cscope</p></td>
+<td><p>1342</p></td>
+<td><p>1340</p></td>
+</tr>
+<tr class="row-even"><td><p>X2Cscope module</p></td>
+<td><p>5466</p></td>
+<td><p>5466</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total</p></td>
+<td><p>6808</p></td>
+<td><p>6806</p></td>
+</tr>
+<tr class="row-even"><td colspan="3"><p><strong>CPU ISR usage</strong> (% at 70 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Worst-case</p></td>
+<td><p>64.1%</p></td>
+<td><p>62.9%</p></td>
+</tr>
+<tr class="row-even"><td><p>99.9% percentile</p></td>
+<td><p>63.8%</p></td>
+<td><p>62.6%</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="usage-statistics-for-mcaf-r4">
+<h2><span class="section-number">6.7.3. </span>Usage statistics for MCAF R4<a class="headerlink" href="#usage-statistics-for-mcaf-r4" title="Permalink to this heading">¶</a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Statistic</p></th>
+<th class="head"><p>MCAF R4, XC16 1.36b <code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p>MCAF R4, XC16 1.36b <code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td colspan="3"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Excluding X2Cscope</p></td>
+<td><p>17556</p></td>
+<td><p>18150</p></td>
+</tr>
+<tr class="row-even"><td><p>X2Cscope module</p></td>
+<td><p>12831</p></td>
+<td><p>12753</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total</p></td>
+<td><p>30309</p></td>
+<td><p>30903</p></td>
+</tr>
+<tr class="row-even"><td colspan="3"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Excluding X2Cscope</p></td>
+<td><p>1402</p></td>
+<td><p>1402</p></td>
+</tr>
+<tr class="row-even"><td><p>X2Cscope module</p></td>
+<td><p>5448</p></td>
+<td><p>5448</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total</p></td>
+<td><p>6850</p></td>
+<td><p>6850</p></td>
+</tr>
+<tr class="row-even"><td colspan="3"><p><strong>CPU ISR usage</strong> (% at 70 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Worst-case</p></td>
+<td><p>58.9%</p></td>
+<td><p>58.1%</p></td>
+</tr>
+<tr class="row-even"><td><p>99.9% percentile</p></td>
+<td><p>58.9%</p></td>
+<td><p>58.1%</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="usage-statistics-for-mcaf-r5">
+<h2><span class="section-number">6.7.4. </span>Usage statistics for MCAF R5<a class="headerlink" href="#usage-statistics-for-mcaf-r5" title="Permalink to this heading">¶</a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Statistic</p></th>
+<th class="head"><p>MCAF R5, XC16 1.41 <code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p>MCAF R5, XC16 1.41 <code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td colspan="3"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Excluding X2Cscope</p></td>
+<td><p>17334</p></td>
+<td><p>18783</p></td>
+</tr>
+<tr class="row-even"><td><p>X2Cscope module</p></td>
+<td><p>11709</p></td>
+<td><p>11709</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total</p></td>
+<td><p>29043</p></td>
+<td><p>30492</p></td>
+</tr>
+<tr class="row-even"><td colspan="3"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Excluding X2Cscope</p></td>
+<td><p>1528</p></td>
+<td><p>1580</p></td>
+</tr>
+<tr class="row-even"><td><p>X2Cscope module</p></td>
+<td><p>5186</p></td>
+<td><p>5186</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total</p></td>
+<td><p>6714</p></td>
+<td><p>6766</p></td>
+</tr>
+<tr class="row-even"><td colspan="3"><p><strong>CPU ISR usage</strong> (% at 70 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Worst-case</p></td>
+<td><p>58.3%</p></td>
+<td><p>57.6%</p></td>
+</tr>
+<tr class="row-even"><td><p>99.9% percentile</p></td>
+<td><p>57.8%</p></td>
+<td><p>57.0%</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="usage-statistics-for-mcaf-r6">
+<span id="resource-usage-r6"></span><h2><span class="section-number">6.7.5. </span>Usage statistics for MCAF R6<a class="headerlink" href="#usage-statistics-for-mcaf-r6" title="Permalink to this heading">¶</a></h2>
+<p><strong>dsPIC33EP256MC506</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Statistic</p></th>
+<th class="head"><p>MCAF R6, XC16 1.60 <code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p>MCAF R6, XC16 1.60 <code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td colspan="3"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Excluding X2Cscope</p></td>
+<td><p>17376</p></td>
+<td><p>18219</p></td>
+</tr>
+<tr class="row-even"><td><p>X2Cscope module</p></td>
+<td><p>11709</p></td>
+<td><p>11709</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total</p></td>
+<td><p>29916</p></td>
+<td><p>30885</p></td>
+</tr>
+<tr class="row-even"><td colspan="3"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Excluding X2Cscope</p></td>
+<td><p>1672</p></td>
+<td><p>1672</p></td>
+</tr>
+<tr class="row-even"><td><p>X2Cscope module</p></td>
+<td><p>5186</p></td>
+<td><p>5186</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total</p></td>
+<td><p>6858</p></td>
+<td><p>6858</p></td>
+</tr>
+<tr class="row-even"><td colspan="3"><p><strong>CPU ISR usage</strong> (approximate number of cycles,
+and percentage at 70 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Worst-case</p></td>
+<td><p>2330 (66.5%)</p></td>
+<td><p>2280 (65.2%)</p></td>
+</tr>
+<tr class="row-even"><td><p>99.9% percentile</p></td>
+<td><p>2300 (65.8%)</p></td>
+<td><p>2260 (64.6%)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>dsPIC33CK256MP508</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Statistic</p></th>
+<th class="head"><p>MCAF R6, XC16 1.60 <code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p>MCAF R6, XC16 1.60 <code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td colspan="3"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Excluding X2Cscope</p></td>
+<td><p>17442</p></td>
+<td><p>18210</p></td>
+</tr>
+<tr class="row-even"><td><p>X2Cscope module</p></td>
+<td><p>11625</p></td>
+<td><p>11625</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total</p></td>
+<td><p>29067</p></td>
+<td><p>29835</p></td>
+</tr>
+<tr class="row-even"><td colspan="3"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Excluding X2Cscope</p></td>
+<td><p>1672</p></td>
+<td><p>1672</p></td>
+</tr>
+<tr class="row-even"><td><p>X2Cscope module</p></td>
+<td><p>5186</p></td>
+<td><p>5186</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total</p></td>
+<td><p>6858</p></td>
+<td><p>6858</p></td>
+</tr>
+<tr class="row-even"><td colspan="3"><p><strong>CPU ISR usage</strong> (approximate number of cycles,
+and percentage at 100 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Worst-case</p></td>
+<td><p>2286 (45.7%)</p></td>
+<td><p>2247 (44.9%)</p></td>
+</tr>
+<tr class="row-even"><td><p>99.9% percentile</p></td>
+<td><p>2272 (45.4%)</p></td>
+<td><p>2226 (44.5%)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Algorithm options and variants</strong> — these represent additional usage costs in
+CPU usage, program (code) memory size, and data memory size, above
+the base case shown above. CPU measurements are approximate, based on capturing elapsed
+timer measurements from the test harness. All measurements are made from independent
+test cases enabling one module or option at a time, which may not take into account
+interaction between modules; for example,
+the compiler may be able to identify additional optimization opportunities
+if more than one of the cases below are enabled simultaneously, or the additional
+computations may cause additional CPU cycles for register moves
+that are not required when the same modules are enabled separately.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Module</p></th>
+<th class="head" rowspan="2"><p>Option</p></th>
+<th class="head" rowspan="2"><p>CPU usage
+<br />
+(cycles)</p></th>
+<th class="head" colspan="2"><p>Size   (bytes)</p></th>
+<th class="head" rowspan="2"><p>Conditions</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>Code</p></th>
+<th class="head"><p>Data</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../algorithms/dead-time-comp.html#algorithm-deadtimecompensation"><span class="std std-ref">Dead-time compensation</span></a></p></td>
+<td><p>Per-phase</p></td>
+<td><p>+66</p></td>
+<td><p>+309</p></td>
+<td><p>+28</p></td>
+<td><p>XC16 1.60 <code class="docutils literal notranslate"><span class="pre">-O2</span></code>, 33C
+(dsPIC33CK256MP508)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../algorithms/flux_control/index.html#algorithm-flux-control"><span class="std std-ref">Flux control</span></a></p></td>
+<td><p>Equation-based,
+FW+MTPA disabled</p></td>
+<td><p>+115</p></td>
+<td><p>+816</p></td>
+<td><p>+60</p></td>
+<td><p>XC16 1.60 <code class="docutils literal notranslate"><span class="pre">-O2</span></code>, 33C
+(dsPIC33CK256MP508),
+full-saliency forced on</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../algorithms/flux_control/index.html#algorithm-flux-control"><span class="std std-ref">Flux control</span></a></p></td>
+<td><p>Equation-based,
+FW enabled</p></td>
+<td><p>+407</p></td>
+<td><p>+1191</p></td>
+<td><p>+60</p></td>
+<td><p>XC16 1.60 <code class="docutils literal notranslate"><span class="pre">-O2</span></code>, 33C
+(dsPIC33CK256MP508),
+full-saliency forced on</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../algorithms/flux_control/index.html#algorithm-flux-control"><span class="std std-ref">Flux control</span></a></p></td>
+<td><p>Equation-based,
+MTPA enabled</p></td>
+<td><p>+256</p></td>
+<td><p>+954</p></td>
+<td><p>+60</p></td>
+<td><p>XC16 1.60 <code class="docutils literal notranslate"><span class="pre">-O2</span></code>, 33C
+(dsPIC33CK256MP508),
+full-saliency forced on</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../algorithms/flux_control/index.html#algorithm-flux-control"><span class="std std-ref">Flux control</span></a></p></td>
+<td><p>Equation-based,
+FW+MTPA enabled</p></td>
+<td><p>+531</p></td>
+<td><p>+1293</p></td>
+<td><p>+60</p></td>
+<td><p>XC16 1.60 <code class="docutils literal notranslate"><span class="pre">-O2</span></code>, 33C
+(dsPIC33CK256MP508),
+full-saliency forced on</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="usage-statistics-for-mcaf-r7">
+<span id="resource-usage-r7"></span><h2><span class="section-number">6.7.6. </span>Usage statistics for MCAF R7<a class="headerlink" href="#usage-statistics-for-mcaf-r7" title="Permalink to this heading">¶</a></h2>
+<p><strong>dsPIC33EP256MC506</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Statistic</p></th>
+<th class="head" colspan="2"><p>MCAF R7, XC16 2.10</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td colspan="3"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>18753</p></td>
+<td><p>19437</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>11787</p></td>
+<td><p>11787</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>30540</p></td>
+<td><p>31260</p></td>
+</tr>
+<tr class="row-odd"><td colspan="3"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>1532</p></td>
+<td><p>1532</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>5378</p></td>
+<td><p>5378</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>6910</p></td>
+<td><p>6910</p></td>
+</tr>
+<tr class="row-odd"><td colspan="3"><p><strong>CPU ISR usage</strong> (approximate number of cycles,
+and percentage at 70 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-even"><td><p>Worst-case</p></td>
+<td><p>2379 (68.0%)</p></td>
+<td><p>2341 (66.9%)</p></td>
+</tr>
+<tr class="row-odd"><td><p>99.9% percentile</p></td>
+<td><p>2295 (65.6%)</p></td>
+<td><p>2230 (63.7%)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>dsPIC33CK256MP508</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Statistic</p></th>
+<th class="head" colspan="2"><p>MCAF R7, XC16 2.10</p></th>
+<th class="head" colspan="2"><p>MCAF R7, XC16 1.60</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td colspan="5"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>17802</p></td>
+<td><p>18471</p></td>
+<td><p>18621</p></td>
+<td><p>19353</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>11703</p></td>
+<td><p>11703</p></td>
+<td><p>11703</p></td>
+<td><p>11703</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>29505</p></td>
+<td><p>30174</p></td>
+<td><p>30324</p></td>
+<td><p>31056</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>1534</p></td>
+<td><p>1534</p></td>
+<td><p>1588</p></td>
+<td><p>1588</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>5378</p></td>
+<td><p>5378</p></td>
+<td><p>5378</p></td>
+<td><p>5378</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>6912</p></td>
+<td><p>6912</p></td>
+<td><p>6966</p></td>
+<td><p>6966</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>CPU ISR usage</strong> (approximate number of cycles,
+and percentage at 100 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-even"><td><p>Worst-case</p></td>
+<td><p>2335 (46.7%)</p></td>
+<td><p>2273 (45.5%)</p></td>
+<td><p>2322 (46.4%)</p></td>
+<td><p>2276 (45.5%)</p></td>
+</tr>
+<tr class="row-odd"><td><p>99.9% percentile</p></td>
+<td><p>2263 (45.3%)</p></td>
+<td><p>2201 (44.0%)</p></td>
+<td><p>2307 (46.1%)</p></td>
+<td><p>2255 (45.1%)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>dsPIC33CK64MC105</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Statistic</p></th>
+<th class="head" colspan="2"><p>MCAF R7, XC16 2.10</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td colspan="3"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>17430</p></td>
+<td><p>18108</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>11703</p></td>
+<td><p>11703</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>29133</p></td>
+<td><p>29811</p></td>
+</tr>
+<tr class="row-odd"><td colspan="3"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>1534</p></td>
+<td><p>1534</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>5378</p></td>
+<td><p>5378</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>6912</p></td>
+<td><p>6912</p></td>
+</tr>
+<tr class="row-odd"><td colspan="3"><p><strong>CPU ISR usage</strong> (approximate number of cycles,
+and percentage at 100 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-even"><td><p>Worst-case</p></td>
+<td><p>2333 (46.7%)</p></td>
+<td><p>2274 (45.5%)</p></td>
+</tr>
+<tr class="row-odd"><td><p>99.9% percentile</p></td>
+<td><p>2263 (45.3%)</p></td>
+<td><p>2201 (44.0%)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Algorithm options and variants</strong> — these represent additional usage costs in
+CPU usage, program (code) memory size, and data memory size, above
+the base case shown above. CPU measurements are approximate, based on capturing elapsed
+timer measurements from the test harness. All measurements are made from independent
+test cases enabling one module or option at a time, which may not take into account
+interaction between modules; for example,
+the compiler may be able to identify additional optimization opportunities
+if more than one of the cases below are enabled simultaneously, or the additional
+computations may cause additional CPU cycles for register moves
+that are not required when the same modules are enabled separately.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Module</p></th>
+<th class="head" rowspan="2"><p>Option</p></th>
+<th class="head" rowspan="2"><p>CPU usage
+<br />
+(cycles)</p></th>
+<th class="head" colspan="2"><p>Size   (bytes)</p></th>
+<th class="head" rowspan="2"><p>Conditions</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p>Code</p></th>
+<th class="head"><p>Data</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../algorithms/foc/current_measure.html#algorithm-current-measure"><span class="std std-ref">Current measurement</span></a></p></td>
+<td><p>Single-channel</p></td>
+<td><p>+222</p></td>
+<td><p>+2028</p></td>
+<td><p>+52</p></td>
+<td><p>XC16 2.10 <code class="docutils literal notranslate"><span class="pre">-O2</span></code>, 33C
+(dsPIC33CK256MP508)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../algorithms/foc/current_measure.html#algorithm-current-measure"><span class="std std-ref">Current measurement</span></a></p></td>
+<td><p>Triple-channel</p></td>
+<td><p>+100</p></td>
+<td><p>+294</p></td>
+<td><p>+6</p></td>
+<td><p>XC16 2.10 <code class="docutils literal notranslate"><span class="pre">-O2</span></code>, 33C
+(dsPIC33CK256MP508)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../algorithms/current-limit.html#algorithm-ilimit-dynamic"><span class="std std-ref">Dynamic current limit</span></a></p></td>
+<td><p>Simple</p></td>
+<td><p>+113</p></td>
+<td><p>+561</p></td>
+<td><p>+26</p></td>
+<td><p>XC16 2.10 <code class="docutils literal notranslate"><span class="pre">-O2</span></code>, 33C
+(dsPIC33CK256MP508)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../algorithms/zsmt.html#algorithm-zsmt"><span class="std std-ref">Zero-Speed / Maximum Torque (ZS/MT)</span></a></p></td>
+<td><p>ZS/MT standalone
+estimator</p></td>
+<td><p>-264</p></td>
+<td><p>-696</p></td>
+<td><p>+6</p></td>
+<td><p>XC16 2.10 <code class="docutils literal notranslate"><span class="pre">-O2</span></code>, 33C
+(dsPIC33CK256MP508)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../algorithms/zsmt.html#algorithm-zsmt"><span class="std std-ref">Zero-Speed / Maximum Torque (ZS/MT)</span></a></p></td>
+<td><p>Binary hard-switch
+hybrid estimator</p></td>
+<td><p>+386</p></td>
+<td><p>+2763</p></td>
+<td><p>+130</p></td>
+<td><p>XC16 2.10 <code class="docutils literal notranslate"><span class="pre">-O2</span></code>, 33C
+(dsPIC33CK256MP508)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="usage-statistics-for-mcaf-r8">
+<span id="resource-usage-r8"></span><h2><span class="section-number">6.7.7. </span>Usage Statistics for MCAF R8<a class="headerlink" href="#usage-statistics-for-mcaf-r8" title="Permalink to this heading">¶</a></h2>
+<p><strong>dsPIC33EP256MC506</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Statistic</p></th>
+<th class="head" colspan="2"><p>MCAF R8, XC16 2.10</p></th>
+<th class="head" colspan="2"><p>MCAF R8, XC-DSC 3.21</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td colspan="5"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>19092</p></td>
+<td><p>19929</p></td>
+<td><p>19394</p></td>
+<td><p>19869</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>11553</p></td>
+<td><p>11532</p></td>
+<td><p>11559</p></td>
+<td><p>11538</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>30645</p></td>
+<td><p>31461</p></td>
+<td><p>30954</p></td>
+<td><p>31407</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>1536</p></td>
+<td><p>1536</p></td>
+<td><p>1536</p></td>
+<td><p>1536</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>6916</p></td>
+<td><p>6916</p></td>
+<td><p>6916</p></td>
+<td><p>6916</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>CPU ISR usage</strong> (approximate number of cycles,
+and percentage at 70 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-even"><td><p>Worst-case</p></td>
+<td><p>2851 (81.5%)</p></td>
+<td><p>2701 (77.2%)</p></td>
+<td><p>2841 (81.2%)</p></td>
+<td><p>2773 (79.2%)</p></td>
+</tr>
+<tr class="row-odd"><td><p>99.9% percentile</p></td>
+<td><p>2674 (76.4%)</p></td>
+<td><p>2615 (74.7%)</p></td>
+<td><p>2750 (78.6%)</p></td>
+<td><p>2686 (76.7%)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>dsPIC33CK256MP508</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Statistic</p></th>
+<th class="head" colspan="2"><p>MCAF R8, XC16 2.10</p></th>
+<th class="head" colspan="2"><p>MCAF R8, XC-DSC 3.21</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td colspan="5"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>25248</p></td>
+<td><p>26163</p></td>
+<td><p>26034</p></td>
+<td><p>26400</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>11514</p></td>
+<td><p>11493</p></td>
+<td><p>11517</p></td>
+<td><p>11496</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>36762</p></td>
+<td><p>37656</p></td>
+<td><p>37551</p></td>
+<td><p>37896</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>1540</p></td>
+<td><p>1540</p></td>
+<td><p>1538</p></td>
+<td><p>1538</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>6920</p></td>
+<td><p>6920</p></td>
+<td><p>6918</p></td>
+<td><p>6918</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>CPU ISR usage</strong> (approximate number of cycles,
+and percentage at 100 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-even"><td><p>Worst-case</p></td>
+<td><p>2760 (55.2%)</p></td>
+<td><p>2694 (53.9%)</p></td>
+<td><p>2802 (56.0%)</p></td>
+<td><p>2761 (55.2%)</p></td>
+</tr>
+<tr class="row-odd"><td><p>99.9% percentile</p></td>
+<td><p>2570 (51.4%)</p></td>
+<td><p>2509 (50.2%)</p></td>
+<td><p>2715 (54.3%)</p></td>
+<td><p>2653 (53.1%)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>dsPIC33CK64MC105</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Statistic</p></th>
+<th class="head" colspan="2"><p>MCAF R8, XC16 2.10</p></th>
+<th class="head" colspan="2"><p>MCAF R8, XC-DSC 3.21</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td colspan="5"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>23925</p></td>
+<td><p>24840</p></td>
+<td><p>24684</p></td>
+<td><p>25035</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>11514</p></td>
+<td><p>11493</p></td>
+<td><p>11517</p></td>
+<td><p>11496</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>35439</p></td>
+<td><p>36333</p></td>
+<td><p>36201</p></td>
+<td><p>36531</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>1540</p></td>
+<td><p>1540</p></td>
+<td><p>1538</p></td>
+<td><p>1538</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>6920</p></td>
+<td><p>6920</p></td>
+<td><p>6918</p></td>
+<td><p>6918</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>CPU ISR usage</strong> (approximate number of cycles,
+and percentage at 100 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-even"><td><p>Worst-case</p></td>
+<td><p>2661 (53.2%)</p></td>
+<td><p>2628 (52.6%)</p></td>
+<td><p>2901 (58.0%)</p></td>
+<td><p>2897 (57.9%)</p></td>
+</tr>
+<tr class="row-odd"><td><p>99.9% percentile</p></td>
+<td><p>2574 (51.5%)</p></td>
+<td><p>2512 (50.2%)</p></td>
+<td><p>2715 (54.3%)</p></td>
+<td><p>2711 (54.2%)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="usage-statistics-for-mcaf-r9">
+<h2><span class="section-number">6.7.8. </span>Usage Statistics for MCAF R9<a class="headerlink" href="#usage-statistics-for-mcaf-r9" title="Permalink to this heading">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In execution-time testing for MCAF R9,
+dsPIC33A and dsPIC33C devices use MCC Melody, while dsPIC33E devices use MCC Classic.</p>
+</div>
+<p><strong>dsPIC33EP256MC506</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Statistic</p></th>
+<th class="head" colspan="2"><p>MCAF R9, XC-DSC 3.21</p></th>
+<th class="head" colspan="2"><p>MCAF R9, XC-DSC 3.31</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td colspan="5"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>19356</p></td>
+<td><p>19599</p></td>
+<td><p>19698</p></td>
+<td><p>19977</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>11559</p></td>
+<td><p>11538</p></td>
+<td><p>11556</p></td>
+<td><p>11535</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>30915</p></td>
+<td><p>31137</p></td>
+<td><p>31254</p></td>
+<td><p>31512</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>1536</p></td>
+<td><p>1536</p></td>
+<td><p>1536</p></td>
+<td><p>1536</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>6916</p></td>
+<td><p>6916</p></td>
+<td><p>6916</p></td>
+<td><p>6916</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>CPU ISR usage</strong> (approximate number of cycles,
+and percentage at 70 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-even"><td><p>Worst-case</p></td>
+<td><p>2881 (82.3%)</p></td>
+<td><p>2726 (77.9%)</p></td>
+<td><p>2890 (82.6%)</p></td>
+<td><p>2744 (78.4%)</p></td>
+</tr>
+<tr class="row-odd"><td><p>99.9% percentile</p></td>
+<td><p>2718 (77.7%)</p></td>
+<td><p>2649 (75.7%)</p></td>
+<td><p>2734 (78.1%)</p></td>
+<td><p>2642 (75.5%)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>dsPIC33CK256MP508</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Statistic</p></th>
+<th class="head" colspan="2"><p>MCAF R9, XC-DSC 3.21</p></th>
+<th class="head" colspan="2"><p>MCAF R9, XC-DSC 3.31</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td colspan="5"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>26334</p></td>
+<td><p>26526</p></td>
+<td><p>26652</p></td>
+<td><p>26781</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>11517</p></td>
+<td><p>11496</p></td>
+<td><p>11517</p></td>
+<td><p>11496</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>37851</p></td>
+<td><p>38022</p></td>
+<td><p>38169</p></td>
+<td><p>38227</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>1538</p></td>
+<td><p>1538</p></td>
+<td><p>1538</p></td>
+<td><p>1538</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>6918</p></td>
+<td><p>6918</p></td>
+<td><p>6918</p></td>
+<td><p>6918</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>CPU ISR usage</strong> (approximate number of cycles,
+and percentage at 100 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-even"><td><p>Worst-case</p></td>
+<td><p>2704 (54.1%)</p></td>
+<td><p>2619 (52.4%)</p></td>
+<td><p>2714 (54.3%)</p></td>
+<td><p>2642 (52.8%)</p></td>
+</tr>
+<tr class="row-odd"><td><p>99.9% percentile</p></td>
+<td><p>2609 (52.2%)</p></td>
+<td><p>2531 (50.6%)</p></td>
+<td><p>2631 (52.6%)</p></td>
+<td><p>2546 (50.9%)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>dsPIC33CK64MC105</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Statistic</p></th>
+<th class="head" colspan="2"><p>MCAF R9, XC-DSC 3.21</p></th>
+<th class="head" colspan="2"><p>MCAF R9, XC-DSC 3.31</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td colspan="5"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>24987</p></td>
+<td><p>25164</p></td>
+<td><p>25305</p></td>
+<td><p>25425</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>11517</p></td>
+<td><p>11496</p></td>
+<td><p>11517</p></td>
+<td><p>11496</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>36504</p></td>
+<td><p>36660</p></td>
+<td><p>36822</p></td>
+<td><p>36921</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>1538</p></td>
+<td><p>1538</p></td>
+<td><p>1538</p></td>
+<td><p>1538</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+<td><p>5380</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>6918</p></td>
+<td><p>6918</p></td>
+<td><p>6918</p></td>
+<td><p>6918</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>CPU ISR usage</strong> (approximate number of cycles,
+and percentage at 100 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-even"><td><p>Worst-case</p></td>
+<td><p>2780 (55.6%)</p></td>
+<td><p>2629 (52.6%)</p></td>
+<td><p>–</p></td>
+<td><p>–</p></td>
+</tr>
+<tr class="row-odd"><td><p>99.9% percentile</p></td>
+<td><p>2606 (52.1%)</p></td>
+<td><p>2528 (50.6%)</p></td>
+<td><p>–</p></td>
+<td><p>–</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>CPU ISR usage results for dsPIC33CK64MC105 with the XC-DSC 3.31 compiler are not available due to technical issues in profiling this configuration; MCAF team will update these results when the profiling issues are addressed</p>
+</div>
+<p><strong>dsPIC33AK128MC106</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Statistic</p></th>
+<th class="head" colspan="2"><p>MCAF R9, XC-DSC 3.21</p></th>
+<th class="head" colspan="2"><p>MCAF R9, XC-DSC 3.31</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td colspan="5"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>39882</p></td>
+<td><p>40566</p></td>
+<td><p>39480</p></td>
+<td><p>40608</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>17940</p></td>
+<td><p>17892</p></td>
+<td><p>17970</p></td>
+<td><p>17922</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>57822</p></td>
+<td><p>58458</p></td>
+<td><p>57450</p></td>
+<td><p>58530</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>1704</p></td>
+<td><p>1704</p></td>
+<td><p>1704</p></td>
+<td><p>1704</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>5540</p></td>
+<td><p>5540</p></td>
+<td><p>5540</p></td>
+<td><p>5540</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>7244</p></td>
+<td><p>7244</p></td>
+<td><p>7244</p></td>
+<td><p>7244</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>CPU ISR usage</strong> (approximate number of cycles,
+and percentage at 200 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-even"><td><p>Worst-case</p></td>
+<td><p>3358 (33.6%)</p></td>
+<td><p>3254 (32.5%)</p></td>
+<td><p>3282 (32.8%)</p></td>
+<td><p>3242 (32.4%)</p></td>
+</tr>
+<tr class="row-odd"><td><p>99.9% percentile</p></td>
+<td><p>3204 (32.0%)</p></td>
+<td><p>3136 (31.4%)</p></td>
+<td><p>3178 (31.8%)</p></td>
+<td><p>3070 (30.7%)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>dsPIC33AK512MC510</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Statistic</p></th>
+<th class="head" colspan="2"><p>MCAF R9, XC-DSC 3.21</p></th>
+<th class="head" colspan="2"><p>MCAF R9, XC-DSC 3.31</p></th>
+</tr>
+<tr class="row-even"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">-O2</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td colspan="5"><p><strong>Program memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>42354</p></td>
+<td><p>42966</p></td>
+<td><p>41946</p></td>
+<td><p>43014</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>17940</p></td>
+<td><p>17892</p></td>
+<td><p>17970</p></td>
+<td><p>17922</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>60294</p></td>
+<td><p>60858</p></td>
+<td><p>59916</p></td>
+<td><p>60936</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>Data memory</strong> (bytes)</p></td>
+</tr>
+<tr class="row-even"><td><p>Excluding X2Cscope</p></td>
+<td><p>1720</p></td>
+<td><p>1720</p></td>
+<td><p>1720</p></td>
+<td><p>1720</p></td>
+</tr>
+<tr class="row-odd"><td><p>X2Cscope module</p></td>
+<td><p>5540</p></td>
+<td><p>5540</p></td>
+<td><p>5540</p></td>
+<td><p>5540</p></td>
+</tr>
+<tr class="row-even"><td><p>Total</p></td>
+<td><p>7260</p></td>
+<td><p>7260</p></td>
+<td><p>7260</p></td>
+<td><p>7260</p></td>
+</tr>
+<tr class="row-odd"><td colspan="5"><p><strong>CPU ISR usage</strong> (approximate number of cycles,
+and percentage at 200 MIPS, 20 kHz ISR)</p></td>
+</tr>
+<tr class="row-even"><td><p>Worst-case</p></td>
+<td><p>3316 (33.2%)</p></td>
+<td><p>3180 (31.8%)</p></td>
+<td><p>3284 (32.8%)</p></td>
+<td><p>3186 (31.9%)</p></td>
+</tr>
+<tr class="row-odd"><td><p>99.9% percentile</p></td>
+<td><p>3182 (31.8%)</p></td>
+<td><p>3070 (30.7%)</p></td>
+<td><p>3184 (31.8%)</p></td>
+<td><p>3094 (30.9%)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="changes-between-mcaf-revisions">
+<h2><span class="section-number">6.7.9. </span>Changes between MCAF revisions<a class="headerlink" href="#changes-between-mcaf-revisions" title="Permalink to this heading">¶</a></h2>
+<p>The apparent decrease in ISR usage between MCAF R3 and R4 should not be
+taken as conclusive. Microchip staff have performed similar tests where the CPU usage time
+has increased slightly from MCAF R3 to MCAF R4; we are aware of the issue and
+are investigating more reliable methods to compare CPU usage between MCAF revisions
+under controlled conditions.</p>
+<p>MCAF R6 and R7 have each increased CPU usage slightly, compared to MCAF R5.</p>
+<p>CPU usage has increased slightly in MCAF R8 compared to MCAF R7.</p>
+<p>Microchip staff is investigating potential ways to reduce these increases in CPU
+usage in future MCAF revisions.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">6.7. Resource Usage</a><ul>
+<li><a class="reference internal" href="#test-case">6.7.1. Test case</a><ul>
+<li><a class="reference internal" href="#program-and-data-memory">6.7.1.1. Program and data memory</a></li>
+<li><a class="reference internal" href="#cpu-usage">6.7.1.2. CPU usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#usage-statistics-for-mcaf-r3">6.7.2. Usage statistics for MCAF R3</a></li>
+<li><a class="reference internal" href="#usage-statistics-for-mcaf-r4">6.7.3. Usage statistics for MCAF R4</a></li>
+<li><a class="reference internal" href="#usage-statistics-for-mcaf-r5">6.7.4. Usage statistics for MCAF R5</a></li>
+<li><a class="reference internal" href="#usage-statistics-for-mcaf-r6">6.7.5. Usage statistics for MCAF R6</a></li>
+<li><a class="reference internal" href="#usage-statistics-for-mcaf-r7">6.7.6. Usage statistics for MCAF R7</a></li>
+<li><a class="reference internal" href="#usage-statistics-for-mcaf-r8">6.7.7. Usage Statistics for MCAF R8</a></li>
+<li><a class="reference internal" href="#usage-statistics-for-mcaf-r9">6.7.8. Usage Statistics for MCAF R9</a></li>
+<li><a class="reference internal" href="#changes-between-mcaf-revisions">6.7.9. Changes between MCAF revisions</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="custom-board-support/custom_board_definitions.html"
+                          title="previous chapter"><span class="section-number">6.6.9. </span>Custom board definition format</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../appendix/index.html"
+                          title="next chapter"><span class="section-number">7. </span>Appendix</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../appendix/index.html" title="7. Appendix"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="custom-board-support/custom_board_definitions.html" title="6.6.9. Custom board definition format"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R9 RC31 (docver 9.0.1)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.7. </span>Resource Usage</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2026, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>
