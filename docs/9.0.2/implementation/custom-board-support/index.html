@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>6.6. Custom Board Support &#8212; MCAF R9 RC32 documentation (docver 9.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../../_static/rendermath.js"></script>
+    <script src="../../_static/svgcrop.js"></script>
+    <script src="../../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="6.6.1. Overview of Board Support in motorBench® Development Suite" href="overview.html" />
+    <link rel="prev" title="6.5. Integration with Custom Code" href="../integration.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="overview.html" title="6.6.1. Overview of Board Support in motorBench® Development Suite"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../integration.html" title="6.5. Integration with Custom Code"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R9 RC32 (docver 9.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U"><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.6. </span>Custom Board Support</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="custom-board-support">
+<span id="custom-board"></span><h1><span class="section-number">6.6. </span>Custom Board Support<a class="headerlink" href="#custom-board-support" title="Permalink to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">6.6.1. Overview of Board Support in motorBench<sup>®</sup> Development Suite</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html#scope-of-hardware-support">6.6.2. Scope of Hardware Support</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#board-configuration-features">6.6.2.1. Board Configuration Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#assumptions">6.6.2.2. Assumptions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html#board-definition-file-structure">6.6.3. Board Definition File Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html#system-parameters">6.6.4. System Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">6.6.5. Creating a Custom Board Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#starter-board-file">6.6.5.1. Starter Board File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#modifying-the-starter-board-definition">6.6.5.2. Modifying the Starter Board Definition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#adding-parameters-to-the-board-definition">6.6.5.3. Adding Parameters to the Board Definition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#adding-a-non-mcaf-uart">6.6.5.4. Adding a Non-MCAF UART</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#custom-boards-without-pushbuttons-or-potentiometer">6.6.5.5. Custom Boards Without Pushbuttons or Potentiometer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#custom-boards-without-debug-leds-for-error-code">6.6.5.6. Custom Boards Without Debug LEDs for Error Code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html#board-definition-file-validation">6.6.6. Board Definition File Validation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html#support-for-mcp802x-gate-drivers-including-mcp8021-based-sip-system-in-package-devices">6.6.7. Support for MCP802X Gate Drivers, Including MCP8021-Based SiP (System-in-Package) Devices</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#overview">6.6.7.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#integration-with-mcaf">6.6.7.2. Integration with MCAF</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#configuration">6.6.7.3. Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#system-level-behavior">6.6.7.4. System-Level Behavior</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="verification.html">6.6.8. Verification and Board Bring-Up</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="verification.html#overview">6.6.8.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="verification.html#general-firmware-execution">6.6.8.2. General Firmware Execution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="verification.html#open-loop-voltage-operation">6.6.8.3. Open-Loop Voltage Operation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="verification.html#closed-loop-current-control">6.6.8.4. Closed-Loop Current Control</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="custom_board_definitions.html">6.6.9. Custom Board Definition Format</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="custom_board_definitions.html#working-with-serialized-data-models">6.6.9.1. Working with Serialized Data Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom_board_definitions.html#custom-board-schema">6.6.9.2. Custom Board Schema</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../integration.html"
+                          title="previous chapter"><span class="section-number">6.5. </span>Integration with Custom Code</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="overview.html"
+                          title="next chapter"><span class="section-number">6.6.1. </span>Overview of Board Support in motorBench<sup>®</sup> Development Suite</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="overview.html" title="6.6.1. Overview of Board Support in motorBench® Development Suite"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../integration.html" title="6.5. Integration with Custom Code"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R9 RC32 (docver 9.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.6. </span>Custom Board Support</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2026, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>
