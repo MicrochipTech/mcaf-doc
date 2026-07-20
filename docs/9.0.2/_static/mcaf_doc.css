@@ -1,0 +1,114 @@
+div.highlighted-refs li a:first-child span.std-ref {
+  font-weight: bold;
+}
+
+.literal-block-oneline div.highlight pre,
+.literal-block-oneline div.highlight .o
+{
+  font-size: 0.95em;
+  margin: 0;
+  padding: 0;
+  color: #000;
+  line-height: inherit;
+  border: inherit;
+}
+
+code.literal {
+  white-space: pre;
+}
+
+div.body {
+  background-color: inherit;
+}
+
+div.footer, div.footer a {
+  color: #000;
+}
+
+div.figure p.caption, figure figcaption > p {
+  text-align: justify;
+  display: inline-block;
+}
+
+table.footnote {
+  border: 0;
+}
+
+table.docutils td {
+  vertical-align: top;
+}
+
+table.docutils td > p {
+  text-align: left;
+}
+
+table.docutils td.centered > p, 
+table.docutils th.centered > p {
+  text-align: center;
+}
+table.docutils td.vcentered, 
+table.docutils th.vcentered {
+  vertical-align: middle;
+}
+
+table.docutils td.vcentered img, 
+table.docutils th.vcentered img
+{
+  vertical-align: middle;
+  max-width: min-content;
+}
+
+table.components-table td.longcolumn-1 code {
+  font-size: 90%;
+}
+
+table.components-table td.longcolumn-2 code {
+  font-size: 80%;
+}
+
+table.components-table td.longcolumn-3 code {
+  font-size: 70%;
+}
+
+table.board-schema span.katex {
+  font-size: 100%;
+}
+
+/* minor tweaks to board schema table */
+
+/* fixed-width path and type: make slightly smaller */
+table.board-schema td.board-schema-path code.literal,
+table.board-schema td.board-schema-type code.literal {
+  font-size: 80%;
+}
+
+/* ---------------- admonitions ---------------- */
+
+/* get rid of the "Note" */
+.admonition.note > p.admonition-title {
+  display: none;
+}
+/* get rid of the : after admonition title */
+.admonition.note > .admonition-title:after {
+  content: none;
+}
+
+.admonition {
+  border:         1px solid;
+  border-radius:  3px;
+}
+
+.admonition.note {
+  background-color: #f0ffe0;
+  border-color:     #d0f0a0;
+}
+
+.admonition.warning {
+  background-color: #ffffd0;
+  border-color:     #ffff40;
+}
+
+.admonition.caution {
+  background-color: #ffe8c0;
+  border-color:     #ffc040;
+}

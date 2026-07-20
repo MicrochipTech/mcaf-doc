@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>6. General Implementation Issues &#8212; MCAF R9 RC32 documentation (docver 9.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="6.1. Source Tree Structure" href="source-tree-structure.html" />
+    <link rel="prev" title="5.9. Temperature Measurement" href="../algorithms/temperature-measure.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="source-tree-structure.html" title="6.1. Source Tree Structure"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../algorithms/temperature-measure.html" title="5.9. Temperature Measurement"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R9 RC32 (docver 9.0.2)</a> &#187;
+    
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6. </span>General Implementation Issues</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="general-implementation-issues">
+<span id="implementation-issues"></span><h1><span class="section-number">6. </span>General Implementation Issues<a class="headerlink" href="#general-implementation-issues" title="Permalink to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="source-tree-structure.html">6.1. Source Tree Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="codegen.html">6.2. Code Generation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="codegen.html#relationship-with-mb-and-mcc">6.2.1. Relationship with motorBench<sup>®</sup> Development Suite and MCC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="codegen.html#configurable-parameters">6.2.2. Configurable Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="codegen.html#source-file-organization">6.2.3. Source File Organization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="codegen.html#auxiliary-reports">6.2.4. Auxiliary Reports</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ui-customization.html">6.3. Parameter Customization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ui-customization.html#summary">6.3.1. Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ui-customization.html#detailed-information">6.3.2. Detailed Information</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sampling-rate.html">6.4. Sampling Rate and PWM Frequency Implications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sampling-rate.html#effects-of-changing-sampling-rate-and-pwm-frequency">6.4.1. Effects of Changing Sampling Rate and PWM Frequency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sampling-rate.html#implementation-notes">6.4.2. Implementation Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sampling-rate.html#testing">6.4.3. Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="integration.html">6.5. Integration with Custom Code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="integration.html#overview">6.5.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="integration.html#modifying-the-main-application">6.5.2. Modifying the Main Application</a></li>
+<li class="toctree-l2"><a class="reference internal" href="integration.html#modifying-the-foc-module">6.5.3. Modifying the FOC Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="integration.html#modifying-the-state-machine">6.5.4. Modifying the State Machine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="integration.html#modifying-the-supervisory-algorithms">6.5.5. Modifying the Supervisory Algorithms</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="custom-board-support/index.html">6.6. Custom Board Support</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="custom-board-support/overview.html">6.6.1. Overview of Board Support in motorBench<sup>®</sup> Development Suite</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-board-support/overview.html#scope-of-hardware-support">6.6.2. Scope of Hardware Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-board-support/overview.html#board-definition-file-structure">6.6.3. Board Definition File Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-board-support/overview.html#system-parameters">6.6.4. System Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-board-support/configuration.html">6.6.5. Creating a Custom Board Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-board-support/configuration.html#board-definition-file-validation">6.6.6. Board Definition File Validation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-board-support/configuration.html#support-for-mcp802x-gate-drivers-including-mcp8021-based-sip-system-in-package-devices">6.6.7. Support for MCP802X Gate Drivers, Including MCP8021-Based SiP (System-in-Package) Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-board-support/verification.html">6.6.8. Verification and Board Bring-Up</a></li>
+<li class="toctree-l2"><a class="reference internal" href="custom-board-support/custom_board_definitions.html">6.6.9. Custom Board Definition Format</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="resource-usage.html">6.7. Resource Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="resource-usage.html#test-case">6.7.1. Test Case</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resource-usage.html#usage-statistics-for-mcaf-r3">6.7.2. Usage Statistics for MCAF R3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resource-usage.html#usage-statistics-for-mcaf-r4">6.7.3. Usage Statistics for MCAF R4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resource-usage.html#usage-statistics-for-mcaf-r5">6.7.4. Usage Statistics for MCAF R5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resource-usage.html#usage-statistics-for-mcaf-r6">6.7.5. Usage Statistics for MCAF R6</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resource-usage.html#usage-statistics-for-mcaf-r7">6.7.6. Usage Statistics for MCAF R7</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resource-usage.html#usage-statistics-for-mcaf-r8">6.7.7. Usage Statistics for MCAF R8</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resource-usage.html#usage-statistics-for-mcaf-r9">6.7.8. Usage Statistics for MCAF R9</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resource-usage.html#changes-between-mcaf-revisions">6.7.9. Changes Between MCAF Revisions</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../algorithms/temperature-measure.html"
+                          title="previous chapter"><span class="section-number">5.9. </span>Temperature Measurement</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="source-tree-structure.html"
+                          title="next chapter"><span class="section-number">6.1. </span>Source Tree Structure</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="source-tree-structure.html" title="6.1. Source Tree Structure"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../algorithms/temperature-measure.html" title="5.9. Temperature Measurement"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R9 RC32 (docver 9.0.2)</a> &#187;
+    
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6. </span>General Implementation Issues</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2026, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

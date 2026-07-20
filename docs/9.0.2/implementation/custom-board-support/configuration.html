@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>6.6.5. Creating a Custom Board Configuration &#8212; MCAF R9 RC32 documentation (docver 9.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../../_static/svgcrop.js"></script>
+    <script src="../../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="6.6.8. Verification and Board Bring-Up" href="verification.html" />
+    <link rel="prev" title="6.6.1. Overview of Board Support in motorBench® Development Suite" href="overview.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="verification.html" title="6.6.8. Verification and Board Bring-Up"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="6.6.1. Overview of Board Support in motorBench® Development Suite"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R9 RC32 (docver 9.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U"><span class="section-number">6.6. </span>Custom Board Support</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.6.5. </span>Creating a Custom Board Configuration</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="creating-a-custom-board-configuration">
+<span id="custom-board-configuration"></span><h1><span class="section-number">6.6.5. </span>Creating a Custom Board Configuration<a class="headerlink" href="#creating-a-custom-board-configuration" title="Permalink to this heading">¶</a></h1>
+<p>Copy the <a class="reference external" href="https://github.com/microchip-pic-avr-solutions/motorbench-release-collateral">starter board definition</a>
+into a text editor, save it to the local filesystem and then follow the procedure in
+<a class="reference internal" href="#fig-custom-board-workflow"><span class="std std-numref">Figure 6.10</span></a>.</p>
+<figure class="align-center" id="id1">
+<span id="fig-custom-board-workflow"></span><a class="reference internal image-reference" href="../../_images/custom-board-creation.svg"><img alt="../../_images/custom-board-creation.svg" src="../../_images/custom-board-creation.svg" width="1000px" /></a>
+<figcaption>
+<p><span class="caption-number">Figure 6.10 </span><span class="caption-text">Procedure for creating a custom board cofiguration.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+<ol class="arabic simple">
+<li><p><strong>Change existing values.</strong> Detailed guidance is provided below in <a class="reference internal" href="#custom-board-modifying"><span class="std std-ref">Modifying the Starter Board Definition</span></a>.</p>
+</li>
+<li><p><strong>Add new sections</strong> to completely define the custom board.
+Detailed guidance is provided below in <a class="reference internal" href="#custom-board-adding-features"><span class="std std-ref">Adding Parameters to the Board Definition</span></a>.</p></li>
+<li><p><strong>Import custom board file</strong> in motorBench<sup>®</sup> Development Suite.</p></li>
+<li><p><strong>Review board properties</strong> in Configure → Board.</p></li>
+</ol>
+<p>Alternatively — export one of the Microchip development boards and edit this board definition file as
+necessary to match the custom board design.</p>
+<section id="starter-board-file">
+<h2><span class="section-number">6.6.5.1. </span>Starter Board File<a class="headerlink" href="#starter-board-file" title="Permalink to this heading">¶</a></h2>
+<p>The starter board file provides the bare minimum content required by motorBench. Visit the motorBench release
+repository to obtain a copy of the starter board file.</p>
+</section>
+<section id="modifying-the-starter-board-definition">
+<span id="custom-board-modifying"></span><h2><span class="section-number">6.6.5.2. </span>Modifying the Starter Board Definition<a class="headerlink" href="#modifying-the-starter-board-definition" title="Permalink to this heading">¶</a></h2>
+<dl>
+<dt><strong>Change the device</strong></dt><dd><p>Update <code class="docutils literal notranslate"><span class="pre">characteristics.device</span></code> to the specific digital signal controller device on the board.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Make sure that the device selected in the MPLAB<sup>®</sup> X project matches this device.</p>
+</div>
+</dd>
+<dt><strong>Change default PWM frequency</strong></dt><dd><p>Update <code class="docutils literal notranslate"><span class="pre">characteristics.pwm.frequency.default</span></code> to the desired PWM frequency in Hz.</p>
+<p>Used for the initial value of the PWM frequency <a class="reference internal" href="overview.html#custom-board-system-parameters"><span class="std std-ref">system parameter</span></a>
+after this board is selected.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Within <code class="docutils literal notranslate"><span class="pre">characteristics.pwm.frequency</span></code>, <code class="docutils literal notranslate"><span class="pre">default</span></code> must be between <code class="docutils literal notranslate"><span class="pre">minimum</span></code> and <code class="docutils literal notranslate"><span class="pre">maximum</span></code>: <br />
+<code class="docutils literal notranslate"><span class="pre">minimum</span></code> <span class="math notranslate nohighlight">\(\le\)</span> <code class="docutils literal notranslate"><span class="pre">default</span></code> <span class="math notranslate nohighlight">\(\le\)</span> <code class="docutils literal notranslate"><span class="pre">maximum</span></code>.</p>
+</div>
+</dd>
+<dt><strong>Change default DC link voltage</strong></dt><dd><p>Update <code class="docutils literal notranslate"><span class="pre">characteristics.voltage.dcLink.default</span></code> to the desired DC link voltage.</p>
+<p>Used for the initial value of the nominal DC link voltage <a class="reference internal" href="overview.html#custom-board-system-parameters"><span class="std std-ref">system parameter</span></a>
+after this board is selected.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Within <code class="docutils literal notranslate"><span class="pre">characteristics.voltage.dcLink</span></code>, <code class="docutils literal notranslate"><span class="pre">default</span></code> must be between <code class="docutils literal notranslate"><span class="pre">minimum</span></code> and <code class="docutils literal notranslate"><span class="pre">maximum</span></code>: <br />
+<code class="docutils literal notranslate"><span class="pre">minimum</span></code> <span class="math notranslate nohighlight">\(\le\)</span> <code class="docutils literal notranslate"><span class="pre">default</span></code> <span class="math notranslate nohighlight">\(\le\)</span> <code class="docutils literal notranslate"><span class="pre">maximum</span></code>.</p>
+</div>
+</dd>
+<dt><strong>Change full-scale measurement range</strong></dt><dd><p>Update the following items to the full scale measurement capabilities of the board:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">characteristics.current.dcLink.fullscale</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">characteristics.current.phase.fullscale</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">characteristics.voltage.dcLink.fullscale</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">characteristics.voltage.phase.fullscale</span></code></p></li>
+</ul>
+</dd>
+<dt><strong>Change PWM fault configuration</strong></dt><dd><p>The PWM fault signal, if asserted, automatically shuts down PWM channels
+in the event of an externally-detected fault such as an overcurrent or overvoltage.
+To configure MCAF for a PWM fault signal, update the <code class="docutils literal notranslate"><span class="pre">source</span></code> and <code class="docutils literal notranslate"><span class="pre">polarity</span></code>
+properties of <code class="docutils literal notranslate"><span class="pre">peripherals.pwm.fault</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>See <a class="reference internal" href="custom_board_definitions.html#custom-board-pwm-fault"><span class="std std-ref">PWM fault section of custom board schema</span></a> for more information.</p>
+<p>Specification for the <code class="docutils literal notranslate"><span class="pre">polarity</span></code> property is required only if <code class="docutils literal notranslate"><span class="pre">source</span></code>
+is not <code class="docutils literal notranslate"><span class="pre">none</span></code>.</p>
+</div>
+</dd>
+<dt><strong>Change PWM channel to motor phase mapping</strong></dt><dd><p>Update <code class="docutils literal notranslate"><span class="pre">peripherals.pwm.generators</span></code> to change the mapping between motor phases A, B, and C,
+and the appropriate PWM generators.
+For example: if phase A is generated by PWM3, phase B by PWM4, phase C by PWM1, then
+the board definition should contain:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">peripherals</span><span class="p">:</span>
+  <span class="n">pwm</span><span class="p">:</span>
+    <span class="n">generators</span><span class="p">:</span>
+      <span class="n">a</span><span class="p">:</span> <span class="mi">3</span>
+      <span class="n">b</span><span class="p">:</span> <span class="mi">4</span>
+      <span class="n">c</span><span class="p">:</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl id="custom-board-current-sense">
+<dt><strong>Change current sense channel support</strong></dt><dd><p>Update <code class="docutils literal notranslate"><span class="pre">peripherals.adc.current</span></code> to add or remove channels, as appropriate.
+This defines the ADC inputs that can potentially be used for current sensing.</p>
+<p>For example, the LVMC 33CK board contains all four channels:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">peripherals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">adc</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">current</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">a</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AN0</span>
+<span class="w">        </span><span class="nt">inverted</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">signed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">b</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AN1</span>
+<span class="w">        </span><span class="nt">inverted</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">signed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">c</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AN10</span>
+<span class="w">        </span><span class="nt">inverted</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">signed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">dcLink</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AN4</span>
+<span class="w">        </span><span class="nt">inverted</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">        </span><span class="nt">signed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>motorBench/MCAF support several configurations for current measurement:</p>
+<ul class="simple">
+<li><p>Triple-channel current sense (A, B, C)</p></li>
+<li><p>Dual-channel current sense (A, B only)</p></li>
+<li><p>Single-channel current sense (DC link)</p></li>
+</ul>
+<p>See <a class="reference internal" href="../../algorithms/foc/current_measure.html#foc-current-sense-polarity"><span class="std std-ref">Current polarity conventions</span></a> to determine whether inverted
+should be true or false for the channels on the board.</p>
+</div>
+</dd>
+<dt><strong>Change oscillator configuration</strong></dt><dd><p>Update <code class="docutils literal notranslate"><span class="pre">peripherals.oscillator.clockSource</span></code> to one of the valid <a class="reference internal" href="custom_board_definitions.html#custom-board-clocksource"><span class="std std-ref">clock source options</span></a>
+listed in the custom board schema.</p>
+</dd>
+</dl>
+</section>
+<section id="adding-parameters-to-the-board-definition">
+<span id="custom-board-adding-features"></span><h2><span class="section-number">6.6.5.3. </span>Adding Parameters to the Board Definition<a class="headerlink" href="#adding-parameters-to-the-board-definition" title="Permalink to this heading">¶</a></h2>
+<p>New content may be added to the board definition but it must conform to the structure defined by the <a class="reference internal" href="custom_board_definitions.html#custom-board-schema"><span class="std std-ref">custom board
+schema</span></a>.</p>
+<p>In some cases, new sections may need to be added in the appropriate place if a parent key does not already exist.
+See the following guidance for more specific details.</p>
+<dl>
+<dt><strong>Add MCAF UI GPIOs</strong></dt><dd><p>Specify the pin mapping for MCAF <a class="reference internal" href="custom_board_definitions.html#board-schema-gpio"><span class="std std-ref">GPIO channels</span></a> under <code class="docutils literal notranslate"><span class="pre">peripherals.gpio</span></code> for the recommended
+interface features in the <a class="reference internal" href="../../components/ext-interface.html#ext-interface-ui-guidelines"><span class="std std-ref">General UI Guidelines</span></a>, in the following format:</p>
+<pre class="literal-block"><em>&lt;MCAFGpioName&gt;</em>:
+  pin: <em>&lt;pin name&gt;</em>
+  direction: <em>&lt;input/output&gt;</em>
+  polarity: <em>&lt;active-high/active-low&gt;</em></pre>
+<p>For example, all possible MCAF-compatible GPIO on dsPIC33CK Low Voltage Motor Control (LVMC) Development Board are configured:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">peripherals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">gpio</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">MCAF_BUTTON1</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;input&quot;</span>
+<span class="w">      </span><span class="nt">pin</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;RE11&quot;</span>
+<span class="w">      </span><span class="nt">polarity</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;active-high&quot;</span>
+<span class="w">    </span><span class="nt">MCAF_BUTTON2</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;input&quot;</span>
+<span class="w">      </span><span class="nt">pin</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;RE12&quot;</span>
+<span class="w">      </span><span class="nt">polarity</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;active-high&quot;</span>
+<span class="w">    </span><span class="nt">MCAF_LED1</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;output&quot;</span>
+<span class="w">      </span><span class="nt">pin</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;RE6&quot;</span>
+<span class="w">      </span><span class="nt">polarity</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;active-high&quot;</span>
+<span class="w">    </span><span class="nt">MCAF_LED2</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;output&quot;</span>
+<span class="w">      </span><span class="nt">pin</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;RE7&quot;</span>
+<span class="w">      </span><span class="nt">polarity</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;active-high&quot;</span>
+<span class="w">    </span><span class="nt">MCAF_TESTPOINT1</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;output&quot;</span>
+<span class="w">      </span><span class="nt">pin</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;RE4&quot;</span>
+<span class="w">      </span><span class="nt">polarity</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;active-high&quot;</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>Add potentiometer configuration</strong></dt><dd><p>Specify the pin mapping for a potentiometer <a class="reference internal" href="custom_board_definitions.html#board-schema-adcchannelvoltage"><span class="std std-ref">analog channel</span></a> under
+<code class="docutils literal notranslate"><span class="pre">peripherals.adc</span></code> for the recommended potentiometer in the <a class="reference internal" href="../../components/ext-interface.html#ext-interface-ui-guidelines"><span class="std std-ref">General UI Guidelines</span></a>,
+in the following format:</p>
+<blockquote>
+<div><pre class="literal-block">other:
+  potentiometer:
+    channel: ANx
+    signed: <em>&lt;true/false&gt;</em></pre>
+</div></blockquote>
+<p>For example, the ADC channel for the potentiometer used by MCAF on dsPIC33CK Low Voltage Motor Control (LVMC) Development Board is configured:</p>
+<blockquote>
+<div><div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">peripherals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">adc</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">other</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">potentiometer</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;AN11&quot;</span>
+<span class="w">        </span><span class="nt">signed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+</div></blockquote>
+</dd>
+</dl>
+<dl id="custom-board-adding-uart">
+<dt><strong>Add UART pin mapping</strong></dt><dd><p>Specify the pin mapping for RX and TX signals under <code class="docutils literal notranslate"><span class="pre">peripherals.uart.pins</span></code> in the following format:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">peripherals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">uart</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">pins</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">RX</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;R&lt;port&gt;&lt;number&gt;&quot;</span>
+<span class="w">      </span><span class="nt">TX</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;R&lt;port&gt;&lt;number&gt;&quot;</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only one instance of UART is supported and this UART will be used by MCAF specifically for real time
+diagnostics.</p>
+</div>
+</dd>
+<dt><strong>Add new custom ADC channels</strong></dt><dd><p>Specify custom analog channels as a map object under <code class="docutils literal notranslate"><span class="pre">peripherals.adc.custom</span></code> in the following format:</p>
+<pre class="literal-block">custom:
+  <em>&lt;channelName&gt;</em>:
+    channel: ANx
+    signed: <em>&lt;true/false&gt;</em></pre>
+<p>Example custom analog channel specification for two analog channels:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">peripherals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">adc</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">current</span><span class="p">:</span>
+<span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">    </span><span class="nt">voltage</span><span class="p">:</span>
+<span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+<span class="w">    </span><span class="nt">custom</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">sineInput</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AN2</span>
+<span class="w">        </span><span class="nt">signed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">cosineInput</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AN3</span>
+<span class="w">        </span><span class="nt">signed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Custom name <code class="docutils literal notranslate"><span class="pre">&lt;channelName&gt;</span></code> should be a valid C identifier (no spaces or special characters except
+underscore).</p>
+</div>
+</dd>
+<dt><strong>Add new custom GPIOs</strong></dt><dd><p>Specify the pin mapping for <a class="reference internal" href="custom_board_definitions.html#board-schema-gpio"><span class="std std-ref">custom GPIO channels</span></a> under <code class="docutils literal notranslate"><span class="pre">peripherals.gpio</span></code> in
+the following format:</p>
+<pre class="literal-block"><em>&lt;customGpioName&gt;</em>:
+  pin: <em>&lt;pin name&gt;</em>
+  direction: <em>&lt;input/output&gt;</em>
+  polarity: <em>&lt;active-high/active-low&gt;</em></pre>
+<p>Pin, direction, and polarity are the minimum set of properties required to specify a GPIO channel.</p>
+<p>If needed, the following additional GPIO properties may be included in the GPIO channel specification:</p>
+<pre class="literal-block"><em>&lt;customGpioName&gt;</em>:
+  pin: <em>&lt;pin name&gt;</em>
+  direction: <em>&lt;input/output&gt;</em>
+  polarity: <em>&lt;active-high/active-low&gt;</em>
+  openDrain: <em>&lt;true/false&gt;</em>
+  weakPullUp: <em>&lt;true/false&gt;</em>
+  weakPullDown: <em>&lt;true/false&gt;</em>
+  startHigh: <em>&lt;true/false&gt;</em></pre>
+<p>The configuration below is an example specification of a custom GPIO on pin RA1, configured as output,
+active-high, with a weak pullup resistor.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">peripherals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">gpio</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">customgpio1</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">pin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RA1</span>
+<span class="w">      </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">output</span>
+<span class="w">      </span><span class="nt">polarity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">active-high</span>
+<span class="w">      </span><span class="nt">weakPullUp</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Custom name <code class="docutils literal notranslate"><span class="pre">&lt;customGpioName&gt;</span></code> must be a valid C identifier (no spaces or special characters except
+underscore).</p>
+</div>
+</dd>
+<dt><strong>Add internal comparator configuration</strong></dt><dd><p>Specify the comparator configuration under <code class="docutils literal notranslate"><span class="pre">peripherals.comparator</span></code> in the following format:</p>
+<pre class="literal-block">source: CMP&lt;instance&gt;&lt;muxinput&gt;
+inverted: <em>&lt;true/false&gt;</em>
+threshold: <em>&lt;fraction&gt;</em></pre>
+<p>Source, inverted and threshold are mandatory fields required to specify the comparator completely.</p>
+<p>The configuration below is an example specification of CMP1 configured to compare the analog signal at its
+mux input “C” with the internal DAC reference of (0.95*Add) and output a non-inverted logic signal:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">peripherals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">comparator</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CMP1C</span>
+<span class="w">    </span><span class="nt">inverted</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.95</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently, motorBench allows the specification for only one internal comparator.</p>
+</div>
+</dd>
+<dt><strong>Add internal op amp configuration</strong></dt><dd><p>Specify the op amp configuration under <code class="docutils literal notranslate"><span class="pre">peripherals.opamp</span></code> in the following format:</p>
+<pre class="literal-block">enabled:
+  - <em>&lt;numbertoenable&gt;</em>
+  - <em>&lt;numbertoenable&gt;</em>
+  - <em>&lt;numbertoenable&gt;</em></pre>
+<p>Example specification that enables internal op amps 1 and 3:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">peripherals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">opamp</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</pre></div>
+</div>
+</dd>
+<dt><strong>Add QEI configuration</strong></dt><dd><p>Specify the QEI configuration under <code class="docutils literal notranslate"><span class="pre">peripherals.qei</span></code> in the following format:</p>
+<pre class="literal-block">pins:
+  A: <em>&lt;port for phase-A&gt;</em>
+  B: <em>&lt;port for phase-B&gt;</em>
+  Z: <em>&lt;port for index pulse&gt;</em></pre>
+<p>If QEI configuration is specified, then phase-A and phase-B are mandatory while index (Z) is optional.</p>
+<p>Following is an example specification that enables QEI on port pins RC12, RC13 and RC14 for phase-A, phase-B
+and Index inputs, respectively.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">peripherals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">qei</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">pins</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">A</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RC12</span>
+<span class="w">      </span><span class="nt">B</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RC13</span>
+<span class="w">      </span><span class="nt">Z</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RC14</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently, motorBench allows the specification for only one instance of the QEI peripheral.</p>
+</div>
+</dd>
+<dt><strong>Add inverter bridge temperature sensor configuration</strong></dt><dd><p>Specify the inverter bridge temperature sensor configuration under <code class="docutils literal notranslate"><span class="pre">peripherals.adc.other</span></code> in the following format:</p>
+<pre class="literal-block">bridgeTemperature:
+  channel: ANx
+  signed: <em>&lt;true/false&gt;</em>
+  offset: <em>&lt;voltage&gt;</em>
+  gain: <em>&lt;fraction&gt;</em></pre>
+<p>For example, the dsPIC33CK LVMC board includes an MCP9700 temperature sensor,
+and the corresponding board definition includes:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">peripherals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">adc</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">other</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">bridgeTemperature</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AN12</span>
+<span class="w">        </span><span class="nt">signed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">        </span><span class="nt">offset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.5</span>
+<span class="w">        </span><span class="nt">gain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.50354</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>MCAF temperature sensor support is limited to linear temperature sensors at this time.
+These sensors are commonly specified at 10 mV/°C with a given voltage offset at 0 °C;
+for example the <a class="reference external" href="https://www.microchip.com/en-us/product/mcp9700">MCP9700</a> is specified as
+10 mV/°C with 500mV offset at 0 °C.</p>
+<p><code class="docutils literal notranslate"><span class="pre">bridgeTemperature.offset</span></code> is represented in terms of voltage [V] at 0 °C.</p>
+<p><code class="docutils literal notranslate"><span class="pre">bridgeTemperature.gain</span></code> is the ADC gain needed to scale temperature to 0.01 °C/count,
+after the full ADC range is mapped to the range 0 – 65535 counts.
+For AVdd = 3.3V, an increase in 1 °C → 10 mV → 0.01 V / 3.3 V × 65536
+= 198.594 counts. To scale this to 100 counts per °C, multiply
+by 100 / 198.594 = 0.50354. In general, the formula for <code class="docutils literal notranslate"><span class="pre">bridgeTemperature.gain</span></code> <span class="math notranslate nohighlight">\(G_T\)</span> is</p>
+<div class="math notranslate nohighlight" id="equation-implementation-custom-board-support-configuration-0">
+<span class="eqno">(6.2)<a class="headerlink" href="#equation-implementation-custom-board-support-configuration-0" title="Permalink to this equation">¶</a></span>\[G_T = \frac{100 AV_{dd}}{2^{16} K_V}\]</div>
+<p>where <span class="math notranslate nohighlight">\(K_V\)</span> is the voltage gain of the temperature sensor per °C.
+As another example, the <a class="reference external" href="https://www.microchip.com/en-us/product/mcp9701">MCP9701</a> is specified
+as 19.5 mV/°C, with a 400 mV offset, so a board definition with the MCP9701 and
+analog supply voltage AVdd = 3.3V should contain
+<span class="math notranslate nohighlight">\(G_T = \frac{100 \cdot 3.3}{65536 \cdot 0.0195}\)</span> = 0.25823:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">peripherals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">adc</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">other</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">bridgeTemperature</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">offset</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.4</span>
+<span class="w">        </span><span class="nt">gain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.25823</span>
+</pre></div>
+</div>
+</div>
+</dd>
+<dt><strong>Add configuration for a SiP device</strong></dt><dd><p>Specify the SiP device and gate driver configuration under <code class="docutils literal notranslate"><span class="pre">characteristics</span></code> in the following format:</p>
+<pre class="literal-block">device: dsPIC33CDV[C/L][64/256]M[P/C]XXX
+  gateDriver:
+    device: MCP8021
+    configuration:
+      sleepMode: <em>&lt;standby/sleep&gt;</em>
+      shortCircuitDetect: <em>&lt;true/false&gt;</em>
+      underVoltageLockout: <em>&lt;true/false&gt;</em>
+    pins:
+      RX: R&lt;port&gt;&lt;number&gt;
+      TX: R&lt;port&gt;&lt;number&gt;
+      fault: R&lt;port&gt;&lt;number&gt;
+      outputEnable: R&lt;port&gt;&lt;number&gt;</pre>
+<p>For example, a board with a dsPIC33CDVC256MP506 device is configured:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">characteristics</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dsPIC33CDVC256MP506</span>
+<span class="w">  </span><span class="nt">gateDriver</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MCP8021</span>
+<span class="w">    </span><span class="nt">configuration</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">sleepMode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standby</span>
+<span class="w">      </span><span class="nt">shortCircuitDetect</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">      </span><span class="nt">underVoltageLockout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">pins</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">RX</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RC12</span>
+<span class="w">      </span><span class="nt">TX</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RC12</span>
+<span class="w">      </span><span class="nt">fault</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RB12</span>
+<span class="w">      </span><span class="nt">outputEnable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RB13</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The following additional parameters of MCP8021 are pre-configured by motorBench/ MCAF and cannot be modified directly.
+See section on <a class="reference internal" href="#custom-board-sip-devices-param-override"><span class="std std-ref">configuration</span></a> for more infomration.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">driverDeadTime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">250</span>
+<span class="nt">driverBlankingTime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4000</span>
+<span class="nt">overcurrentLimit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+</pre></div>
+</div>
+<p>Note: All SiP devices come with a single gate driver option, the MCP8021, and the pin connections between
+the microcontroller and the gate driver device are hard-wired.</p>
+</div>
+</dd>
+<dt><strong>Add gate driver configuration for MCP8021</strong></dt><dd><p>Specify the MCP8021 gate driver configuration under <code class="docutils literal notranslate"><span class="pre">characteristics</span></code> in the following format:</p>
+<pre class="literal-block">gateDriver:
+  device: MCP8021
+  configuration:
+    sleepMode: <em>&lt;standby/sleep&gt;</em>
+    shortCircuitDetect: <em>&lt;true/false&gt;</em>
+    underVoltageLockout: <em>&lt;true/false&gt;</em>
+  pins:
+    RX: R&lt;port&gt;&lt;number&gt;
+    TX: R&lt;port&gt;&lt;number&gt;
+    fault: R&lt;port&gt;&lt;number&gt;
+    outputEnable: R&lt;port&gt;&lt;number&gt;</pre>
+<p>For example, a board with dsPIC33CK256MP508 and MCP8021 gate driver has the following configuration:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">characteristics</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dsPIC33CK256MP508</span>
+<span class="w">  </span><span class="nt">gateDriver</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MCP8021</span>
+<span class="w">    </span><span class="nt">configuration</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">sleepMode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standby</span>
+<span class="w">      </span><span class="nt">shortCircuitDetect</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">      </span><span class="nt">underVoltageLockout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">pins</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">RX</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RB8</span>
+<span class="w">      </span><span class="nt">TX</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RB9</span>
+<span class="w">      </span><span class="nt">fault</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RB4</span>
+<span class="w">      </span><span class="nt">outputEnable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RA2</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The following additional parameters of MCP8021 are pre-configured by motorBench/ MCAF and cannot be modified directly.
+See section on <a class="reference internal" href="#custom-board-sip-devices-param-override"><span class="std std-ref">configuration</span></a> for more infomration.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">driverDeadTime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">250</span>
+<span class="nt">driverBlankingTime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4000</span>
+<span class="nt">overcurrentLimit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+</pre></div>
+</div>
+</div>
+</dd>
+<dt><strong>Add gate driver configuration for MCP8022</strong></dt><dd><p>Specify the MCP8022 gate driver configuration under <code class="docutils literal notranslate"><span class="pre">characteristics</span></code> in the following format:</p>
+<pre class="literal-block">gateDriver:
+  device: MCP8022
+  configuration:
+    sleepMode: <em>&lt;standby/sleep&gt;</em>
+    shortCircuitDetect: <em>&lt;true/false&gt;</em>
+    underVoltageLockout: <em>&lt;true/false&gt;</em>
+    opampEnabledDuringDeviceStandby: <em>&lt;true/false&gt;</em>
+  pins:
+    RX: R&lt;port&gt;&lt;number&gt;
+    TX: R&lt;port&gt;&lt;number&gt;
+    fault: R&lt;port&gt;&lt;number&gt;
+    outputEnable: R&lt;port&gt;&lt;number&gt;</pre>
+<p>For example, a board with dsPIC33CK256MP508 and MCP8022 gate driver has the following configuration:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">characteristics</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dsPIC33CK256MP508</span>
+<span class="w">  </span><span class="nt">gateDriver</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MCP8022</span>
+<span class="w">    </span><span class="nt">configuration</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">sleepMode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standby</span>
+<span class="w">      </span><span class="nt">shortCircuitDetect</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">      </span><span class="nt">underVoltageLockout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">      </span><span class="nt">opampEnabledDuringDeviceStandby</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">pins</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">RX</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RB8</span>
+<span class="w">      </span><span class="nt">TX</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RB9</span>
+<span class="w">      </span><span class="nt">fault</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RB4</span>
+<span class="w">      </span><span class="nt">outputEnable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RA2</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The following additional parameters of MCP8022 are pre-configured by motorBench/ MCAF and cannot be modified directly.
+See section on <a class="reference internal" href="#custom-board-sip-devices-param-override"><span class="std std-ref">configuration</span></a> for more infomration.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">driverDeadTime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">250</span>
+<span class="nt">driverBlankingTime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4000</span>
+<span class="nt">overcurrentLimit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+</pre></div>
+</div>
+</div>
+</dd>
+<dt><strong>Add gate driver configuration for MCP8027</strong></dt><dd><p>Specify the MCP8027 gate driver configuration under <code class="docutils literal notranslate"><span class="pre">characteristics</span></code> in the following format:</p>
+<pre class="literal-block">gateDriver:
+  device: MCP8027
+  configuration:
+    sleepMode: <em>&lt;standby/sleep&gt;</em>
+    shortCircuitDetect: <em>&lt;true/false&gt;</em>
+    underVoltageLockout: <em>&lt;true/false&gt;</em>
+    linPullUpsEnabled: <em>&lt;true/false&gt;</em>
+    dacReference: <em>&lt;voltage&gt;</em>
+  pins:
+    RX: R&lt;port&gt;&lt;number&gt;
+    TX: R&lt;port&gt;&lt;number&gt;
+    fault: R&lt;port&gt;&lt;number&gt;
+    outputEnable: R&lt;port&gt;&lt;number&gt;</pre>
+<p>For example, a board with dsPIC33CK256MP508 and MCP8027 gate driver has the following configuration:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">characteristics</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dsPIC33CK256MP508</span>
+<span class="w">  </span><span class="nt">gateDriver</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MCP8027</span>
+<span class="w">    </span><span class="nt">configuration</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">sleepMode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">standby</span>
+<span class="w">      </span><span class="nt">shortCircuitDetect</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">      </span><span class="nt">underVoltageLockout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">      </span><span class="nt">linPullUpsEnabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">      </span><span class="nt">dacReference</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.872</span>
+<span class="w">    </span><span class="nt">pins</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">RX</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RB8</span>
+<span class="w">      </span><span class="nt">TX</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RB9</span>
+<span class="w">      </span><span class="nt">fault</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RB4</span>
+<span class="w">      </span><span class="nt">outputEnable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RA2</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The following additional parameters of MCP8027 are pre-configured by motorBench/ MCAF and cannot be modified directly.
+See section on <a class="reference internal" href="#custom-board-sip-devices-param-override"><span class="std std-ref">configuration</span></a> for more infomration.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">driverDeadTime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">250</span>
+<span class="nt">driverBlankingTime</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4000</span>
+<span class="nt">overcurrentLimit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+</pre></div>
+</div>
+</div>
+</dd>
+<dt><strong>Add PWM swap configuration for boards where PWMxH and PWMxL are swapped</strong></dt><dd><p>Specify the PWM output swap configuration under <code class="docutils literal notranslate"><span class="pre">peripherals.pwm.outputSwap</span></code> in the following format:</p>
+<pre class="literal-block">peripherals:
+  pwm:
+    outputSwap:
+      a: <em>&lt;true/false&gt;</em>
+      b: <em>&lt;true/false&gt;</em>
+      c: <em>&lt;true/false&gt;</em></pre>
+<p>For example, the following configuration will swap PWMxH and PWMxL outputs for PWM generators assigned to
+phase A and phase B.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">peripherals</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">pwm</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">outputSwap</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">a</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">b</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">c</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</section>
+<section id="adding-a-non-mcaf-uart">
+<span id="custom-board-non-mcaf-uart"></span><h2><span class="section-number">6.6.5.4. </span>Adding a Non-MCAF UART<a class="headerlink" href="#adding-a-non-mcaf-uart" title="Permalink to this heading">¶</a></h2>
+<p>motorBench<sup>®</sup> Development Suite configures only the resources defined in the board definition file and motorBench settings. The UART configured in
+the board definition file is reserved exclusively for MCAF real-time diagnostics
+(see <a class="reference internal" href="#custom-board-adding-uart"><span class="std std-ref">Add UART pin mapping</span></a>).</p>
+<p>To use an additional UART, first generate code with motorBench, then add the extra UART instance through <a class="reference external" href="https://www.microchip.com/en-us/tools-resources/configure/mplab-code-configurator/melody">MCC Melody</a>
+separately. The same principle applies to other peripherals not managed by motorBench, such as additional timers or CAN.</p>
+</section>
+<section id="custom-boards-without-pushbuttons-or-potentiometer">
+<span id="custom-board-without-ui"></span><h2><span class="section-number">6.6.5.5. </span>Custom Boards Without Pushbuttons or Potentiometer<a class="headerlink" href="#custom-boards-without-pushbuttons-or-potentiometer" title="Permalink to this heading">¶</a></h2>
+<p><a class="reference internal" href="../../components/diagnostics.html#diag-kernel"><span class="std std-ref">Real-time diagnostics software</span></a> such as X2Cscope
+allows boards without pushbuttons or a potentiometer to control a motor while using the
+<a class="reference internal" href="../../components/main.html#sample-application"><span class="std std-ref">sample application</span></a>.</p>
+<ol class="arabic simple">
+<li><p>Connect to the board with real-time diagnostics.</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">app.hardwareUiEnabled</span></code> to 0. This will disable MCAF <a class="reference internal" href="../../components/ext-interface.html#ext-interface"><span class="std std-ref">external interface</span></a> functionality in the sample
+application.</p></li>
+<li><p>Update <code class="docutils literal notranslate"><span class="pre">motor.apiData.velocityReference</span></code> to set the velocity of the motor. This Q15 integer value is scaled by
+the full-scale velocity <span class="math notranslate nohighlight">\(ω_{u}\)</span> of the motor, set in the Customize page. The reference velocity will saturate
+between the minimum and maximum velocity values (<span class="math notranslate nohighlight">\(ω_{min}\)</span> and <span class="math notranslate nohighlight">\(ω_{max}\)</span>) set in the Customize
+page.</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">motor.apiData.runMotorRequest</span></code> to 1 to start the motor. MCAF will attempt to start the motor, and
+<code class="docutils literal notranslate"><span class="pre">motor.apiData.runMotorRequest</span></code> will be reset to 0.</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">motor.apiData.stopMotorRequest</span></code> to 1 to stop the motor. MCAF will stop the motor, and
+<code class="docutils literal notranslate"><span class="pre">motor.apiData.stopMotorRequest</span></code> will be reset to 0.</p></li>
+</ol>
+</section>
+<section id="custom-boards-without-debug-leds-for-error-code">
+<h2><span class="section-number">6.6.5.6. </span>Custom Boards Without Debug LEDs for Error Code<a class="headerlink" href="#custom-boards-without-debug-leds-for-error-code" title="Permalink to this heading">¶</a></h2>
+<p><a class="reference internal" href="../../components/diagnostics.html#diag-kernel"><span class="std std-ref">Real-time diagnostics software</span></a> such as X2Cscope
+allows boards without debug LEDs to read error codes.</p>
+<ol class="arabic simple">
+<li><p>Connect to the board with real-time diagnostics.</p></li>
+<li><p>Locate <code class="docutils literal notranslate"><span class="pre">motor.ui.indicatorState.code</span></code> for the error code.</p></li>
+<li><p>Refer to the <a class="reference internal" href="../../appendix/error_codes.html#appendix-error-codes"><span class="std std-ref">Error Code List</span></a> to interpret the value.</p></li>
+</ol>
+</section>
+</section>
+<section id="board-definition-file-validation">
+<h1><span class="section-number">6.6.6. </span>Board Definition File Validation<a class="headerlink" href="#board-definition-file-validation" title="Permalink to this heading">¶</a></h1>
+<p>When importing a custom board, motorBench validates the board definition to ensure it conforms to
+the <a class="reference internal" href="custom_board_definitions.html#custom-board-schema"><span class="std std-ref">custom board schema</span></a>. If this validation
+fails, motorBench will display an error message detailing the error(s) reported.</p>
+</section>
+<section id="support-for-mcp802x-gate-drivers-including-mcp8021-based-sip-system-in-package-devices">
+<span id="custom-board-sip-devices"></span><h1><span class="section-number">6.6.7. </span>Support for MCP802X Gate Drivers, Including MCP8021-Based SiP (System-in-Package) Devices<a class="headerlink" href="#support-for-mcp802x-gate-drivers-including-mcp8021-based-sip-system-in-package-devices" title="Permalink to this heading">¶</a></h1>
+<p>MCAF supports smart gate drivers like the MCP802X series, through a Gate Driver
+firmware module, which manages tasks such as configuration, diagnostics, and
+fault handling. The gate driver can be used in MCAF by specifying the use of
+an MCP802X gate driver in the board definition file.</p>
+<section id="overview">
+<h2><span class="section-number">6.6.7.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>The Gate Driver Interface performs the following core functions:</p>
+<div class="highlighted-refs docutils container">
+<ul class="simple">
+<li><p><strong>Initialization:</strong> Applies the board configuration to the gate driver to prepare it for use.</p></li>
+<li><p><strong>Enable/Disable Control:</strong> Safely enable or disable the gate driver circuitry.</p></li>
+<li><p><strong>Periodic Servicing:</strong> Maintains communication with the gate driver during operation.</p></li>
+<li><p><a class="reference internal" href="../../components/mcapi.html#mcapi-fault-flags"><span class="std std-ref">Fault Monitoring</span></a>: Captures and stores fault conditions for diagnostics or shutdown protocols.</p></li>
+</ul>
+</div>
+<p>The hardware abstraction layer (HAL) provides these functions to high-level components of MCAF such as the system board service and state machine.</p>
+</section>
+<section id="integration-with-mcaf">
+<h2><span class="section-number">6.6.7.2. </span>Integration with MCAF<a class="headerlink" href="#integration-with-mcaf" title="Permalink to this heading">¶</a></h2>
+<p>MCAF includes the Gate Driver module when the board definition specifies a gate driver device.</p>
+<div class="highlighted-refs docutils container">
+<ul class="simple">
+<li><p>During <strong>board initialization</strong>, the gate driver is configured.</p></li>
+<li><p>During <a class="reference internal" href="../../components/hal.html#board-service-module-board-handler"><span class="std std-ref">runtime servicing</span></a>, MCAF performs periodic updates to the gate driver’s internal state and fault monitoring.</p></li>
+<li><p>In the <a class="reference internal" href="../../components/hal.html#board-service-module-bootstrap-charging"><span class="std std-ref">bootstrap sequence</span></a>, the system waits until the gate driver communicates its readiness state before initiating bootstrap capacitor charging.</p></li>
+</ul>
+</div>
+<p>This ensures that the gate driver is ready for normal operation.</p>
+</section>
+<section id="configuration">
+<h2><span class="section-number">6.6.7.3. </span>Configuration<a class="headerlink" href="#configuration" title="Permalink to this heading">¶</a></h2>
+<p>motorBench<sup>®</sup> Development Suite automatically configures the MCP802X device with preset settings from the microcontroller.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Summary</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">driverDeadTime</span></code></p></td>
+<td><p>Sets the <a class="reference internal" href="../../algorithms/dead-time-comp.html#dtc-definition"><span class="std std-ref">dead time</span></a> between switching high-side
+and low-side MOSFETs to prevent shoot-through.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">driverBlankingTime</span></code></p></td>
+<td><p>Sets the interval during which the current sense comparator is disabled.
+This prevents false overcurrent or short-circuit detection due to
+switching noise.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">shortCircuitDetection</span></code></p></td>
+<td><p>Enables and configures short-circuit fault detection by monitoring the
+current sense inputs for rapid overcurrent conditions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">underVoltageLockOut</span></code></p></td>
+<td><p>If the supply voltage drops below this defined threshold, the gate drive
+outputs are disabled to prevent improper operation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">overcurrentLimit</span></code></p></td>
+<td><p>Configures the maximum allowable current level. If exceeded, the driver
+will shut down or limit current.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sleepMode</span></code></p></td>
+<td><p>Internal circuits are powered down to reduce quiescent current. LIN
+wake-up and other wake conditions may be used to restore full operation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">opampEnabledDuringDeviceStandby</span></code></p></td>
+<td><p>Allows the internal op-amps to remain active during standby mode,
+enabling external signal conditioning circuits to continue functioning
+when the main driver is inactive.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">linPullUpsEnabled</span></code></p></td>
+<td><p>Enables internal pull-up resistors on the LIN
+(Local Interconnect Network) bus pins.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dacReference</span></code></p></td>
+<td><p>Configures the reference voltage for the internal DAC, which is used to
+set overcurrent threshold.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The availability and behavior of the listed configuration parameters may vary between MCP8021, MCP8022, and MCP8027 devices.
+Refer to the specific device’s datasheet or board definition schema for detailed implementation and valid settings.</p>
+</div>
+<p id="custom-board-sip-devices-param-override">MCAF preconfigures the following parameters to ensure consistent behavior:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">driverDeadTime</span></code>: MCP802X does not insert symmetrical dead time. To avoid interference with microcontroller-generated dead time, MCAF configures the MCP802X to the minimum value (250 ns).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">driverBlankingTime</span></code>: Set to maximum (4000 ns) to ignore switching-induced current spikes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">overcurrentLimit</span></code>: Set to 1.0 V, the highest allowed, leaving the effective overcurrent threshold to MCAF.</p></li>
+</ul>
+<p>To override these defaults, use the MCP802X EasyView configuration within the MCC Melody application builder.
+The MCC Melody MCP802X interface supports custom configurations for the gate driver that can be selected as the default for
+motorBench.</p>
+</section>
+<section id="system-level-behavior">
+<h2><span class="section-number">6.6.7.4. </span>System-Level Behavior<a class="headerlink" href="#system-level-behavior" title="Permalink to this heading">¶</a></h2>
+<section id="initialization">
+<h3><span class="section-number">6.6.7.4.1. </span>Initialization<a class="headerlink" href="#initialization" title="Permalink to this heading">¶</a></h3>
+<p>The gate driver initialization routine configures all relevant control pins, communication parameters, and internal registers of the gate driver, then enables operation.</p>
+</section>
+<section id="bootstrap-sequence">
+<h3><span class="section-number">6.6.7.4.2. </span>Bootstrap sequence<a class="headerlink" href="#bootstrap-sequence" title="Permalink to this heading">¶</a></h3>
+<p>MCAF monitors the readiness state from gate driver before proceeding with <a class="reference internal" href="../../components/hal.html#board-service-module-bootstrap-charging"><span class="std std-ref">bootstrap capacitor charging</span></a>. This ensures proper high-side switching in designs that depend on charged bootstrap capacitors.</p>
+</section>
+<section id="runtime-service">
+<h3><span class="section-number">6.6.7.4.3. </span>Runtime service<a class="headerlink" href="#runtime-service" title="Permalink to this heading">¶</a></h3>
+<p>MCAF calls a gate driver service function periodically from the board service layer or main control loop. This maintains synchronization with the hardware, handles fault polling, and enables diagnostic features.</p>
+</section>
+<section id="fault-handling">
+<h3><span class="section-number">6.6.7.4.4. </span>Fault handling<a class="headerlink" href="#fault-handling" title="Permalink to this heading">¶</a></h3>
+<p>The gate driver module periodically reads and stores fault flags from the gate driver IC. This allows the system to detect and respond to undervoltage, overcurrent, or communication faults.</p>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">6.6.5. Creating a Custom Board Configuration</a><ul>
+<li><a class="reference internal" href="#starter-board-file">6.6.5.1. Starter Board File</a></li>
+<li><a class="reference internal" href="#modifying-the-starter-board-definition">6.6.5.2. Modifying the Starter Board Definition</a></li>
+<li><a class="reference internal" href="#adding-parameters-to-the-board-definition">6.6.5.3. Adding Parameters to the Board Definition</a></li>
+<li><a class="reference internal" href="#adding-a-non-mcaf-uart">6.6.5.4. Adding a Non-MCAF UART</a></li>
+<li><a class="reference internal" href="#custom-boards-without-pushbuttons-or-potentiometer">6.6.5.5. Custom Boards Without Pushbuttons or Potentiometer</a></li>
+<li><a class="reference internal" href="#custom-boards-without-debug-leds-for-error-code">6.6.5.6. Custom Boards Without Debug LEDs for Error Code</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#board-definition-file-validation">6.6.6. Board Definition File Validation</a></li>
+<li><a class="reference internal" href="#support-for-mcp802x-gate-drivers-including-mcp8021-based-sip-system-in-package-devices">6.6.7. Support for MCP802X Gate Drivers, Including MCP8021-Based SiP (System-in-Package) Devices</a><ul>
+<li><a class="reference internal" href="#overview">6.6.7.1. Overview</a></li>
+<li><a class="reference internal" href="#integration-with-mcaf">6.6.7.2. Integration with MCAF</a></li>
+<li><a class="reference internal" href="#configuration">6.6.7.3. Configuration</a></li>
+<li><a class="reference internal" href="#system-level-behavior">6.6.7.4. System-Level Behavior</a><ul>
+<li><a class="reference internal" href="#initialization">6.6.7.4.1. Initialization</a></li>
+<li><a class="reference internal" href="#bootstrap-sequence">6.6.7.4.2. Bootstrap sequence</a></li>
+<li><a class="reference internal" href="#runtime-service">6.6.7.4.3. Runtime service</a></li>
+<li><a class="reference internal" href="#fault-handling">6.6.7.4.4. Fault handling</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="overview.html"
+                          title="previous chapter"><span class="section-number">6.6.1. </span>Overview of Board Support in motorBench<sup>®</sup> Development Suite</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="verification.html"
+                          title="next chapter"><span class="section-number">6.6.8. </span>Verification and Board Bring-Up</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="verification.html" title="6.6.8. Verification and Board Bring-Up"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="6.6.1. Overview of Board Support in motorBench® Development Suite"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../../index.html">MCAF R9 RC32 (docver 9.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="../index.html" ><span class="section-number">6. </span>General Implementation Issues</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" ><span class="section-number">6.6. </span>Custom Board Support</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">6.6.5. </span>Creating a Custom Board Configuration</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2026, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>

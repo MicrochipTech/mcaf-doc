@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>5.4.6. Sliding Mode Observer (SMO) &#8212; MCAF R9 RC32 documentation (docver 9.0.2)</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/microchip.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mcaf_doc.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css" />
+    
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+    <script src="../_static/rendermath.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <script src="../_static/svgcrop.js"></script>
+    <script src="../_static/mcaf-styling.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.5. Flux Control" href="flux_control/index.html" />
+    <link rel="prev" title="5.4.5. Zero-Speed / Maximum Torque (ZS/MT)" href="zsmt.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="flux_control/index.html" title="5.5. Flux Control"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="zsmt.html" title="5.4.5. Zero-Speed / Maximum Torque (ZS/MT)"
+             accesskey="P">previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R9 RC32 (docver 9.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="estimators.html" accesskey="U"><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.6. </span>Sliding Mode Observer (SMO)</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="sliding-mode-observer-smo">
+<span id="algorithm-smo"></span><span id="index-0"></span><h1><span class="section-number">5.4.6. </span>Sliding Mode Observer (SMO)<a class="headerlink" href="#sliding-mode-observer-smo" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">5.4.6.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>The Sliding Mode Observer (SMO) is used here for the velocity and rotor
+angle estimation of a <a class="reference internal" href="../appendix/glossary.html#term-PMSM"><span class="xref std std-term">PMSM</span></a> to achieve sensorless control. The algorithm
+uses the PMSM current dynamics and forces the estimated current to match the
+measured current using a sliding mode gain. The estimated back-emf is used to calculate
+the position and velocity as shown in the implementation block diagram. The implementation is based on
+<a class="reference external" href="https://www.microchip.com/en-us/application-notes/an1078">AN1078</a> with some improvements in parameter calculations.</p>
+</section>
+<section id="implementation-block-diagram-and-description">
+<h2><span class="section-number">5.4.6.2. </span>Implementation Block Diagram and Description<a class="headerlink" href="#implementation-block-diagram-and-description" title="Permalink to this heading">¶</a></h2>
+<blockquote id="fig-smo-high-level">
+<div><figure class="align-center" id="id1">
+<img alt="SMO: High-level Block Diagram" src="../_images/smo_high_level.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.75 </span><span class="caption-text">SMO: High-level Block Diagram</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</div></blockquote>
+<p>The observer model uses current dynamics (<a class="reference internal" href="#equation-eq-current-dynamics">5.40</a>) in the stationary frame (<span class="math notranslate nohighlight">\({\alpha\beta}\)</span>-domain).</p>
+<div class="math notranslate nohighlight" id="equation-eq-current-dynamics">
+<span class="eqno">(5.40)<a class="headerlink" href="#equation-eq-current-dynamics" title="Permalink to this equation">¶</a></span>\[   \frac{d}{dt}\hat{i}_{\alpha\beta} = \frac{-R}{L}\hat{i}_{\alpha\beta} +    \frac{1}{L}(v_{\alpha\beta}-\hat{e}_{\alpha\beta}-z_{\alpha\beta})\]</div>
+<blockquote id="fig-smo-z-calc">
+<div><figure class="align-center" id="id2">
+<img alt="SMO :math: `z_{\alpha\beta}` Calculation" src="../_images/smo_z_calc.png" />
+<figcaption>
+<p><span class="caption-number">Figure 5.76 </span><span class="caption-text">SMO <span class="math notranslate nohighlight">\(z_{\alpha\beta}\)</span> Calculation</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</div></blockquote>
+<p>To prevent possible chattering, a smoothly-saturating function has been used instead of a signum function.
+The sliding gains (<span class="math notranslate nohighlight">\(k\)</span>) and the boundary layer width (<span class="math notranslate nohighlight">\(\Phi\)</span>) have been calculated using Lyapunov and describing function methods.
+The low-pass filters (LPFs) used for the back-emf filtering are adaptive filters, such that the cut-off frequency is always equal to the reference speed.
+These filters introduce a delay which needs to be compensated (<span class="math notranslate nohighlight">\(\theta_{offset}\)</span>). The estimated position from the back-emf is differentiated with respect to time to estimate the speed.
+This estimated speed is further filtered using another adaptive LPF to get the final speed.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">5.4.6. Sliding Mode Observer (SMO)</a><ul>
+<li><a class="reference internal" href="#overview">5.4.6.1. Overview</a></li>
+<li><a class="reference internal" href="#implementation-block-diagram-and-description">5.4.6.2. Implementation Block Diagram and Description</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="zsmt.html"
+                          title="previous chapter"><span class="section-number">5.4.5. </span>Zero-Speed / Maximum Torque (ZS/MT)</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="flux_control/index.html"
+                          title="next chapter"><span class="section-number">5.5. </span>Flux Control</a></p>
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="flux_control/index.html" title="5.5. Flux Control"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="zsmt.html" title="5.4.5. Zero-Speed / Maximum Torque (ZS/MT)"
+             >previous</a> |</li>
+    <li><img class="nav-logo"
+             src="../_static/Microchip-Logo-Horizontal-White-Red-120x28.png" alt=""
+        /></li>
+    <li><a href=""></a> &#187;</li>
+    <a href="../index.html">MCAF R9 RC32 (docver 9.0.2)</a> &#187;
+    
+          <li class="nav-item nav-item-1"><a href="index.html" ><span class="section-number">5. </span>Detailed Algorithm Notes</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="estimators.html" ><span class="section-number">5.4. </span>Position and Velocity Estimation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">5.4.6. </span>Sliding Mode Observer (SMO)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017-2026, Microchip Technology, Inc..
+    </div>
+  </body>
+</html>
